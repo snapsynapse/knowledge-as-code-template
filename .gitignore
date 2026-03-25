@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-*
+.claude/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Generated output (rebuild with: node scripts/build.js)
+# docs/ is generated — track only the static assets
+docs/*
+!docs/assets/
+docs/assets/*
+!docs/assets/styles.css
+!docs/assets/search.js
+
+# Environment
+.env
+.env.local

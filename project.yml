@@ -1,0 +1,118 @@
+# Knowledge-as-Code Project Configuration
+# Edit this file to define your domain ontology, then run: node scripts/build.js
+
+# ---------------------------------------------------------------------------
+# Project identity
+# ---------------------------------------------------------------------------
+name: "Example Knowledge Base"
+short_name: "example"
+url: "https://example.com"
+repo: "https://github.com/your-org/your-repo"
+description: "A structured reference tracking example entities across categories."
+
+# ---------------------------------------------------------------------------
+# Entity model — the ontology
+#
+# Every project has four core entity roles:
+#   primary    — stable anchors (e.g., obligations, capabilities, controls)
+#   container  — grouping entity (e.g., regulations, products, frameworks)
+#   authority  — source entity (e.g., regulatory bodies, vendors, standards orgs)
+#   secondary  — mapping entity connecting containers to primaries (e.g., provisions)
+#
+# The relationship is: Authority → Container → Secondary → Primary
+# ---------------------------------------------------------------------------
+entities:
+  primary:
+    name: Requirement
+    plural: Requirements
+    directory: requirements
+    groups:
+      - name: governance
+        color: "#7c4dff"
+        color_light: "#4527a0"
+      - name: technical
+        color: "#4fc3f7"
+        color_light: "#0277bd"
+      - name: operational
+        color: "#ff6e40"
+        color_light: "#bf360c"
+    body_sections:
+      - Summary
+      - What Counts
+      - What Does Not Count
+
+  container:
+    name: Framework
+    plural: Frameworks
+    directory: frameworks
+    statuses:
+      - name: active
+        color: "#4caf50"
+        color_light: "#1b7d1b"
+      - name: draft
+        color: "#ff9800"
+        color_light: "#e65100"
+      - name: deprecated
+        color: "#607d8b"
+        color_light: "#455a64"
+    has_timeline: true
+    scope_field: jurisdiction
+
+  authority:
+    name: Organization
+    plural: Organizations
+    directory: organizations
+
+  secondary:
+    name: Provision
+    plural: Provisions
+    directory: provisions
+    relationship: "implements"
+
+# Mapping file — connects containers to primaries via secondaries
+mapping:
+  file: "provisions/index.yml"
+
+# ---------------------------------------------------------------------------
+# Site navigation
+# ---------------------------------------------------------------------------
+nav:
+  - id: home
+    label: Home
+    href: index.html
+  - id: containers
+    label: Frameworks
+    href: containers.html
+  - id: primaries
+    label: Requirements
+    href: primaries.html
+  - id: matrix
+    label: Matrix
+    href: matrix.html
+  - id: timeline
+    label: Timeline
+    href: timeline.html
+  - id: compare
+    label: Compare
+    href: compare.html
+  - id: about
+    label: About
+    href: about.html
+
+# ---------------------------------------------------------------------------
+# Bridge pages — SEO-targeted detail pages
+# ---------------------------------------------------------------------------
+bridges:
+  requires: true
+  compare: true
+  applies_to:
+    field: jurisdiction
+
+# ---------------------------------------------------------------------------
+# Theme colors
+# ---------------------------------------------------------------------------
+theme:
+  accent: "#4fc3f7"
+  accent_light: "#0055aa"
+  accent_bg: "#0f3460"
+  accent_bg_light: "#e6f2ff"

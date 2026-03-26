@@ -33,6 +33,10 @@
     <meta property="og:title" content="Incident Response">
     <meta property="og:description" content="Incident Response — Requirement to detect, respond to, and recover from security incidents with defined procedures and communication plans.">
     <meta property="og:type" content="website">
+    
+    <meta property="og:url" content="https://example.comprimary/incident-response/">
+    <meta name="twitter:card" content="summary">
+    
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
@@ -83,7 +87,7 @@
         <h3>What Does Not Count</h3><ul><li>Ad-hoc responses without documentation</li><li>Plans that exist but are never tested or exercised</li></ul>
         <h3>Implementing Frameworks</h3>
         <table class="data-table"><thead><tr><th>Framework</th><th>Scope</th><th>Status</th><th>Provisions</th></tr></thead><tbody>
-            <tr><td><a href="../container/nist-csf/index.html" onclick="passTheme(this)">NIST Cybersecurity Framework</a></td><td>Federal</td><td><span class="status-badge active">active</span></td><td>1</td></tr>
+            <tr><td><a href="../../container/nist-csf/index.html" onclick="passTheme(this)">NIST Cybersecurity Framework</a></td><td>Federal</td><td><span class="status-badge active">active</span></td><td>1</td></tr>
         </tbody></table>
     
     </div>
@@ -92,6 +96,39 @@
         <p>&copy; 2026 | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern created by <a href="https://snapsynapse.com">Snap Synapse</a></p>
     </footer>
     <script src="../../assets/search.js"></script>
+    <script>
+    (function() {
+        document.querySelectorAll('th[data-sortable]').forEach(function(th) {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', function() {
+                var table = th.closest('table');
+                var tbody = table.querySelector('tbody');
+                var rows = Array.from(tbody.querySelectorAll('tr'));
+                var col = Array.from(th.parentNode.children).indexOf(th);
+                var type = th.dataset.sortType || 'string';
+                var asc = th.dataset.sortDir !== 'asc';
+
+                th.parentNode.querySelectorAll('th').forEach(function(h) {
+                    h.dataset.sortDir = '';
+                    h.classList.remove('sort-asc', 'sort-desc');
+                });
+                th.dataset.sortDir = asc ? 'asc' : 'desc';
+                th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+                rows.sort(function(a, b) {
+                    var aCell = a.children[col], bCell = b.children[col];
+                    var aVal = aCell ? (aCell.dataset.sortValue || aCell.textContent.trim()) : '';
+                    var bVal = bCell ? (bCell.dataset.sortValue || bCell.textContent.trim()) : '';
+                    if (type === 'number' || type === 'price' || type === 'range') {
+                        return asc ? (parseFloat(aVal) || 0) - (parseFloat(bVal) || 0) : (parseFloat(bVal) || 0) - (parseFloat(aVal) || 0);
+                    }
+                    return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                });
+                rows.forEach(function(r) { tbody.appendChild(r); });
+            });
+        });
+    })();
+    </script>
     <script>
         function toggleTheme() {
             document.documentElement.classList.toggle('light-mode');

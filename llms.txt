@@ -1,0 +1,31 @@
+# Example Knowledge Base
+> A structured reference tracking example entities across categories.
+
+## Entity Model
+Organization -> Framework -> Provision -> Requirement
+
+## API Endpoints
+- /api/v1/index.json
+- /api/v1/primaries.json
+- /api/v1/containers.json
+- /api/v1/authorities.json
+- /api/v1/mappings.json
+- /api/v1/matrix.json
+- /api/v1/comparisons.json
+
+## 3 Requirements
+- access-control: Access Control
+- data-quality: Data Quality
+- incident-response: Incident Response
+
+## 2 Frameworks
+- iso-27001: ISO 27001 (active)
+- nist-csf: NIST Cybersecurity Framework (active)
+
+## 2 Organizations
+- iso: International Organization for Standardization
+- nist: National Institute of Standards and Technology
+
+## Built with Knowledge as Code
+https://knowledge-as-code.com
+Template: https://github.com/snapsynapse/knowledge-as-code-template

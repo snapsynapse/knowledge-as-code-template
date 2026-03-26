@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "name": "Example Knowledge Base",
+  "description": "A structured reference tracking example entities across categories.",
+  "url": "https://example.com",
+  "capabilities": {
+    "api": {
+      "base_url": "https://example.com/api/v1/",
+      "format": "json"
+    },
+    "mcp": {
+      "config_file": "mcp.json"
+    }
+  },
+  "metadata": {
+    "built_with": "Knowledge as Code",
+    "pattern_url": "https://knowledge-as-code.com",
+    "template_url": "https://github.com/snapsynapse/knowledge-as-code-template",
+    "generated": "2026-03-26T23:21:57.369Z"
+  }
+}

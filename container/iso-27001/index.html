@@ -33,6 +33,10 @@
     <meta property="og:title" content="ISO 27001">
     <meta property="og:description" content="ISO 27001 — 2 provisions.">
     <meta property="og:type" content="website">
+    
+    <meta property="og:url" content="https://example.comcontainer/iso-27001/">
+    <meta name="twitter:card" content="summary">
+    
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
@@ -85,14 +89,14 @@
         </div>
         <h3>Requirements Covered</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">
-            <a href="../primary/access-control/index.html" onclick="passTheme(this)" class="group-badge governance" style="text-decoration:none;">Access Control</a> <a href="../primary/data-quality/index.html" onclick="passTheme(this)" class="group-badge technical" style="text-decoration:none;">Data Quality</a>
+            <a href="../../primary/access-control/index.html" onclick="passTheme(this)" class="group-badge governance" style="text-decoration:none;">Access Control</a> <a href="../../primary/data-quality/index.html" onclick="passTheme(this)" class="group-badge technical" style="text-decoration:none;">Data Quality</a>
         </div>
         <h3>Timeline</h3><table class="data-table"><thead><tr><th>Milestone</th><th>Date</th><th>Notes</th></tr></thead><tbody><tr><td>Published</td><td>Oct 25, 2022</td><td>ISO/IEC 27001:2022 released</td></tr><tr><td>Transition deadline</td><td>Oct 31, 2025</td><td>Organizations must transition from 2013 version</td></tr></tbody></table>
         <h3>Provisions (2)</h3>
         <div class="provision-card" id="information-security-controls-annex-a">
         <h3>Information Security Controls (Annex A)</h3>
         <div class="provision-meta">
-            <span><strong>Implements:</strong> <a href="../primary/access-control/index.html" onclick="passTheme(this)">Access Control</a></span>
+            <span><strong>Implements:</strong> <a href="../../primary/access-control/index.html" onclick="passTheme(this)">Access Control</a></span>
             <span><span class="status-badge active">active</span></span>
             <span><strong>Effective:</strong> Oct 25, 2022</span>
         </div>
@@ -104,7 +108,7 @@
 <div class="provision-card" id="data-quality-requirements-clause-7-5">
         <h3>Data Quality Requirements (Clause 7.5)</h3>
         <div class="provision-meta">
-            <span><strong>Implements:</strong> <a href="../primary/data-quality/index.html" onclick="passTheme(this)">Data Quality</a></span>
+            <span><strong>Implements:</strong> <a href="../../primary/data-quality/index.html" onclick="passTheme(this)">Data Quality</a></span>
             <span><span class="status-badge active">active</span></span>
             <span><strong>Effective:</strong> Oct 25, 2022</span>
         </div>
@@ -120,6 +124,39 @@
         <p>&copy; 2026 | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern created by <a href="https://snapsynapse.com">Snap Synapse</a></p>
     </footer>
     <script src="../../assets/search.js"></script>
+    <script>
+    (function() {
+        document.querySelectorAll('th[data-sortable]').forEach(function(th) {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', function() {
+                var table = th.closest('table');
+                var tbody = table.querySelector('tbody');
+                var rows = Array.from(tbody.querySelectorAll('tr'));
+                var col = Array.from(th.parentNode.children).indexOf(th);
+                var type = th.dataset.sortType || 'string';
+                var asc = th.dataset.sortDir !== 'asc';
+
+                th.parentNode.querySelectorAll('th').forEach(function(h) {
+                    h.dataset.sortDir = '';
+                    h.classList.remove('sort-asc', 'sort-desc');
+                });
+                th.dataset.sortDir = asc ? 'asc' : 'desc';
+                th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+                rows.sort(function(a, b) {
+                    var aCell = a.children[col], bCell = b.children[col];
+                    var aVal = aCell ? (aCell.dataset.sortValue || aCell.textContent.trim()) : '';
+                    var bVal = bCell ? (bCell.dataset.sortValue || bCell.textContent.trim()) : '';
+                    if (type === 'number' || type === 'price' || type === 'range') {
+                        return asc ? (parseFloat(aVal) || 0) - (parseFloat(bVal) || 0) : (parseFloat(bVal) || 0) - (parseFloat(aVal) || 0);
+                    }
+                    return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                });
+                rows.forEach(function(r) { tbody.appendChild(r); });
+            });
+        });
+    })();
+    </script>
     <script>
         function toggleTheme() {
             document.documentElement.classList.toggle('light-mode');

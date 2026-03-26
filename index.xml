@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/1999/xhtml">
+  <channel>
+    <title>Example Knowledge Base</title>
+    <link>https://example.com</link>
+    <description>A structured reference tracking example entities across categories.</description>
+    <lastBuildDate>Thu, 26 Mar 2026 23:21:57 GMT</lastBuildDate>
+    <atom:link href="https://example.comindex.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>NIST Cybersecurity Framework</title>
+      <link>https://example.comcontainer/nist-csf/</link>
+      <description>NIST Cybersecurity Framework - Status: active. 2 provisions.</description>
+      <pubDate>Mon, 26 Feb 2024 00:00:00 GMT</pubDate>
+      <guid>https://example.comcontainer/nist-csf/</guid>
+    </item>
+    <item>
+      <title>ISO 27001</title>
+      <link>https://example.comcontainer/iso-27001/</link>
+      <description>ISO 27001 - Status: active. 2 provisions.</description>
+      <pubDate>Tue, 25 Oct 2022 00:00:00 GMT</pubDate>
+      <guid>https://example.comcontainer/iso-27001/</guid>
+    </item>
+  </channel>
+</rss>

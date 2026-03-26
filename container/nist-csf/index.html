@@ -33,6 +33,10 @@
     <meta property="og:title" content="NIST Cybersecurity Framework">
     <meta property="og:description" content="NIST Cybersecurity Framework — 2 provisions.">
     <meta property="og:type" content="website">
+    
+    <meta property="og:url" content="https://example.comcontainer/nist-csf/">
+    <meta name="twitter:card" content="summary">
+    
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
@@ -85,14 +89,14 @@
         </div>
         <h3>Requirements Covered</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">
-            <a href="../primary/incident-response/index.html" onclick="passTheme(this)" class="group-badge operational" style="text-decoration:none;">Incident Response</a> <a href="../primary/access-control/index.html" onclick="passTheme(this)" class="group-badge governance" style="text-decoration:none;">Access Control</a>
+            <a href="../../primary/incident-response/index.html" onclick="passTheme(this)" class="group-badge operational" style="text-decoration:none;">Incident Response</a> <a href="../../primary/access-control/index.html" onclick="passTheme(this)" class="group-badge governance" style="text-decoration:none;">Access Control</a>
         </div>
         <h3>Timeline</h3><table class="data-table"><thead><tr><th>Milestone</th><th>Date</th><th>Notes</th></tr></thead><tbody><tr><td>CSF 2.0 published</td><td>Feb 26, 2024</td><td>Major update adding Govern function</td></tr><tr><td>CSF 1.1 published</td><td>Apr 16, 2018</td><td>Original framework</td></tr></tbody></table>
         <h3>Provisions (2)</h3>
         <div class="provision-card" id="incident-response-rs-an-rs-mi">
         <h3>Incident Response (RS.AN, RS.MI)</h3>
         <div class="provision-meta">
-            <span><strong>Implements:</strong> <a href="../primary/incident-response/index.html" onclick="passTheme(this)">Incident Response</a></span>
+            <span><strong>Implements:</strong> <a href="../../primary/incident-response/index.html" onclick="passTheme(this)">Incident Response</a></span>
             <span><span class="status-badge active">active</span></span>
             <span><strong>Effective:</strong> Feb 26, 2024</span>
         </div>
@@ -104,7 +108,7 @@
 <div class="provision-card" id="access-control-pr-aa">
         <h3>Access Control (PR.AA)</h3>
         <div class="provision-meta">
-            <span><strong>Implements:</strong> <a href="../primary/access-control/index.html" onclick="passTheme(this)">Access Control</a></span>
+            <span><strong>Implements:</strong> <a href="../../primary/access-control/index.html" onclick="passTheme(this)">Access Control</a></span>
             <span><span class="status-badge active">active</span></span>
             <span><strong>Effective:</strong> Feb 26, 2024</span>
         </div>
@@ -120,6 +124,39 @@
         <p>&copy; 2026 | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern created by <a href="https://snapsynapse.com">Snap Synapse</a></p>
     </footer>
     <script src="../../assets/search.js"></script>
+    <script>
+    (function() {
+        document.querySelectorAll('th[data-sortable]').forEach(function(th) {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', function() {
+                var table = th.closest('table');
+                var tbody = table.querySelector('tbody');
+                var rows = Array.from(tbody.querySelectorAll('tr'));
+                var col = Array.from(th.parentNode.children).indexOf(th);
+                var type = th.dataset.sortType || 'string';
+                var asc = th.dataset.sortDir !== 'asc';
+
+                th.parentNode.querySelectorAll('th').forEach(function(h) {
+                    h.dataset.sortDir = '';
+                    h.classList.remove('sort-asc', 'sort-desc');
+                });
+                th.dataset.sortDir = asc ? 'asc' : 'desc';
+                th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+                rows.sort(function(a, b) {
+                    var aCell = a.children[col], bCell = b.children[col];
+                    var aVal = aCell ? (aCell.dataset.sortValue || aCell.textContent.trim()) : '';
+                    var bVal = bCell ? (bCell.dataset.sortValue || bCell.textContent.trim()) : '';
+                    if (type === 'number' || type === 'price' || type === 'range') {
+                        return asc ? (parseFloat(aVal) || 0) - (parseFloat(bVal) || 0) : (parseFloat(bVal) || 0) - (parseFloat(aVal) || 0);
+                    }
+                    return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                });
+                rows.forEach(function(r) { tbody.appendChild(r); });
+            });
+        });
+    })();
+    </script>
     <script>
         function toggleTheme() {
             document.documentElement.classList.toggle('light-mode');

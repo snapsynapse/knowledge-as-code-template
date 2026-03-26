@@ -6,7 +6,7 @@
     <title>ISO 27001 vs NIST Cybersecurity Framework - Example Knowledge Base</title>
     <meta name="theme-color" content="#1a1a2e">
     <link rel="canonical" href="https://example.comcompare/iso-27001-vs-nist-csf/">
-    <link rel="stylesheet" href="../../../assets/styles.css">
+    <link rel="stylesheet" href="../../assets/styles.css">
     <style>/* Generated from project.yml — do not edit manually */
 .group-badge.governance { background: #7c4dff; }
 :is(html, body).light-mode .group-badge.governance { background: #4527a0; }
@@ -33,6 +33,10 @@
     <meta property="og:title" content="ISO 27001 vs NIST Cybersecurity Framework">
     <meta property="og:description" content="">
     <meta property="og:type" content="website">
+    
+    <meta property="og:url" content="https://example.comcompare/iso-27001-vs-nist-csf/">
+    <meta name="twitter:card" content="summary">
+    
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
@@ -46,18 +50,18 @@
 <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="site-header">
-        <h1><a href="../../../index.html" onclick="passTheme(this)">Example Knowledge Base</a></h1>
+        <h1><a href="../../index.html" onclick="passTheme(this)">Example Knowledge Base</a></h1>
         <button class="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Toggle menu" aria-expanded="false" aria-controls="siteNav">
             <span class="hamburger-icon"></span>
         </button>
         <nav class="site-nav" id="siteNav" aria-label="Main navigation">
-            <a href="../../../index.html" class="site-nav-link" onclick="passTheme(this)">Home</a>
-            <a href="../../../containers.html" class="site-nav-link" onclick="passTheme(this)">Frameworks</a>
-            <a href="../../../primaries.html" class="site-nav-link" onclick="passTheme(this)">Requirements</a>
-            <a href="../../../matrix.html" class="site-nav-link" onclick="passTheme(this)">Matrix</a>
-            <a href="../../../timeline.html" class="site-nav-link" onclick="passTheme(this)">Timeline</a>
-            <a href="../../../compare.html" class="site-nav-link" onclick="passTheme(this)">Compare</a>
-            <a href="../../../about.html" class="site-nav-link" onclick="passTheme(this)">About</a>
+            <a href="../../index.html" class="site-nav-link" onclick="passTheme(this)">Home</a>
+            <a href="../../containers.html" class="site-nav-link" onclick="passTheme(this)">Frameworks</a>
+            <a href="../../primaries.html" class="site-nav-link" onclick="passTheme(this)">Requirements</a>
+            <a href="../../matrix.html" class="site-nav-link" onclick="passTheme(this)">Matrix</a>
+            <a href="../../timeline.html" class="site-nav-link" onclick="passTheme(this)">Timeline</a>
+            <a href="../../compare.html" class="site-nav-link" onclick="passTheme(this)">Compare</a>
+            <a href="../../about.html" class="site-nav-link" onclick="passTheme(this)">About</a>
         </nav>
         <div class="header-actions">
             <div class="site-search" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="searchResults">
@@ -70,8 +74,8 @@
     <div class="container" id="main-content">
         
         <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="../../../index.html" onclick="passTheme(this)">Home</a>
-        <span class="sep">/</span> <a href="../../../compare.html" onclick="passTheme(this)">Compare</a>
+        <a href="../../index.html" onclick="passTheme(this)">Home</a>
+        <span class="sep">/</span> <a href="../../compare.html" onclick="passTheme(this)">Compare</a>
         <span class="sep">/</span> <span>ISO 27001 vs NIST Cybersecurity Framework</span>
     </nav>
         <div class="bridge-header"><h2>ISO 27001 vs NIST Cybersecurity Framework</h2></div>
@@ -94,7 +98,40 @@
         <p>Maintained with <a href="https://github.com/your-org/your-repo">version control</a>. This is a reference tool, not professional advice.</p>
         <p>&copy; 2026 | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern created by <a href="https://snapsynapse.com">Snap Synapse</a></p>
     </footer>
-    <script src="../../../assets/search.js"></script>
+    <script src="../../assets/search.js"></script>
+    <script>
+    (function() {
+        document.querySelectorAll('th[data-sortable]').forEach(function(th) {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', function() {
+                var table = th.closest('table');
+                var tbody = table.querySelector('tbody');
+                var rows = Array.from(tbody.querySelectorAll('tr'));
+                var col = Array.from(th.parentNode.children).indexOf(th);
+                var type = th.dataset.sortType || 'string';
+                var asc = th.dataset.sortDir !== 'asc';
+
+                th.parentNode.querySelectorAll('th').forEach(function(h) {
+                    h.dataset.sortDir = '';
+                    h.classList.remove('sort-asc', 'sort-desc');
+                });
+                th.dataset.sortDir = asc ? 'asc' : 'desc';
+                th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+                rows.sort(function(a, b) {
+                    var aCell = a.children[col], bCell = b.children[col];
+                    var aVal = aCell ? (aCell.dataset.sortValue || aCell.textContent.trim()) : '';
+                    var bVal = bCell ? (bCell.dataset.sortValue || bCell.textContent.trim()) : '';
+                    if (type === 'number' || type === 'price' || type === 'range') {
+                        return asc ? (parseFloat(aVal) || 0) - (parseFloat(bVal) || 0) : (parseFloat(bVal) || 0) - (parseFloat(aVal) || 0);
+                    }
+                    return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                });
+                rows.forEach(function(r) { tbody.appendChild(r); });
+            });
+        });
+    })();
+    </script>
     <script>
         function toggleTheme() {
             document.documentElement.classList.toggle('light-mode');

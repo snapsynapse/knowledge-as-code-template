@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "generated": "2026-03-26T02:06:29.049Z",
+    "version": "1.0",
+    "project": "example"
+  },
+  "files": {
+    "primaries": {
+      "path": "primaries.json"
+    },
+    "containers": {
+      "path": "containers.json"
+    },
+    "authorities": {
+      "path": "authorities.json"
+    },
+    "mappings": {
+      "path": "mappings.json"
+    },
+    "matrix": {
+      "path": "matrix.json"
+    },
+    "comparisons": {
+      "path": "comparisons.json"
+    }
+  }
+}

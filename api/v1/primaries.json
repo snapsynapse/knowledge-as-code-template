@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "generated": "2026-03-26T02:06:29.048Z",
+    "count": 3
+  },
+  "items": [
+    {
+      "id": "access-control",
+      "name": "Access Control",
+      "group": "governance",
+      "status": "active"
+    },
+    {
+      "id": "data-quality",
+      "name": "Data Quality",
+      "group": "technical",
+      "status": "active"
+    },
+    {
+      "id": "incident-response",
+      "name": "Incident Response",
+      "group": "operational",
+      "status": "active"
+    }
+  ]
+}

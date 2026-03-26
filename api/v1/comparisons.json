@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "generated": "2026-03-26T02:06:29.049Z"
+  },
+  "comparisons": [
+    {
+      "regulations": [
+        "iso-27001",
+        "nist-csf"
+      ],
+      "shared_obligations": [
+        "access-control"
+      ],
+      "only_a": [
+        "data-quality"
+      ],
+      "only_b": [
+        "incident-response"
+      ],
+      "shared_count": 1,
+      "only_a_count": 1,
+      "only_b_count": 1
+    }
+  ]
+}

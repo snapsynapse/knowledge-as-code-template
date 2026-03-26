@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "generated": "2026-03-26T02:06:29.049Z",
+    "count": 2
+  },
+  "items": [
+    {
+      "id": "iso",
+      "name": "International Organization for Standardization",
+      "jurisdiction": "International"
+    },
+    {
+      "id": "nist",
+      "name": "National Institute of Standards and Technology",
+      "jurisdiction": "Federal"
+    }
+  ]
+}

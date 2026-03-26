@@ -478,6 +478,10 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
     <meta property="og:title" content="${escapeHTML(title)}">
     <meta property="og:description" content="${escapeHTML(desc)}">
     <meta property="og:type" content="website">
+    ${config.social?.og_image ? `<meta property="og:image" content="${siteUrl}${config.social.og_image}">` : ''}
+    ${canonicalPath !== undefined ? `<meta property="og:url" content="${siteUrl}${canonicalPath || ''}">` : ''}
+    <meta name="twitter:card" content="${config.social?.twitter_card || 'summary'}">
+    ${config.social?.twitter_site ? `<meta name="twitter:site" content="${config.social.twitter_site}">` : ''}
     ${renderThemeInit()}
 </head>
 <body>
@@ -487,6 +491,7 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
     </div>
     ${renderFooter(config)}
     <script src="${prefix}assets/search.js"></script>
+    ${renderTableSortScript()}
     ${renderThemeScript()}
 </body>
 </html>`;
@@ -510,7 +515,11 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
     <meta name="description" content="${escapeHTML(description || '')}">
     <meta property="og:title" content="${escapeHTML(title)}">
     <meta property="og:description" content="${escapeHTML(description || '')}">
-    <meta property="og:type" content="website">${jsonLd}
+    <meta property="og:type" content="website">
+    ${config.social?.og_image ? `<meta property="og:image" content="${siteUrl}${config.social.og_image}">` : ''}
+    ${canonicalPath !== undefined ? `<meta property="og:url" content="${siteUrl}${canonicalPath || ''}">` : ''}
+    <meta name="twitter:card" content="${config.social?.twitter_card || 'summary'}">
+    ${config.social?.twitter_site ? `<meta name="twitter:site" content="${config.social.twitter_site}">` : ''}${jsonLd}
     ${renderThemeInit()}
 </head>
 <body>
@@ -520,6 +529,7 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
     </div>
     ${renderFooter(config)}
     <script src="${prefix}assets/search.js"></script>
+    ${renderTableSortScript()}
     ${renderThemeScript()}
 </body>
 </html>`;
@@ -544,7 +554,7 @@ function renderBreadcrumb(items, prefix) {
     </nav>`;
 }
 
-function renderProvisionCard(prov) {
+function renderProvisionCard(prov, linkPrefix = '../') {
     const reqRows = (prov.requirements || []).map(r => `<tr><td>${escapeHTML(r.requirement || '')}</td><td>${escapeHTML(r.details || '')}</td></tr>`).join('');
     const penRows = (prov.penalties || []).map(p => `<tr><td>${escapeHTML(p.violation || '')}</td><td>${escapeHTML(p.fine || '')}</td></tr>`).join('');
     const sources = (prov.sources || []).map(s => `<a href="${escapeHTML(s.url)}" target="_blank" rel="noopener">${escapeHTML(s.title)}</a>`).join(' ');
@@ -552,7 +562,7 @@ function renderProvisionCard(prov) {
     return `<div class="provision-card" id="${slugify(prov.name)}">
         <h3>${escapeHTML(prov.name)}</h3>
         <div class="provision-meta">
-            ${prov.obligation ? `<span><strong>Implements:</strong> <a href="../primary/${escapeHTML(prov.obligation)}/index.html" onclick="passTheme(this)">${escapeHTML(humanizeId(prov.obligation))}</a></span>` : ''}
+            ${prov.obligation ? `<span><strong>Implements:</strong> <a href="${linkPrefix}primary/${escapeHTML(prov.obligation)}/index.html" onclick="passTheme(this)">${escapeHTML(humanizeId(prov.obligation))}</a></span>` : ''}
             ${prov.status ? `<span>${renderStatusBadge(prov.status)}</span>` : ''}
             ${prov.effective ? `<span><strong>Effective:</strong> ${formatDate(prov.effective)}</span>` : ''}
         </div>
@@ -561,6 +571,76 @@ function renderProvisionCard(prov) {
         ${penRows ? `<h4>Penalties</h4><table class="data-table"><thead><tr><th>Violation</th><th>Fine</th></tr></thead><tbody>${penRows}</tbody></table>` : ''}
         ${sources ? `<div class="provision-sources"><strong>Sources:</strong> ${sources}</div>` : ''}
     </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Sortable table helpers (backported from downstream implementations)
+// ---------------------------------------------------------------------------
+
+function th(label, opts = {}) {
+    const sortType = opts.sortType || 'string';
+    const col = opts.col || slugify(label);
+    return `<th data-sortable data-sort-type="${sortType}" data-col="${col}">${escapeHTML(label)}</th>`;
+}
+
+function tdDate(dateStr) {
+    return `<td data-sort-value="${dateStr || '9999-12-31'}">${formatDate(dateStr)}</td>`;
+}
+
+function tdStatus(status) {
+    return `<td data-sort-value="${escapeHTML(status || 'zzz')}">${renderStatusBadge(status)}</td>`;
+}
+
+function tdNumber(n) {
+    const num = parseFloat(n) || 0;
+    return `<td data-sort-value="${num}">${n}</td>`;
+}
+
+function tdPrice(priceStr) {
+    const num = priceStr === 'Free' || priceStr === 'free' ? 0 : parseFloat(String(priceStr).replace(/[^0-9.]/g, '')) || 0;
+    return `<td data-sort-value="${num}">${escapeHTML(priceStr || '')}</td>`;
+}
+
+function tdRange(rangeStr) {
+    const parts = String(rangeStr || '0').split('-');
+    const max = parseFloat(parts[parts.length - 1].replace(/[^0-9.]/g, '')) || 0;
+    return `<td data-sort-value="${max}">${escapeHTML(rangeStr || '')}</td>`;
+}
+
+function renderTableSortScript() {
+    return `<script>
+    (function() {
+        document.querySelectorAll('th[data-sortable]').forEach(function(th) {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', function() {
+                var table = th.closest('table');
+                var tbody = table.querySelector('tbody');
+                var rows = Array.from(tbody.querySelectorAll('tr'));
+                var col = Array.from(th.parentNode.children).indexOf(th);
+                var type = th.dataset.sortType || 'string';
+                var asc = th.dataset.sortDir !== 'asc';
+
+                th.parentNode.querySelectorAll('th').forEach(function(h) {
+                    h.dataset.sortDir = '';
+                    h.classList.remove('sort-asc', 'sort-desc');
+                });
+                th.dataset.sortDir = asc ? 'asc' : 'desc';
+                th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+                rows.sort(function(a, b) {
+                    var aCell = a.children[col], bCell = b.children[col];
+                    var aVal = aCell ? (aCell.dataset.sortValue || aCell.textContent.trim()) : '';
+                    var bVal = bCell ? (bCell.dataset.sortValue || bCell.textContent.trim()) : '';
+                    if (type === 'number' || type === 'price' || type === 'range') {
+                        return asc ? (parseFloat(aVal) || 0) - (parseFloat(bVal) || 0) : (parseFloat(bVal) || 0) - (parseFloat(aVal) || 0);
+                    }
+                    return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                });
+                rows.forEach(function(r) { tbody.appendChild(r); });
+            });
+        });
+    })();
+    </script>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -863,11 +943,11 @@ function generateContainerDetail(config, container, data, configCSS) {
         </div>
         ${cPrimaries.length ? `<h3>${config.entities?.primary?.plural || 'Primaries'} Covered</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">
-            ${cPrimaries.map(pId => { const p = primaries.find(pr => pr.id === pId); return `<a href="../primary/${pId}/index.html" onclick="passTheme(this)" class="group-badge ${p?.group || ''}" style="text-decoration:none;">${escapeHTML(p?.name || humanizeId(pId))}</a>`; }).join(' ')}
+            ${cPrimaries.map(pId => { const p = primaries.find(pr => pr.id === pId); return `<a href="../../primary/${pId}/index.html" onclick="passTheme(this)" class="group-badge ${p?.group || ''}" style="text-decoration:none;">${escapeHTML(p?.name || humanizeId(pId))}</a>`; }).join(' ')}
         </div>` : ''}
         ${timelineRows ? `<h3>Timeline</h3><table class="data-table"><thead><tr><th>Milestone</th><th>Date</th><th>Notes</th></tr></thead><tbody>${timelineRows}</tbody></table>` : ''}
         <h3>Provisions (${container.provisions.length})</h3>
-        ${container.provisions.map(p => renderProvisionCard(p)).join('\n')}
+        ${container.provisions.map(p => renderProvisionCard(p, '../../')).join('\n')}
     `;
 
     return renderBridgeShell(config, { title: container.name, depth: 2, content, canonicalPath: `container/${container.id}/`, description: `${container.name} — ${container.provisions.length} provisions.`, configCSS });
@@ -894,7 +974,7 @@ function generatePrimaryDetail(config, primary, data, configCSS) {
         ${whatDoesNot ? `<h3>What Does Not Count</h3><ul>${parseBulletList(whatDoesNot).map(i => `<li>${escapeHTML(i)}</li>`).join('')}</ul>` : ''}
         <h3>Implementing ${config.entities?.container?.plural || 'Containers'}</h3>
         ${coveredContainers.length ? `<table class="data-table"><thead><tr><th>${config.entities?.container?.name || 'Container'}</th><th>Scope</th><th>Status</th><th>Provisions</th></tr></thead><tbody>
-            ${coveredContainers.map(cId => { const c = containers.find(co => co.id === cId); if (!c) return ''; return `<tr><td><a href="../container/${cId}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${escapeHTML(c.jurisdiction || '')}</td><td>${renderStatusBadge(c.status)}</td><td>${pMatrix[cId].provisions.length}</td></tr>`; }).join('\n')}
+            ${coveredContainers.map(cId => { const c = containers.find(co => co.id === cId); if (!c) return ''; return `<tr><td><a href="../../container/${cId}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${escapeHTML(c.jurisdiction || '')}</td><td>${renderStatusBadge(c.status)}</td><td>${pMatrix[cId].provisions.length}</td></tr>`; }).join('\n')}
         </tbody></table>` : `<p style="color:var(--text-secondary);">No ${cName}s currently implement this.</p>`}
     `;
 
@@ -916,7 +996,7 @@ function generateAuthorityDetail(config, auth, data, configCSS) {
         </div>
         <h3>${config.entities?.container?.plural || 'Containers'} (${authContainers.length})</h3>
         ${authContainers.length ? `<table class="data-table"><thead><tr><th>Name</th><th>Status</th><th>Effective</th><th>Provisions</th></tr></thead><tbody>
-            ${authContainers.map(c => `<tr><td><a href="../container/${c.id}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${renderStatusBadge(c.status)}</td><td>${formatDate(c.effective)}</td><td>${c.provisions.length}</td></tr>`).join('\n')}
+            ${authContainers.map(c => `<tr><td><a href="../../container/${c.id}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${renderStatusBadge(c.status)}</td><td>${formatDate(c.effective)}</td><td>${c.provisions.length}</td></tr>`).join('\n')}
         </tbody></table>` : '<p style="color:var(--text-secondary);">None tracked.</p>'}
     `;
 
@@ -946,7 +1026,7 @@ function generateRequiresBridge(config, containerId, primaryId, data, configCSS)
         <div class="bridge-answer">
             ${covered ? `<p class="answer-yes">Yes &mdash; ${matching.length} provision${matching.length !== 1 ? 's' : ''}</p>` : `<p class="answer-no">Not specifically addressed</p>`}
         </div>
-        ${provCards.map(p => renderProvisionCard(p)).join('\n')}
+        ${provCards.map(p => renderProvisionCard(p, '../../../')).join('\n')}
         <div style="margin-top: 2rem; text-align: center;">
             <a href="../../../container/${containerId}/index.html" onclick="passTheme(this)" class="bridge-cta">View ${escapeHTML(config.entities?.container?.name || 'container')}</a>
             <a href="../../../primary/${primaryId}/index.html" onclick="passTheme(this)" class="bridge-cta">View ${escapeHTML(config.entities?.primary?.name || 'primary')}</a>
@@ -962,7 +1042,7 @@ function generateCompareBridge(config, cA, cB, comparison, data, configCSS) {
     const pName = id => { const p = primaries.find(pr => pr.id === id); return p ? (p.name || humanizeId(id)) : humanizeId(id); };
 
     const content = `
-        ${renderBreadcrumb([{ label: 'Compare', href: 'compare.html' }, { label: `${cA.name} vs ${cB.name}` }], '../../../')}
+        ${renderBreadcrumb([{ label: 'Compare', href: 'compare.html' }, { label: `${cA.name} vs ${cB.name}` }], '../../')}
         <div class="bridge-header"><h2>${escapeHTML(cA.name)} vs ${escapeHTML(cB.name)}</h2></div>
         <div class="compare-section"><h3>Shared (${comparison.shared_count})</h3>
             ${comparison.shared_obligations.length ? `<ul class="compare-list">${comparison.shared_obligations.map(o => `<li><a href="../../primary/${o}/index.html" onclick="passTheme(this)">${escapeHTML(pName(o))}</a></li>`).join('')}</ul>` : '<p style="color:var(--text-secondary);">None shared.</p>'}
@@ -979,7 +1059,7 @@ function generateCompareBridge(config, cA, cB, comparison, data, configCSS) {
         </div>
     `;
 
-    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 3, content, canonicalPath: `compare/${cA.id}-vs-${cB.id}/`, configCSS });
+    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 2, content, canonicalPath: `compare/${cA.id}-vs-${cB.id}/`, configCSS });
 }
 
 function generateAppliesToBridge(config, scopeValue, data, configCSS) {
@@ -1022,7 +1102,99 @@ function buildSearchIndex(config, data) {
 
 function generateSitemap(config, pages) {
     const base = config.url || '';
-    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map(p => `  <url><loc>${base}${p}</loc></url>`).join('\n')}\n</urlset>`;
+    const lastmod = new Date().toISOString().split('T')[0];
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map(p => `  <url><loc>${base}${p}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}\n</urlset>`;
+}
+
+// ---------------------------------------------------------------------------
+// Pattern page
+// ---------------------------------------------------------------------------
+
+function generatePatternPage(config, data, configCSS) {
+    const primaryName = config.entities?.primary?.name || 'Primary';
+    const containerName = config.entities?.container?.name || 'Container';
+    const authorityName = config.entities?.authority?.name || 'Authority';
+    const secondaryName = config.entities?.secondary?.name || 'Secondary';
+    const examples = config.pattern?.examples || [];
+    const ecosystem = config.ecosystem || [];
+    const canonicalUrl = config.pattern?.canonical_url || '';
+
+    const content = `
+        ${canonicalUrl ? `<link rel="canonical" href="${escapeHTML(canonicalUrl)}">` : ''}
+        <div class="about-content">
+        <h1>Knowledge as Code</h1>
+        <p><em>A pattern for building knowledge bases that verify themselves, resist decay, and serve both humans and machines from plain text files.</em></p>
+        ${canonicalUrl ? `<p>Canonical pattern definition: <a href="${escapeHTML(canonicalUrl)}">${escapeHTML(canonicalUrl)}</a></p>` : ''}
+
+        <h2>The Pattern</h2>
+        <p>Knowledge as Code applies software engineering practices to knowledge management. The knowledge lives in version-controlled plain text files. It is validated by automated processes. It produces multiple outputs from a single source. And it actively resists becoming outdated.</p>
+
+        <h2>Six Properties</h2>
+        <table class="data-table">
+            <thead><tr><th>Property</th><th>What It Means</th><th>In This Project</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Plain text canonical</strong></td><td>Knowledge in human-readable, version-controlled files. No database, no CMS, no vendor lock-in.</td><td>Markdown and YAML files in <code>data/</code></td></tr>
+                <tr><td><strong>Self-healing</strong></td><td>Automated verification detects when knowledge drifts from reality. Flags decay before humans notice.</td><td>Verification scripts and AI-assisted freshness checks</td></tr>
+                <tr><td><strong>Multi-output</strong></td><td>One source produces every format needed — human-readable, machine-readable, agent-queryable.</td><td>HTML site, JSON API, MCP server, SEO bridge pages, sitemap, <code>llms.txt</code></td></tr>
+                <tr><td><strong>Zero-dependency</strong></td><td>No external packages. Nothing breaks when you come back in a year.</td><td>One Node.js script, no <code>package.json</code>, no <code>node_modules</code></td></tr>
+                <tr><td><strong>Git-native</strong></td><td>Git is the collaboration layer, audit trail, and deployment trigger.</td><td>Issues, PRs, CI/CD, version history — all through Git</td></tr>
+                <tr><td><strong>Ontology-driven</strong></td><td>A vendor-neutral taxonomy maps to domain-specific implementations.</td><td>${escapeHTML(data.primaries.length)} ${escapeHTML(config.entities?.primary?.plural || 'primaries')} across ${escapeHTML(data.containers.length)} ${escapeHTML(config.entities?.container?.plural || 'containers')}</td></tr>
+            </tbody>
+        </table>
+
+        <h2>The Ontology</h2>
+        <p>Every Knowledge-as-Code project has four entity roles:</p>
+        <div style="text-align: center; padding: 1.5rem 0; font-size: 1.1rem;">
+            <strong>${escapeHTML(authorityName)}</strong> → <strong>${escapeHTML(containerName)}</strong> → <strong>${escapeHTML(secondaryName)}</strong> → <strong>${escapeHTML(primaryName)}</strong>
+        </div>
+        <table class="data-table">
+            <thead><tr><th>Role</th><th>This Project</th><th>What It Is</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Primary</strong></td><td>${escapeHTML(primaryName)}</td><td>Stable anchors that persist when sources change</td></tr>
+                <tr><td><strong>Container</strong></td><td>${escapeHTML(containerName)}</td><td>Grouping entities that contain provisions</td></tr>
+                <tr><td><strong>Authority</strong></td><td>${escapeHTML(authorityName)}</td><td>Source entities that produce containers</td></tr>
+                <tr><td><strong>Secondary</strong></td><td>${escapeHTML(secondaryName)}</td><td>Mapping entities connecting containers to primaries</td></tr>
+            </tbody>
+        </table>
+        <p>Primaries are stable; containers are unstable. When a ${containerName.toLowerCase()} is amended, its ${secondaryName.toLowerCase()}s change, but the underlying ${primaryName.toLowerCase()}s persist.</p>
+
+        <h2>Standing on Shoulders</h2>
+        <ul>
+            <li><strong>File over App</strong> — <a href="https://stephango.com/file-over-app">Steph Ango</a> on durable digital artifacts as files you control</li>
+            <li><strong>Docs as Code</strong> — Managing documentation with version control, pull requests, CI, plain text formats. <a href="https://www.writethedocs.org/guide/docs-as-code/">Write the Docs</a> community</li>
+            <li><strong>Living Documentation</strong> — Cyrille Martraire on documentation that evolves with the system it describes</li>
+            <li><strong>GitOps</strong> — Git as single source of truth with automated drift detection. Coined by <a href="https://docs.gitops.weaveworks.org/">Weaveworks</a> (2017)</li>
+            <li><strong>Anti-entropy</strong> — Distributed systems pattern for detecting and repairing state divergence (Dynamo, Cassandra)</li>
+        </ul>
+
+        ${examples.length > 0 ? `
+        <h2>Live Examples</h2>
+        <div class="card-grid">
+            ${examples.map(ex => `<div class="obligation-card">
+                <div class="card-title"><a href="${escapeHTML(ex.url)}">${escapeHTML(ex.name)}</a></div>
+                <div class="card-description">${escapeHTML(ex.description || '')}</div>
+            </div>`).join('\n            ')}
+        </div>` : ''}
+
+        ${ecosystem.length > 0 ? `
+        <h2>Ecosystem</h2>
+        <ul>
+            ${ecosystem.map(p => `<li><strong><a href="${escapeHTML(p.url)}">${escapeHTML(p.name)}</a></strong> — ${escapeHTML(p.description || '')}</li>`).join('\n            ')}
+        </ul>` : ''}
+
+        <h2>Get Started</h2>
+        <pre><code>git clone https://github.com/snapsynapse/knowledge-as-code-template.git
+cd knowledge-as-code-template
+node scripts/build.js
+open docs/index.html</code></pre>
+        <p>Template: <a href="https://github.com/snapsynapse/knowledge-as-code-template">github.com/snapsynapse/knowledge-as-code-template</a></p>
+
+        <hr>
+        <p><em>Knowledge as Code was created by <a href="https://sam-rogers.com">Sam Rogers</a> at <a href="https://snapsynapse.com">Snap Synapse</a>.</em></p>
+        </div>
+    `;
+
+    return renderPageShell(config, { title: 'Knowledge as Code', activePage: 'pattern', content, description: 'A pattern for building knowledge bases that verify themselves.', canonicalPath: 'pattern.html', configCSS });
 }
 
 // ---------------------------------------------------------------------------
@@ -1113,7 +1285,16 @@ function build() {
     fs.writeFileSync(path.join(DOCS_DIR, 'timeline.html'), generateTimelinePage(config, data, configCSS)); sitemapPages.push('timeline.html');
     fs.writeFileSync(path.join(DOCS_DIR, 'compare.html'), generateComparePage(config, data, configCSS)); sitemapPages.push('compare.html');
     fs.writeFileSync(path.join(DOCS_DIR, 'about.html'), generateAboutPage(config, data, configCSS)); sitemapPages.push('about.html');
-    console.log('  Core pages: 7');
+
+    let patternPageCount = 0;
+    if (config.pattern?.enabled !== false) {
+        fs.writeFileSync(path.join(DOCS_DIR, 'pattern.html'), generatePatternPage(config, data, configCSS));
+        sitemapPages.push('pattern.html');
+        patternPageCount = 1;
+        console.log('  Pattern page: 1');
+    }
+
+    console.log('  Core pages: ' + (7 + patternPageCount));
 
     for (const c of containers) { const dir = path.join(DOCS_DIR, 'container', c.id); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateContainerDetail(config, c, data, configCSS)); sitemapPages.push(`container/${c.id}/`); }
     console.log(`  Container detail pages: ${containers.length}`);
@@ -1164,13 +1345,97 @@ function build() {
     fs.writeFileSync(path.join(DOCS_DIR, 'sitemap.xml'), generateSitemap(config, sitemapPages));
     fs.writeFileSync(path.join(DOCS_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${config.url || ''}sitemap.xml\n`);
 
+    // --- Discovery files ---
+
+    // llms.txt
+    const llmsTxt = [
+        `# ${config.name || 'Knowledge Base'}`,
+        `> ${config.description || ''}`,
+        '',
+        '## Entity Model',
+        `${config.entities?.authority?.name || 'Authority'} -> ${config.entities?.container?.name || 'Container'} -> ${config.entities?.secondary?.name || 'Secondary'} -> ${config.entities?.primary?.name || 'Primary'}`,
+        '',
+        '## API Endpoints',
+        '- /api/v1/index.json',
+        '- /api/v1/primaries.json',
+        '- /api/v1/containers.json',
+        '- /api/v1/authorities.json',
+        '- /api/v1/mappings.json',
+        '- /api/v1/matrix.json',
+        '- /api/v1/comparisons.json',
+        '',
+        `## ${primaries.length} ${config.entities?.primary?.plural || 'Primaries'}`,
+        ...primaries.map(p => `- ${p.id}: ${p.name || humanizeId(p.id)}`),
+        '',
+        `## ${containers.length} ${config.entities?.container?.plural || 'Containers'}`,
+        ...containers.map(c => `- ${c.id}: ${c.name} (${c.status || 'unknown'})`),
+        '',
+        `## ${authorities.length} ${config.entities?.authority?.plural || 'Authorities'}`,
+        ...authorities.map(a => `- ${a.id}: ${a.name || humanizeId(a.id)}`),
+        '',
+        '## Built with Knowledge as Code',
+        'https://knowledge-as-code.com',
+        `Template: https://github.com/snapsynapse/knowledge-as-code-template`,
+    ].join('\n');
+    fs.writeFileSync(path.join(DOCS_DIR, 'llms.txt'), llmsTxt);
+
+    // agents.json
+    const agentsJson = {
+        schema_version: '1.0',
+        name: config.name || 'Knowledge Base',
+        description: config.description || '',
+        url: config.url || '',
+        capabilities: {
+            api: { base_url: `${(config.url || '').replace(/\/?$/, '/')}api/v1/`, format: 'json' },
+            mcp: { config_file: 'mcp.json' }
+        },
+        metadata: {
+            built_with: 'Knowledge as Code',
+            pattern_url: 'https://knowledge-as-code.com',
+            template_url: 'https://github.com/snapsynapse/knowledge-as-code-template',
+            generated: new Date().toISOString()
+        }
+    };
+    if (config.ecosystem) {
+        agentsJson.related_sites = config.ecosystem.map(p => ({ name: p.name, url: p.url, description: p.description || '' }));
+    }
+    fs.writeFileSync(path.join(DOCS_DIR, 'agents.json'), JSON.stringify(agentsJson, null, 2));
+
+    // RSS feed (index.xml)
+    const rssItems = containers
+        .filter(c => c.effective)
+        .sort((a, b) => (b.effective || '').localeCompare(a.effective || ''))
+        .slice(0, 20)
+        .map(c => `    <item>
+      <title>${escapeHTML(c.name)}</title>
+      <link>${config.url || ''}container/${c.id}/</link>
+      <description>${escapeHTML(c.name)} - Status: ${c.status || 'unknown'}. ${c.provisions.length} provisions.</description>
+      <pubDate>${c.effective ? new Date(c.effective + 'T00:00:00Z').toUTCString() : ''}</pubDate>
+      <guid>${config.url || ''}container/${c.id}/</guid>
+    </item>`);
+
+    const rssFeed = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/1999/xhtml">
+  <channel>
+    <title>${escapeHTML(config.name || 'Knowledge Base')}</title>
+    <link>${config.url || ''}</link>
+    <description>${escapeHTML(config.description || '')}</description>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${config.url || ''}index.xml" rel="self" type="application/rss+xml"/>
+${rssItems.join('\n')}
+  </channel>
+</rss>`;
+    fs.writeFileSync(path.join(DOCS_DIR, 'index.xml'), rssFeed);
+
+    console.log('  Discovery files: llms.txt, agents.json, index.xml');
+
     // Copy static assets if not present
     const srcCSS = path.join(ROOT, 'docs', 'assets', 'styles.css');
     const srcSearch = path.join(ROOT, 'docs', 'assets', 'search.js');
     // These are already in docs/assets/ from the repo — no copy needed
 
     const elapsed = Date.now() - startTime;
-    const totalPages = 7 + containers.length + primaries.length + authorities.length + reqCount + cmpCount + appCount;
+    const totalPages = 7 + patternPageCount + containers.length + primaries.length + authorities.length + reqCount + cmpCount + appCount;
     console.log(`\nBuild complete in ${elapsed}ms — ${totalPages} HTML pages, 6 JSON API files`);
 }
 

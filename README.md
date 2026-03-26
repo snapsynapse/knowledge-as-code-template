@@ -2,6 +2,14 @@
 
 A template for building structured, version-controlled knowledge bases with an ontology-first approach. Edit a config file, add markdown data, get a full HTML site + JSON API.
 
+**[Knowledge as Code](https://knowledge-as-code.com)** is a pattern created by [Sam Rogers](https://sam-rogers.com) at [Snap Synapse](https://snapsynapse.com). It applies software engineering practices to knowledge management: plain text, Git-native, zero-dependency, ontology-driven, multi-output from a single source.
+
+## Live Examples
+
+- [AI Capability Reference](https://airef.snapsynapse.com) — AI model capabilities across 12 products
+- [AI Regulation Tracker](https://aireg.snapsynapse.com) — global AI regulatory landscape
+- [Meeting Standards Reference](https://meetings.snapsynapse.com) — meeting facilitation standards
+
 ## Quick Start
 
 1. **Use this template** — click "Use this template" on GitHub, or clone locally
@@ -76,6 +84,23 @@ node scripts/validate.js   # Validate cross-references
 - **Zero dependencies** — no npm install, no supply chain risk
 - **Bespoke static generation** — the build script _is_ the specification
 - **GitOps** — Git is the single source of truth
+
+## The Pattern
+
+Knowledge as Code has six defining properties:
+
+1. **Plain text canonical** — knowledge in human-readable, version-controlled files
+2. **Self-healing** — automated verification detects when knowledge drifts from reality
+3. **Multi-output** — one source produces every format needed (HTML, JSON API, MCP, SEO pages)
+4. **Zero-dependency** — no external packages; nothing breaks when you come back in a year
+5. **Git-native** — Git is the collaboration layer, audit trail, and deployment trigger
+6. **Ontology-driven** — a vendor-neutral taxonomy maps to domain-specific implementations
+
+Read the full pattern definition at [knowledge-as-code.com](https://knowledge-as-code.com).
+
+## Attribution
+
+Knowledge as Code was created by [Sam Rogers](https://sam-rogers.com) / [Snap Synapse](https://snapsynapse.com). See [ATTRIBUTION.md](ATTRIBUTION.md) for details.
 
 ## License
 

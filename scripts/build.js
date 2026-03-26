@@ -453,7 +453,7 @@ function renderFooter(config) {
     const repo = config.repo || '#';
     return `<footer>
         <p>Maintained with <a href="${escapeHTML(repo)}">version control</a>. This is a reference tool, not professional advice.</p>
-        <p>&copy; ${new Date().getFullYear()} | Built with <a href="https://github.com/snapsynapse/knowledge-as-code-template">Knowledge-as-Code</a></p>
+        <p>&copy; ${new Date().getFullYear()} | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern created by <a href="https://snapsynapse.com">Snap Synapse</a></p>
     </footer>`;
 }
 

@@ -29,6 +29,12 @@ html {
     }
 }
 
+/* WCAG 2.1 AA — Global focus indicator */
+*:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 .skip-link {
     position: absolute;
     top: -100px;
@@ -521,6 +527,35 @@ h3 {
 
 .data-table a {
     color: var(--accent);
+}
+
+/* Sortable table headers */
+th[data-sortable] {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 1.5em;
+}
+th[data-sortable]:hover {
+    background: rgba(255,255,255,0.05);
+}
+:is(html, body).light-mode th[data-sortable]:hover {
+    background: rgba(0,0,0,0.05);
+}
+th[data-sortable]::after {
+    content: '⇅';
+    position: absolute;
+    right: 0.4em;
+    opacity: 0.3;
+    font-size: 0.8em;
+}
+th[data-sortable].sort-asc::after {
+    content: '↑';
+    opacity: 0.8;
+}
+th[data-sortable].sort-desc::after {
+    content: '↓';
+    opacity: 0.8;
 }
 
 /* ========================================
@@ -1033,6 +1068,8 @@ footer p {
     right: 24px;
     width: 44px;
     height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 50%;
     background: var(--accent);
     color: #000;
@@ -1059,6 +1096,13 @@ footer p {
 /* ========================================
    ABOUT PAGE
    ======================================== */
+
+/* WCAG 1.4.1 — Links distinguishable from surrounding text */
+.about-content a,
+.provision-card a,
+.container-detail a:not(.site-nav-link) {
+    text-decoration: underline;
+}
 
 .about-content {
     max-width: 720px;
@@ -1266,5 +1310,23 @@ footer p {
 
     .timeline-entry {
         padding-left: 40px;
+    }
+}
+
+/* ========================================
+   WINDOWS HIGH CONTRAST MODE
+   ======================================== */
+
+/* Windows High Contrast mode support */
+@media (forced-colors: active) {
+    .status-badge,
+    .group-badge {
+        border: 1px solid ButtonText;
+    }
+    .site-nav-link.active {
+        border-bottom: 2px solid Highlight;
+    }
+    th[data-sortable]::after {
+        forced-color-adjust: auto;
     }
 }

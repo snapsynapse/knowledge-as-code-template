@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "knowledge-base": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "description": "Read-only access to the knowledge base defined in project.yml"
+    }
+  }
+}

@@ -25,6 +25,9 @@ A template for building structured, version-controlled knowledge bases with an o
 - **Bridge pages** — SEO-targeted pages like "Does X require Y?"
 - **Dark/light theme** — with persistence
 - **Client-side search** — lazy-loaded, keyboard-navigable
+- **Sortable tables** — click any column header to sort
+- **MCP server** — AI agent access to your knowledge base
+- **Discovery files** — llms.txt, agents.json, RSS for machine consumption
 - **Zero dependencies** — Node.js built-ins only
 
 ## Project Structure
@@ -85,6 +88,33 @@ node scripts/validate.js   # Validate cross-references
 - **Bespoke static generation** — the build script _is_ the specification
 - **GitOps** — Git is the single source of truth
 
+## AI Agent Support
+
+Every Knowledge-as-Code site includes machine-readable discovery files:
+
+- **MCP Server** — `mcp-server.js` provides read-only access to all entities via Model Context Protocol. Tools are dynamically named from your `project.yml` config. Run with `node mcp-server.js` or add to your MCP client config via `mcp.json`.
+- **llms.txt** — Generated at `docs/llms.txt` with entity model, API endpoints, and entity listings for LLM context
+- **agents.json** — Machine-readable metadata at `docs/agents.json` for agent discovery
+- **RSS feed** — Recent updates at `docs/index.xml`
+- **JSON API** — Programmatic access at `docs/api/v1/`
+
+## Verification
+
+Knowledge as Code includes a verification scaffold for detecting stale data:
+
+- Add `last_verified: YYYY-MM-DD` to entity frontmatter
+- Run `node scripts/verify.js` to check for staleness
+- Configure threshold in `project.yml` under `verification.staleness_days`
+- See [VERIFICATION.md](VERIFICATION.md) for details on adding AI-assisted verification
+
+## Ecosystem
+
+Knowledge as Code is part of a broader set of open standards:
+
+- **[Graceful Boundaries](https://github.com/snapsynapse/graceful-boundaries)** — How services communicate operational limits to humans and agents
+- **[Siteline](https://siteline.snapsynapse.com)** — AI agent readiness scanner for websites
+- **[Knowledge as Code](https://knowledge-as-code.com)** — The pattern definition and community hub
+
 ## The Pattern
 
 Knowledge as Code has six defining properties:
@@ -101,6 +131,15 @@ Read the full pattern definition at [knowledge-as-code.com](https://knowledge-as
 ## Attribution
 
 Knowledge as Code was created by [Sam Rogers](https://sam-rogers.com) / [Snap Synapse](https://snapsynapse.com). See [ATTRIBUTION.md](ATTRIBUTION.md) for details.
+
+## Deploying
+
+When you use this template, update the following:
+
+1. Edit `project.yml` with your domain entities, colors, and site identity
+2. Replace example data in `data/examples/` with your own
+3. Update `docs/CNAME` with your custom domain (or remove it)
+4. Push to GitHub — Pages deploys automatically via the included workflow
 
 ## License
 

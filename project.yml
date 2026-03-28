@@ -98,6 +98,9 @@ nav:
   - id: about
     label: About
     href: about.html
+  - id: pattern
+    label: Pattern
+    href: pattern.html
 
 # ---------------------------------------------------------------------------
 # Bridge pages — SEO-targeted detail pages
@@ -116,3 +119,48 @@ theme:
   accent_light: "#0055aa"
   accent_bg: "#0f3460"
   accent_bg_light: "#e6f2ff"
+
+# ---------------------------------------------------------------------------
+# Pattern page — describes the Knowledge as Code pattern
+# ---------------------------------------------------------------------------
+pattern:
+  enabled: true
+  canonical_url: "https://knowledge-as-code.com"
+  examples:
+    - name: "AI Capability Reference"
+      url: "https://airef.snapsynapse.com"
+      description: "AI model capabilities across 12 products"
+    - name: "AI Regulation Tracker"
+      url: "https://aireg.snapsynapse.com"
+      description: "Global AI regulatory landscape"
+    - name: "Meeting Standards Reference"
+      url: "https://meetings.snapsynapse.com"
+      description: "Meeting facilitation standards"
+
+# ---------------------------------------------------------------------------
+# Social / Open Graph meta tags
+# ---------------------------------------------------------------------------
+social:
+  og_image: ""
+  twitter_card: "summary_large_image"
+  twitter_site: ""
+
+# ---------------------------------------------------------------------------
+# Verification — staleness detection for entity freshness
+# ---------------------------------------------------------------------------
+verification:
+  staleness_days: 90
+
+# ---------------------------------------------------------------------------
+# Ecosystem — related projects shown on pattern/about pages
+# ---------------------------------------------------------------------------
+ecosystem:
+  - name: "Knowledge as Code"
+    url: "https://knowledge-as-code.com"
+    description: "The pattern definition and community hub"
+  - name: "Graceful Boundaries"
+    url: "https://github.com/snapsynapse/graceful-boundaries"
+    description: "How services communicate operational limits to humans and agents"
+  - name: "Siteline"
+    url: "https://siteline.snapsynapse.com"
+    description: "AI agent readiness scanner for websites"

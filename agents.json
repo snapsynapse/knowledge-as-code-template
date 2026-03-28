@@ -16,6 +16,23 @@
     "built_with": "Knowledge as Code",
     "pattern_url": "https://knowledge-as-code.com",
     "template_url": "https://github.com/snapsynapse/knowledge-as-code-template",
-    "generated": "2026-03-28T05:11:53.434Z"
-  }
+    "generated": "2026-03-28T05:33:42.520Z"
+  },
+  "related_sites": [
+    {
+      "name": "Knowledge as Code",
+      "url": "https://knowledge-as-code.com",
+      "description": "The pattern definition and community hub"
+    },
+    {
+      "name": "Graceful Boundaries",
+      "url": "https://github.com/snapsynapse/graceful-boundaries",
+      "description": "How services communicate operational limits to humans and agents"
+    },
+    {
+      "name": "Siteline",
+      "url": "https://siteline.snapsynapse.com",
+      "description": "AI agent readiness scanner for websites"
+    }
+  ]
 }

@@ -4,7 +4,7 @@
     <title>Example Knowledge Base</title>
     <link>https://example.com</link>
     <description>A structured reference tracking example entities across categories.</description>
-    <lastBuildDate>Sat, 28 Mar 2026 05:11:53 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 28 Mar 2026 05:33:42 GMT</lastBuildDate>
     <atom:link href="https://example.comindex.xml" rel="self" type="application/rss+xml"/>
     <item>
       <title>NIST Cybersecurity Framework</title>

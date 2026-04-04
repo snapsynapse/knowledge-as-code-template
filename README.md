@@ -2,12 +2,12 @@
 
 A template for building structured, version-controlled knowledge bases with an ontology-first approach. Edit a config file, add markdown data, get a full HTML site + JSON API.
 
-**[Knowledge as Code](https://knowledge-as-code.com)** is a pattern created by [Sam Rogers](https://sam-rogers.com) at [Snap Synapse](https://snapsynapse.com). It applies software engineering practices to knowledge management: plain text, Git-native, zero-dependency, ontology-driven, multi-output from a single source.
+**[Knowledge as Code](https://knowledge-as-code.com)** is a pattern created for [PAICE.work](https://paice.work/) PBC. It applies software engineering practices to knowledge management: plain text, Git-native, zero-dependency, ontology-driven, multi-output from a single source.
 
 ## Live Examples
 
-- [AI Capability Reference](https://airef.snapsynapse.com) — AI model capabilities across 12 products
-- [AI Regulation Tracker](https://aireg.snapsynapse.com) — global AI regulatory landscape
+- [AI Tool Watch](https://aitool.watch) — AI model capabilities across 12 products
+- [Every AI Law](https://everyailaw.com) — global AI regulatory landscape
 - [Meeting Standards Reference](https://meetings.snapsynapse.com) — meeting facilitation standards
 
 ## Quick Start
@@ -112,7 +112,8 @@ Knowledge as Code includes a verification scaffold for detecting stale data:
 Knowledge as Code is part of a broader set of open standards:
 
 - **[Graceful Boundaries](https://github.com/snapsynapse/graceful-boundaries)** — How services communicate operational limits to humans and agents
-- **[Siteline](https://siteline.snapsynapse.com)** — AI agent readiness scanner for websites
+- **[Skill Provenance](https://github.com/snapsynapse/skill-provenance)** — Version identity that travels with agent skill bundles
+- **[Siteline](https://siteline.to)** — AI agent readiness scanner for websites
 - **[Knowledge as Code](https://knowledge-as-code.com)** — The pattern definition and community hub
 
 ## The Pattern
@@ -130,7 +131,7 @@ Read the full pattern definition at [knowledge-as-code.com](https://knowledge-as
 
 ## Attribution
 
-Knowledge as Code was created by [Sam Rogers](https://sam-rogers.com) / [Snap Synapse](https://snapsynapse.com). See [ATTRIBUTION.md](ATTRIBUTION.md) for details.
+Knowledge as Code is a [PAICE.work](https://paice.work/) project. See [ATTRIBUTION.md](ATTRIBUTION.md) for details.
 
 ## Deploying
 
@@ -140,6 +141,10 @@ When you use this template, update the following:
 2. Replace example data in `data/examples/` with your own
 3. Update `docs/CNAME` with your custom domain (or remove it)
 4. Push to GitHub — Pages deploys automatically via the included workflow
+
+## About
+
+Knowledge as Code is a [PAICE.work](https://paice.work/) project. PAICE.work PBC is a public benefit corporation building infrastructure for productive collaboration between humans and autonomous agents. Structured, version-controlled, agent-accessible knowledge is a foundation for that collaboration.
 
 ## License
 

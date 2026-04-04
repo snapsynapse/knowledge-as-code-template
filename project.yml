@@ -127,11 +127,11 @@ pattern:
   enabled: true
   canonical_url: "https://knowledge-as-code.com"
   examples:
-    - name: "AI Capability Reference"
-      url: "https://airef.snapsynapse.com"
+    - name: "AI Tool Watch"
+      url: "https://aitool.watch"
       description: "AI model capabilities across 12 products"
-    - name: "AI Regulation Tracker"
-      url: "https://aireg.snapsynapse.com"
+    - name: "Every AI Law"
+      url: "https://everyailaw.com"
       description: "Global AI regulatory landscape"
     - name: "Meeting Standards Reference"
       url: "https://meetings.snapsynapse.com"
@@ -162,5 +162,5 @@ ecosystem:
     url: "https://github.com/snapsynapse/graceful-boundaries"
     description: "How services communicate operational limits to humans and agents"
   - name: "Siteline"
-    url: "https://siteline.snapsynapse.com"
+    url: "https://siteline.to"
     description: "AI agent readiness scanner for websites"

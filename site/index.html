@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge as Code</title>
+    <meta name="description" content="A pattern for building structured, version-controlled knowledge bases that verify themselves. A PAICE.work project.">
+    <meta property="og:title" content="Knowledge as Code">
+    <meta property="og:description" content="Apply software engineering practices to knowledge management: plain text, Git-native, zero-dependency, self-healing, multi-output from a single source.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://knowledge-as-code.com">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="canonical" href="https://knowledge-as-code.com">
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --bg-card: #16213e;
+            --text: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent: #4fc3f7;
+            --border: #2a2a4a;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f5f5f5;
+                --bg-card: #ffffff;
+                --text: #1a1a1a;
+                --text-secondary: #555;
+                --accent: #0055aa;
+                --border: #ddd;
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 1.5rem 2rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .cta-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-row a {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .cta-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .cta-secondary {
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 2.5rem 0 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.5rem;
+            color: var(--accent);
+        }
+
+        p, li { margin-bottom: 0.75rem; }
+        ul { padding-left: 1.5rem; }
+
+        .properties {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .prop-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .prop-card strong {
+            color: var(--accent);
+        }
+
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .example-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-decoration: none;
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        .example-card:hover { border-color: var(--accent); }
+        .example-card h4 { margin-bottom: 0.25rem; }
+        .example-card p { color: var(--text-secondary); font-size: 0.9rem; margin: 0; }
+
+        .lineage-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .lineage-table th, .lineage-table td {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .lineage-table th {
+            background: var(--bg-card);
+            font-weight: 600;
+        }
+
+        code {
+            background: var(--bg-card);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+        }
+
+        pre code { background: none; padding: 0; }
+
+        footer {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+        }
+
+        footer a { color: var(--accent); text-decoration: none; }
+
+        a { color: var(--accent); }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            header { padding: 2.5rem 1rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Knowledge as Code</h1>
+        <p>A pattern for building structured, version-controlled knowledge bases that verify themselves.</p>
+        <div class="cta-row">
+            <a class="cta-primary" href="https://github.com/snapsynapse/knowledge-as-code-template">Use the Template</a>
+            <a class="cta-secondary" href="https://dev.to/snapsynapse/knowledge-as-code-a-pattern-for-knowledge-bases-that-verify-themselves-2lhd">Read the Article</a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <h2>The Problem</h2>
+        <p>Documentation rots. Internal wikis go stale. Someone is assigned to "maintain the docs" until they get busy, change roles, or leave. The decay resumes silently, until the wrong person relies on the wrong fact.</p>
+        <p>Knowledge as Code is what happens when you treat a knowledge base like software: version-controlled, validated, multi-output, and capable of detecting its own decay.</p>
+
+        <h2>Six Properties</h2>
+        <div class="properties">
+            <div class="prop-card">
+                <strong>1. Plain text canonical</strong>
+                <p>Knowledge lives in human-readable, version-controlled files. No database, no CMS, no vendor lock-in. Markdown and YAML.</p>
+            </div>
+            <div class="prop-card">
+                <strong>2. Self-healing</strong>
+                <p>Automated verification detects when knowledge has drifted from reality. The system flags decay before humans notice it.</p>
+            </div>
+            <div class="prop-card">
+                <strong>3. Multi-output</strong>
+                <p>One source produces every format needed: HTML site, JSON API, MCP endpoints, SEO bridge pages, sitemap, <code>llms.txt</code>.</p>
+            </div>
+            <div class="prop-card">
+                <strong>4. Zero-dependency</strong>
+                <p>No external packages. The build uses only language built-ins. Nothing breaks when you come back in a year.</p>
+            </div>
+            <div class="prop-card">
+                <strong>5. Git-native</strong>
+                <p>Git is the collaboration layer, the audit trail, the deployment trigger, and the contribution workflow.</p>
+            </div>
+            <div class="prop-card">
+                <strong>6. Ontology-driven</strong>
+                <p>A vendor-neutral taxonomy of concepts maps to domain-specific implementations. The structure is the data model.</p>
+            </div>
+        </div>
+
+        <h2>Live Deployments</h2>
+        <div class="examples">
+            <a class="example-card" href="https://aitool.watch">
+                <h4>AI Tool Watch</h4>
+                <p>AI model capabilities across 12 products. Self-healing via multi-model verification cascade.</p>
+            </a>
+            <a class="example-card" href="https://everyailaw.com">
+                <h4>Every AI Law</h4>
+                <p>Global AI regulatory landscape. Tracks obligations across jurisdictions.</p>
+            </a>
+            <a class="example-card" href="https://meetings.snapsynapse.com">
+                <h4>Meeting Standards Reference</h4>
+                <p>Meeting facilitation standards and practices mapped to frameworks.</p>
+            </a>
+        </div>
+
+        <h2>How It Works</h2>
+
+        <h3>The Ontology</h3>
+        <p>Every knowledge-as-code project has four entity roles. You name them for your domain, but the structure is always:</p>
+        <pre><code>Authority &rarr; Container &rarr; Provision &rarr; Primary</code></pre>
+        <p><strong>Primaries</strong> are stable anchors (requirements, obligations, capabilities). <strong>Containers</strong> are grouping entities that change over time (regulations, frameworks, products). When a container is amended, its provisions change, but the underlying primaries persist.</p>
+
+        <h3>The Config</h3>
+        <p>A single <code>project.yml</code> defines your entire domain: entity names, groups, colors, statuses, navigation, and theme. The build script reads this config and generates everything.</p>
+        <pre><code>git clone https://github.com/snapsynapse/knowledge-as-code-template
+cd knowledge-as-code-template
+# Edit project.yml with your domain
+node scripts/build.js
+open docs/index.html</code></pre>
+
+        <h2>Standing on Shoulders</h2>
+        <table class="lineage-table">
+            <tr><th>Influence</th><th>What it contributes</th><th>What Knowledge as Code adds</th></tr>
+            <tr><td>File over App</td><td>Durable, portable formats</td><td>Ontology-driven structure</td></tr>
+            <tr><td>Docs as Code</td><td>Version control for documentation</td><td>Self-healing verification</td></tr>
+            <tr><td>Living Documentation</td><td>Docs that evolve with systems</td><td>AI-powered drift detection</td></tr>
+            <tr><td>GitOps</td><td>Declared state + drift reconciliation</td><td>Applied to knowledge, not infrastructure</td></tr>
+        </table>
+
+        <h2>Related Projects</h2>
+        <ul>
+            <li><a href="https://github.com/snapsynapse/graceful-boundaries">Graceful Boundaries</a> — how services communicate limits to AI agents</li>
+            <li><a href="https://siteline.to">Siteline</a> — AI agent readiness scanner</li>
+        </ul>
+
+    </div>
+
+    <footer>
+        <p>Knowledge as Code is a <a href="https://paice.work">PAICE.work</a> project.</p>
+        <p>Template: <a href="https://github.com/snapsynapse/knowledge-as-code-template">MIT Licensed</a> | Pattern definition: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></p>
+    </footer>
+</body>
+</html>

@@ -453,7 +453,7 @@ function renderFooter(config) {
     const repo = config.repo || '#';
     return `<footer>
         <p>Maintained with <a href="${escapeHTML(repo)}">version control</a>. This is a reference tool, not professional advice.</p>
-        <p>&copy; ${new Date().getFullYear()} | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern created by <a href="https://snapsynapse.com">Snap Synapse</a></p>
+        <p>&copy; ${new Date().getFullYear()} | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern by <a href="https://paice.work">PAICE.work</a></p>
     </footer>`;
 }
 
@@ -1190,7 +1190,7 @@ open docs/index.html</code></pre>
         <p>Template: <a href="https://github.com/snapsynapse/knowledge-as-code-template">github.com/snapsynapse/knowledge-as-code-template</a></p>
 
         <hr>
-        <p><em>Knowledge as Code was created by <a href="https://sam-rogers.com">Sam Rogers</a> at <a href="https://snapsynapse.com">Snap Synapse</a>.</em></p>
+        <p><em>Knowledge as Code is a <a href="https://paice.work">PAICE.work</a> project.</em></p>
         </div>
     `;
 

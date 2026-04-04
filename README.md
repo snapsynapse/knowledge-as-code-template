@@ -12,11 +12,11 @@ A template for building structured, version-controlled knowledge bases with an o
 
 ## Quick Start
 
-1. **Use this template** — click "Use this template" on GitHub, or clone locally
-2. **Edit `project.yml`** — define your domain entities, groups, colors, and site identity
-3. **Add data** — create markdown files in `data/` following the schema in `data/_schema.md`
-4. **Build** — `node scripts/build.js`
-5. **Deploy** — push to GitHub, Pages deploys automatically
+1. **Use this template** -- click "Use this template" on GitHub, or clone locally
+2. **Edit `project.yml`** -- define your domain entities, groups, colors, and site identity
+3. **Replace example data** -- see [Replacing example data](#replacing-example-data) below
+4. **Build** -- `node scripts/build.js` (or `npm run build`)
+5. **Deploy** -- push to GitHub, Pages deploys automatically
 
 ## What You Get
 
@@ -74,11 +74,32 @@ All domain-specific settings live in `project.yml`:
 - **Bridge pages** — which SEO pages to generate
 - **Theme** — accent colors
 
+## Replacing example data
+
+The template ships with example data in `data/examples/` (ISO 27001, NIST CSF). To replace it with your own domain:
+
+1. **Update `project.yml`** -- rename entity types, groups, statuses, and colors to match your domain. The directory names under `entities.*.directory` control where the build script looks for files.
+
+2. **Delete example files** -- remove the contents of `data/examples/requirements/`, `data/examples/frameworks/`, `data/examples/organizations/`, and `data/examples/mapping/index.yml`.
+
+3. **Create your data files** -- add markdown files following the format documented in [`data/_schema.md`](data/_schema.md). Each entity type has specific frontmatter requirements and body structure.
+
+4. **Update the mapping file** -- create entries in `data/examples/mapping/index.yml` that connect your containers to your primaries.
+
+5. **Validate and build:**
+   ```bash
+   node scripts/validate.js   # Check cross-references
+   node scripts/build.js      # Generate the site
+   ```
+
+The build script looks for data in `data/examples/` first, then `data/`. You can rename `data/examples/` to `data/` if you prefer a flatter structure.
+
 ## Commands
 
 ```bash
-node scripts/build.js      # Build the site
-node scripts/validate.js   # Validate cross-references
+node scripts/build.js      # Build the site (or: npm run build)
+node scripts/validate.js   # Validate cross-references (or: npm run validate)
+node scripts/verify.js     # Check entity freshness (or: npm run verify)
 ```
 
 ## Architecture
@@ -92,11 +113,37 @@ node scripts/validate.js   # Validate cross-references
 
 Every Knowledge-as-Code site includes machine-readable discovery files:
 
-- **MCP Server** — `mcp-server.js` provides read-only access to all entities via Model Context Protocol. Tools are dynamically named from your `project.yml` config. Run with `node mcp-server.js` or add to your MCP client config via `mcp.json`.
-- **llms.txt** — Generated at `docs/llms.txt` with entity model, API endpoints, and entity listings for LLM context
-- **agents.json** — Machine-readable metadata at `docs/agents.json` for agent discovery
-- **RSS feed** — Recent updates at `docs/index.xml`
-- **JSON API** — Programmatic access at `docs/api/v1/`
+- **MCP Server** -- `mcp-server.js` provides read-only access to all entities via Model Context Protocol
+- **llms.txt** -- Generated at `docs/llms.txt` with entity model, API endpoints, and entity listings
+- **agents.json** -- Machine-readable metadata at `docs/agents.json` for agent discovery
+- **RSS feed** -- Recent updates at `docs/index.xml`
+- **JSON API** -- Programmatic access at `docs/api/v1/`
+
+### Using the MCP server
+
+The MCP server exposes your knowledge base as tools that AI agents can call. Tool names are dynamically generated from your `project.yml` entity configuration.
+
+**Add to Claude Code** (or any MCP-compatible client) via `mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "knowledge-base": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "description": "Read-only access to the knowledge base"
+    }
+  }
+}
+```
+
+**Test it directly:**
+
+```bash
+node mcp-server.js
+```
+
+The server reads `project.yml` at startup and exposes tools for listing and retrieving each entity type. For example, with the default config you get tools like `list_requirements`, `get_requirement`, `list_frameworks`, `get_framework`, etc. The exact tool names depend on your entity configuration.
 
 ## Verification
 

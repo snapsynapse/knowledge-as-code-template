@@ -1,0 +1,28 @@
+{
+  "name": "knowledge-as-code-template",
+  "version": "1.0.0",
+  "description": "Template for building structured, version-controlled knowledge bases with an ontology-first approach.",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "validate": "node scripts/validate.js",
+    "verify": "node scripts/verify.js"
+  },
+  "author": "PAICE.work PBC <https://paice.work/>",
+  "homepage": "https://github.com/snapsynapse/knowledge-as-code-template",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/snapsynapse/knowledge-as-code-template"
+  },
+  "keywords": [
+    "knowledge-base",
+    "ontology",
+    "static-site",
+    "zero-dependency",
+    "knowledge-as-code",
+    "mcp"
+  ],
+  "engines": {
+    "node": ">=16"
+  }
+}

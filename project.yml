@@ -71,7 +71,7 @@ entities:
 
 # Mapping file — connects containers to primaries via secondaries
 mapping:
-  file: "provisions/index.yml"
+  file: "mapping/index.yml"
 
 # ---------------------------------------------------------------------------
 # Site navigation

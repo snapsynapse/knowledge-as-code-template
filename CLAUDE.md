@@ -22,8 +22,9 @@ docs/                 # Generated output (HTML + JSON API)
 ## Key Commands
 
 ```bash
-node scripts/build.js      # Build site + JSON API
-node scripts/validate.js   # Validate cross-references
+npm run build       # Build site + JSON API (or: node scripts/build.js)
+npm run validate    # Validate cross-references
+npm run verify      # Check entity freshness / staleness
 ```
 
 ## Entity Model
@@ -41,12 +42,14 @@ Relationship: Authority → Container → Secondary → Primary
 
 ## Adding Data
 
-1. Create a `.md` file in the appropriate `data/` directory
-2. Add YAML frontmatter with required fields (see existing files for format)
+See `data/_schema.md` for the full file format reference.
+
+1. Create a `.md` file in the appropriate `data/examples/` directory
+2. Add YAML frontmatter with required fields per the schema
 3. For containers: add timeline table and provision sections separated by `---`
 4. Add mapping entries to `data/examples/mapping/index.yml`
-5. Run `node scripts/validate.js` to check cross-references
-6. Run `node scripts/build.js` to generate the site
+5. Run `npm run validate` to check cross-references
+6. Run `npm run build` to generate the site
 
 ## Customization
 

@@ -3,6 +3,7 @@ id: incident-response
 name: Incident Response
 group: operational
 status: active
+last_verified: 2026-03-25
 search_terms:
   - incident management
   - breach response

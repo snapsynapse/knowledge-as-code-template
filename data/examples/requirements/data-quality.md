@@ -3,6 +3,7 @@ id: data-quality
 name: Data Quality
 group: technical
 status: active
+last_verified: 2026-03-25
 search_terms:
   - data validation
   - data integrity

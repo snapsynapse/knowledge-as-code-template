@@ -491,13 +491,13 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
     </div>
     ${renderFooter(config)}
     <script src="${prefix}assets/search.js"></script>
-    ${renderTableSortScript()}
+    <script src="${prefix}assets/tables.js"></script>
     ${renderThemeScript()}
 </body>
 </html>`;
 }
 
-function renderBridgeShell(config, { title, depth, content, description, canonicalPath, structuredData, configCSS }) {
+function renderBridgeShell(config, { title, depth, content, description, canonicalPath, structuredData, configCSS, noindex }) {
     const prefix = depth > 0 ? '../'.repeat(depth) : '';
     const siteUrl = config.url || '';
     const jsonLd = structuredData ? `\n    <script type="application/ld+json">${JSON.stringify(structuredData)}</script>` : '';
@@ -512,6 +512,7 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
     <link rel="canonical" href="${siteUrl}${canonicalPath || ''}">
     <link rel="stylesheet" href="${prefix}assets/styles.css">
     <style>${configCSS || ''}</style>
+    ${noindex ? '<meta name="robots" content="noindex">' : ''}
     <meta name="description" content="${escapeHTML(description || '')}">
     <meta property="og:title" content="${escapeHTML(title)}">
     <meta property="og:description" content="${escapeHTML(description || '')}">
@@ -529,7 +530,7 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
     </div>
     ${renderFooter(config)}
     <script src="${prefix}assets/search.js"></script>
-    ${renderTableSortScript()}
+    <script src="${prefix}assets/tables.js"></script>
     ${renderThemeScript()}
 </body>
 </html>`;
@@ -607,41 +608,6 @@ function tdRange(rangeStr) {
     return `<td data-sort-value="${max}">${escapeHTML(rangeStr || '')}</td>`;
 }
 
-function renderTableSortScript() {
-    return `<script>
-    (function() {
-        document.querySelectorAll('th[data-sortable]').forEach(function(th) {
-            th.style.cursor = 'pointer';
-            th.addEventListener('click', function() {
-                var table = th.closest('table');
-                var tbody = table.querySelector('tbody');
-                var rows = Array.from(tbody.querySelectorAll('tr'));
-                var col = Array.from(th.parentNode.children).indexOf(th);
-                var type = th.dataset.sortType || 'string';
-                var asc = th.dataset.sortDir !== 'asc';
-
-                th.parentNode.querySelectorAll('th').forEach(function(h) {
-                    h.dataset.sortDir = '';
-                    h.classList.remove('sort-asc', 'sort-desc');
-                });
-                th.dataset.sortDir = asc ? 'asc' : 'desc';
-                th.classList.add(asc ? 'sort-asc' : 'sort-desc');
-
-                rows.sort(function(a, b) {
-                    var aCell = a.children[col], bCell = b.children[col];
-                    var aVal = aCell ? (aCell.dataset.sortValue || aCell.textContent.trim()) : '';
-                    var bVal = bCell ? (bCell.dataset.sortValue || bCell.textContent.trim()) : '';
-                    if (type === 'number' || type === 'price' || type === 'range') {
-                        return asc ? (parseFloat(aVal) || 0) - (parseFloat(bVal) || 0) : (parseFloat(bVal) || 0) - (parseFloat(aVal) || 0);
-                    }
-                    return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                });
-                rows.forEach(function(r) { tbody.appendChild(r); });
-            });
-        });
-    })();
-    </script>`;
-}
 
 // ---------------------------------------------------------------------------
 // Page generators
@@ -665,14 +631,14 @@ function generateHomepage(config, data, configCSS) {
 
         <h2>${escapeHTML(containerName)}</h2>
         <table class="data-table">
-            <thead><tr><th>${escapeHTML(config.entities?.container?.name || 'Container')}</th><th>Scope</th><th>Status</th><th>Effective</th><th>Provisions</th></tr></thead>
+            <thead><tr>${th(config.entities?.container?.name || 'Container', { sortType: 'string' })}${th('Scope', { sortType: 'string' })}${th('Status', { sortType: 'string' })}${th('Effective', { sortType: 'string' })}${th('Provisions', { sortType: 'number' })}</tr></thead>
             <tbody>
                 ${containers.map(c => `<tr>
                     <td><a href="container/${c.id}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td>
                     <td>${escapeHTML(c.jurisdiction || '')}</td>
-                    <td>${renderStatusBadge(c.status)}</td>
-                    <td>${formatDate(c.effective)}</td>
-                    <td>${c.provisions.length}</td>
+                    ${tdStatus(c.status)}
+                    ${tdDate(c.effective)}
+                    ${tdNumber(c.provisions.length)}
                 </tr>`).join('\n')}
             </tbody>
         </table>
@@ -719,14 +685,14 @@ function generateContainersPage(config, data, configCSS) {
             <span class="result-count" id="itemCount"><strong>${containers.length}</strong> ${cPlural.toLowerCase()}</span>
         </div>
         <table class="data-table" id="itemTable">
-            <thead><tr><th>${escapeHTML(cName)}</th><th>Scope</th><th>Status</th><th>Effective</th><th>Provisions</th></tr></thead>
+            <thead><tr>${th(cName, { sortType: 'string' })}${th('Scope', { sortType: 'string' })}${th('Status', { sortType: 'string' })}${th('Effective', { sortType: 'string' })}${th('Provisions', { sortType: 'number' })}</tr></thead>
             <tbody>
                 ${containers.map(c => `<tr data-scope="${escapeHTML(c[scopeField] || '')}">
                     <td><a href="container/${c.id}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td>
                     <td>${escapeHTML(c[scopeField] || '')}</td>
-                    <td>${renderStatusBadge(c.status)}</td>
-                    <td>${formatDate(c.effective)}</td>
-                    <td>${c.provisions.length}</td>
+                    ${tdStatus(c.status)}
+                    ${tdDate(c.effective)}
+                    ${tdNumber(c.provisions.length)}
                 </tr>`).join('\n')}
             </tbody>
         </table>
@@ -1059,7 +1025,7 @@ function generateCompareBridge(config, cA, cB, comparison, data, configCSS) {
         </div>
     `;
 
-    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 2, content, canonicalPath: `compare/${cA.id}-vs-${cB.id}/`, configCSS });
+    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 2, content, canonicalPath: `compare/${cA.id}-vs-${cB.id}/`, configCSS, noindex: comparison.shared_count === 0 });
 }
 
 function generateAppliesToBridge(config, scopeValue, data, configCSS) {
@@ -1078,7 +1044,7 @@ function generateAppliesToBridge(config, scopeValue, data, configCSS) {
         <div style="margin-top: 2rem; text-align: center;"><a href="../../containers.html" onclick="passTheme(this)" class="bridge-cta">All ${escapeHTML((config.entities?.container?.plural || 'containers').toLowerCase())}</a></div>
     `;
 
-    return renderBridgeShell(config, { title: `${scopeValue}`, depth: 2, content, canonicalPath: `applies-to/${slugify(scopeValue)}/`, configCSS });
+    return renderBridgeShell(config, { title: `${scopeValue}`, depth: 2, content, canonicalPath: `applies-to/${slugify(scopeValue)}/`, configCSS, noindex: scopeContainers.length === 0 });
 }
 
 // ---------------------------------------------------------------------------
@@ -1104,6 +1070,41 @@ function generateSitemap(config, pages) {
     const base = config.url || '';
     const lastmod = new Date().toISOString().split('T')[0];
     return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map(p => `  <url><loc>${base}${p}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}\n</urlset>`;
+}
+
+// ---------------------------------------------------------------------------
+// 404 page
+// ---------------------------------------------------------------------------
+
+function generate404Page(config, configCSS) {
+    const containerPlural = (config.entities?.container?.plural || 'Containers').toLowerCase();
+    const primaryPlural = (config.entities?.primary?.plural || 'Primaries').toLowerCase();
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - ${escapeHTML(config.name || '')}</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="/assets/styles.css">
+    <style>${configCSS || ''}</style>
+    ${renderThemeInit()}
+</head>
+<body>
+    ${renderSiteNav(config, 'none', '/')}
+    <div class="container" id="main-content" style="text-align:center;">
+        <h1 style="margin-top:2rem;">404 — Page Not Found</h1>
+        <p style="color:var(--text-secondary); margin: 1rem 0 2rem;">The page you're looking for doesn't exist or has moved.</p>
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+            <a href="/" class="bridge-cta">Home</a>
+            <a href="/containers.html" class="bridge-cta">All ${escapeHTML(containerPlural)}</a>
+            <a href="/primaries.html" class="bridge-cta">All ${escapeHTML(primaryPlural)}</a>
+        </div>
+    </div>
+    ${renderFooter(config)}
+    ${renderThemeScript()}
+</body>
+</html>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1323,7 +1324,7 @@ function build() {
         for (const comp of comparisons) {
             const [aId, bId] = comp.regulations;
             const cA = containers.find(c => c.id === aId), cB = containers.find(c => c.id === bId);
-            if (cA && cB) { const dir = path.join(DOCS_DIR, 'compare', `${aId}-vs-${bId}`); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateCompareBridge(config, cA, cB, comp, data, configCSS)); sitemapPages.push(`compare/${aId}-vs-${bId}/`); cmpCount++; }
+            if (cA && cB) { const dir = path.join(DOCS_DIR, 'compare', `${aId}-vs-${bId}`); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateCompareBridge(config, cA, cB, comp, data, configCSS)); if (comp.shared_count > 0) sitemapPages.push(`compare/${aId}-vs-${bId}/`); cmpCount++; }
         }
     }
     console.log(`  Compare bridge pages: ${cmpCount}`);
@@ -1332,7 +1333,13 @@ function build() {
     if (config.bridges?.applies_to) {
         const scopeField = config.entities?.container?.scope_field || config.bridges.applies_to.field || 'jurisdiction';
         const scopes = [...new Set(containers.map(c => c[scopeField]).filter(Boolean))];
-        for (const s of scopes) { const dir = path.join(DOCS_DIR, 'applies-to', slugify(s)); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateAppliesToBridge(config, s, data, configCSS)); sitemapPages.push(`applies-to/${slugify(s)}/`); appCount++; }
+        for (const s of scopes) {
+            const dir = path.join(DOCS_DIR, 'applies-to', slugify(s)); ensureDir(dir);
+            const scopeContainerCount = containers.filter(c => c[scopeField] === s).length;
+            fs.writeFileSync(path.join(dir, 'index.html'), generateAppliesToBridge(config, s, data, configCSS));
+            if (scopeContainerCount > 0) sitemapPages.push(`applies-to/${slugify(s)}/`);
+            appCount++;
+        }
     }
     console.log(`  Applies-to bridge pages: ${appCount}`);
 
@@ -1342,58 +1349,111 @@ function build() {
     console.log(`  Search index: ${searchIndex.length} entries`);
 
     // Sitemap + robots
+    const siteUrl = (config.url || '').replace(/\/?$/, '/');
     fs.writeFileSync(path.join(DOCS_DIR, 'sitemap.xml'), generateSitemap(config, sitemapPages));
-    fs.writeFileSync(path.join(DOCS_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${config.url || ''}sitemap.xml\n`);
+    fs.writeFileSync(path.join(DOCS_DIR, 'robots.txt'), [
+        'User-agent: *',
+        'Allow: /',
+        '',
+        `Sitemap: ${siteUrl}sitemap.xml`,
+        `# Machine-readable site info: ${siteUrl}agents.json`,
+        `# LLM context: ${siteUrl}llms.txt`,
+        ''
+    ].join('\n'));
 
     // --- Discovery files ---
 
-    // llms.txt
+    // llms.txt — LLM-friendly site overview
+    const cPlural = config.entities?.container?.plural || 'Containers';
+    const pPlural = config.entities?.primary?.plural || 'Primaries';
+    const aPlural = config.entities?.authority?.plural || 'Authorities';
+    const cSingular = (config.entities?.container?.name || 'container').toLowerCase();
     const llmsTxt = [
         `# ${config.name || 'Knowledge Base'}`,
+        '',
         `> ${config.description || ''}`,
+        `> Tracks ${containers.length} ${cPlural.toLowerCase()}, ${primaries.length} ${pPlural.toLowerCase()}, and ${totalProvisions} provisions across ${authorities.length} ${aPlural.toLowerCase()}.`,
         '',
-        '## Entity Model',
-        `${config.entities?.authority?.name || 'Authority'} -> ${config.entities?.container?.name || 'Container'} -> ${config.entities?.secondary?.name || 'Secondary'} -> ${config.entities?.primary?.name || 'Primary'}`,
+        `## ${cPlural}`,
         '',
-        '## API Endpoints',
-        '- /api/v1/index.json',
-        '- /api/v1/primaries.json',
-        '- /api/v1/containers.json',
-        '- /api/v1/authorities.json',
-        '- /api/v1/mappings.json',
-        '- /api/v1/matrix.json',
-        '- /api/v1/comparisons.json',
+        ...containers.map(c => `- [${c.name}](${siteUrl}container/${c.id}/): ${c.status || 'unknown'}`),
         '',
-        `## ${primaries.length} ${config.entities?.primary?.plural || 'Primaries'}`,
-        ...primaries.map(p => `- ${p.id}: ${p.name || humanizeId(p.id)}`),
+        `## ${pPlural}`,
         '',
-        `## ${containers.length} ${config.entities?.container?.plural || 'Containers'}`,
-        ...containers.map(c => `- ${c.id}: ${c.name} (${c.status || 'unknown'})`),
+        ...primaries.map(p => {
+            const regCount = Object.keys(matrix[p.id] || {}).length;
+            return `- [${p.name || humanizeId(p.id)}](${siteUrl}primary/${p.id}/): ${regCount} ${cPlural.toLowerCase()} support this`;
+        }),
         '',
-        `## ${authorities.length} ${config.entities?.authority?.plural || 'Authorities'}`,
-        ...authorities.map(a => `- ${a.id}: ${a.name || humanizeId(a.id)}`),
+        '## Tools',
         '',
-        '## Built with Knowledge as Code',
-        'https://knowledge-as-code.com',
-        `Template: https://github.com/snapsynapse/knowledge-as-code-template`,
+        `- [Coverage Matrix](${siteUrl}matrix.html): Which ${pPlural.toLowerCase()} each ${cSingular} supports`,
+        `- [Compare](${siteUrl}compare.html): Side-by-side ${cSingular} comparison`,
+        `- [Timeline](${siteUrl}timeline.html): Key dates and milestones`,
+        '',
+        '## Machine-Readable',
+        '',
+        `- [JSON API](${siteUrl}api/v1/index.json): Programmatic access to all data`,
+        `- [agents.json](${siteUrl}agents.json): Agent discovery metadata`,
+        `- [Sitemap](${siteUrl}sitemap.xml): All pages`,
+        `- [RSS Feed](${siteUrl}index.xml): Recent updates`,
+        ''
     ].join('\n');
     fs.writeFileSync(path.join(DOCS_DIR, 'llms.txt'), llmsTxt);
 
-    // agents.json
+    // agents.json — agent-readable site metadata
     const agentsJson = {
         schema_version: '1.0',
-        name: config.name || 'Knowledge Base',
-        description: config.description || '',
-        url: config.url || '',
-        capabilities: {
-            api: { base_url: `${(config.url || '').replace(/\/?$/, '/')}api/v1/`, format: 'json' },
-            mcp: { config_file: 'mcp.json' }
+        site: {
+            name: config.name || 'Knowledge Base',
+            url: siteUrl,
+            description: config.description || '',
+            repo: config.repo || ''
         },
-        metadata: {
+        capabilities: [
+            {
+                id: 'container-comparison',
+                name: `${config.entities?.container?.name || 'Container'} Comparison`,
+                description: `Compare ${containers.length} ${cPlural.toLowerCase()} across ${primaries.length} ${pPlural.toLowerCase()}`,
+                url: `${siteUrl}compare.html`
+            },
+            {
+                id: 'coverage-matrix',
+                name: 'Coverage Matrix',
+                description: `See which ${pPlural.toLowerCase()} each ${cSingular} supports`,
+                url: `${siteUrl}matrix.html`
+            },
+            {
+                id: 'json-api',
+                name: 'JSON API',
+                description: 'Programmatic access to all data',
+                url: `${siteUrl}api/v1/index.json`,
+                endpoints: [
+                    { path: 'api/v1/containers.json', description: `All ${cPlural.toLowerCase()}` },
+                    { path: 'api/v1/primaries.json', description: `All ${pPlural.toLowerCase()}` },
+                    { path: 'api/v1/authorities.json', description: `All ${aPlural.toLowerCase()}` },
+                    { path: 'api/v1/mappings.json', description: 'All mappings' },
+                    { path: 'api/v1/matrix.json', description: 'Coverage matrix' },
+                    { path: 'api/v1/comparisons.json', description: 'Pre-computed comparisons' }
+                ]
+            }
+        ],
+        content: {
+            containers: containers.map(c => ({ id: c.id, name: c.name, status: c.status, url: `${siteUrl}container/${c.id}/` })),
+            primaries: primaries.map(p => ({ id: p.id, name: p.name || humanizeId(p.id), group: p.group, url: `${siteUrl}primary/${p.id}/` })),
+            authorities: authorities.map(a => ({ id: a.id, name: a.name || humanizeId(a.id), url: `${siteUrl}authority/${a.id}/` }))
+        },
+        discovery: {
+            llms_txt: `${siteUrl}llms.txt`,
+            sitemap: `${siteUrl}sitemap.xml`,
+            rss: `${siteUrl}index.xml`,
+            robots: `${siteUrl}robots.txt`
+        },
+        meta: {
+            last_updated: new Date().toISOString().split('T')[0],
             built_with: 'Knowledge as Code',
             pattern_url: 'https://knowledge-as-code.com',
-            template_url: 'https://github.com/snapsynapse/knowledge-as-code-template',
-            generated: new Date().toISOString()
+            template_url: 'https://github.com/snapsynapse/knowledge-as-code-template'
         }
     };
     if (config.ecosystem) {
@@ -1401,33 +1461,50 @@ function build() {
     }
     fs.writeFileSync(path.join(DOCS_DIR, 'agents.json'), JSON.stringify(agentsJson, null, 2));
 
-    // RSS feed (index.xml)
-    const rssItems = containers
-        .filter(c => c.effective)
-        .sort((a, b) => (b.effective || '').localeCompare(a.effective || ''))
-        .slice(0, 20)
-        .map(c => `    <item>
-      <title>${escapeHTML(c.name)}</title>
-      <link>${config.url || ''}container/${c.id}/</link>
-      <description>${escapeHTML(c.name)} - Status: ${c.status || 'unknown'}. ${c.provisions.length} provisions.</description>
-      <pubDate>${c.effective ? new Date(c.effective + 'T00:00:00Z').toUTCString() : ''}</pubDate>
-      <guid>${config.url || ''}container/${c.id}/</guid>
-    </item>`);
-
-    const rssFeed = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/1999/xhtml">
-  <channel>
-    <title>${escapeHTML(config.name || 'Knowledge Base')}</title>
-    <link>${config.url || ''}</link>
-    <description>${escapeHTML(config.description || '')}</description>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="${config.url || ''}index.xml" rel="self" type="application/rss+xml"/>
-${rssItems.join('\n')}
-  </channel>
-</rss>`;
+    // RSS feed (index.xml) — sorted by last_verified (freshest first), fallback to effective
+    const sortedContainers = [...containers]
+        .filter(c => c.effective || c.last_verified)
+        .sort((a, b) => (b.last_verified || b.effective || '').localeCompare(a.last_verified || a.effective || ''));
+    const rssItems = sortedContainers.slice(0, 20).map(c => {
+        const desc = `${c.name}: ${c.status || 'unknown'}. ${c.provisions.length} provisions.`;
+        const pubDate = c.last_verified || c.effective;
+        return [
+            '    <item>',
+            `      <title>${escapeHTML(c.name)}</title>`,
+            `      <link>${siteUrl}container/${c.id}/</link>`,
+            `      <guid>${siteUrl}container/${c.id}/</guid>`,
+            `      <description>${escapeHTML(desc)}</description>`,
+            pubDate ? `      <pubDate>${new Date(pubDate + 'T00:00:00Z').toUTCString()}</pubDate>` : '',
+            '    </item>'
+        ].filter(Boolean).join('\n');
+    }).join('\n');
+    const rssFeed = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+        '  <channel>',
+        `    <title>${escapeHTML(config.name || 'Knowledge Base')}</title>`,
+        `    <link>${siteUrl}</link>`,
+        `    <description>${escapeHTML(config.description || '')}</description>`,
+        `    <atom:link href="${siteUrl}index.xml" rel="self" type="application/rss+xml"/>`,
+        `    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`,
+        rssItems,
+        '  </channel>',
+        '</rss>',
+        ''
+    ].join('\n');
     fs.writeFileSync(path.join(DOCS_DIR, 'index.xml'), rssFeed);
 
     console.log('  Discovery files: llms.txt, agents.json, index.xml');
+
+    // CNAME — for GitHub Pages custom domains
+    const hostname = siteUrl.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+    if (hostname) fs.writeFileSync(path.join(DOCS_DIR, 'CNAME'), hostname + '\n');
+
+    // .nojekyll — prevent GitHub Pages from running Jekyll on output
+    fs.writeFileSync(path.join(DOCS_DIR, '.nojekyll'), '');
+
+    // 404 page
+    fs.writeFileSync(path.join(DOCS_DIR, '404.html'), generate404Page(config, configCSS));
 
     // Copy static assets if not present
     const srcCSS = path.join(ROOT, 'docs', 'assets', 'styles.css');

@@ -189,6 +189,10 @@ When you use this template, update the following:
 3. Update `docs/CNAME` with your custom domain (or remove it)
 4. Push to GitHub — Pages deploys automatically via the included workflow
 
+## Sponsor
+
+Knowledge as Code is free and open. If you build on this template, consider [sponsoring its development](https://github.com/sponsors/snapsynapse). See [SPONSORS.md](SPONSORS.md).
+
 ## About
 
 Knowledge as Code is a [PAICE.work](https://paice.work/) project. PAICE.work PBC is a public benefit corporation building infrastructure for productive collaboration between humans and autonomous agents. Structured, version-controlled, agent-accessible knowledge is a foundation for that collaboration.

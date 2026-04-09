@@ -383,6 +383,80 @@
   }
   .split .card.primary-card a.big-link:hover { text-decoration: none; transform: translateY(-1px); }
 
+  .used-by-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 28px;
+  }
+  @media (max-width: 780px) {
+    .used-by-grid { grid-template-columns: 1fr; }
+  }
+  .used-by-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.1s ease, transform 0.08s ease;
+  }
+  .used-by-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+  .used-by-card .thumb {
+    aspect-ratio: 1200 / 630;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    background-size: cover;
+    background-position: center;
+    display: block;
+  }
+  .used-by-card .thumb-text {
+    aspect-ratio: 1200 / 630;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background:
+      radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 55%),
+      radial-gradient(circle at 75% 85%, color-mix(in srgb, var(--highlight) 22%, transparent), transparent 50%),
+      var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px;
+    text-align: center;
+  }
+  .used-by-card .thumb-text .big-num {
+    font-family: ui-monospace, monospace;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .used-by-card .thumb-text .unit {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .used-by-card .body { padding: 16px 18px 18px; }
+  .used-by-card h3 {
+    font-size: 1rem;
+    margin: 0 0 4px;
+    font-family: ui-monospace, monospace;
+    color: var(--accent-ink);
+  }
+  @media (prefers-color-scheme: dark) { .used-by-card h3 { color: var(--accent); } }
+  .used-by-card p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+  }
+
   pre {
     background: var(--code-bg);
     color: var(--code-text);
@@ -468,6 +542,7 @@
       <a href="#why">Why</a>
       <a href="#reference">Reference</a>
       <a href="#see-it">See it</a>
+      <a href="#built-with">Built with</a>
       <a href="#start">Get started</a>
       <a class="gh-star" href="https://github.com/snapsynapse/knowledge-as-code-template" target="_blank" rel="noopener" aria-label="Star snapsynapse/knowledge-as-code-template on GitHub">
         <svg class="star-icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -641,6 +716,45 @@
     is the input. The right-hand column is the output. Everything in between is a single
     <code style="font-size:12px;padding:2px 6px;border-radius:4px;background:var(--accent-soft);color:var(--accent-ink);">node scripts/build.js</code> command.
   </p>
+</section>
+
+<section id="built-with">
+  <h2>Built with Knowledge as Code</h2>
+  <p style="color:var(--muted); max-width:62ch;">
+    Three production reference sites running the pattern today. Each is a normal GitHub repo —
+    clone it, read the markdown, rebuild the site. Nothing is hidden behind a CMS.
+  </p>
+
+  <div class="used-by-grid">
+    <a class="used-by-card" href="https://aitool.watch" target="_blank" rel="noopener">
+      <span class="thumb" style="background-image: url('/imgs/used-by/aitool-watch.png');"></span>
+      <div class="body">
+        <h3>aitool.watch</h3>
+        <p>A plain-English reference for AI capabilities, plans, constraints, and implementations across ChatGPT, Claude, Gemini, Copilot, Grok, and Perplexity.</p>
+      </div>
+    </a>
+
+    <a class="used-by-card" href="https://everyailaw.com" target="_blank" rel="noopener">
+      <span class="thumb" style="background-image: url('/imgs/used-by/everyailaw.png');"></span>
+      <div class="body">
+        <h3>everyailaw.com</h3>
+        <p>A global reference to AI regulation, obligations, and compliance deadlines for GRC, CISO, CAIO, and legal teams.</p>
+      </div>
+    </a>
+
+    <a class="used-by-card" href="https://meetings.snapsynapse.com" target="_blank" rel="noopener">
+      <span class="thumb-text">
+        <span class="big-num">22</span>
+        <span class="unit">meeting tools</span>
+        <span class="big-num" style="font-size:1.3rem;margin-top:4px;">9</span>
+        <span class="unit">facilitation primitives</span>
+      </span>
+      <div class="body">
+        <h3>meetings.snapsynapse.com</h3>
+        <p>Virtual meeting software mapped to facilitation primitives, with timeline and compatibility matrix.</p>
+      </div>
+    </a>
+  </div>
 </section>
 
 <section id="start">

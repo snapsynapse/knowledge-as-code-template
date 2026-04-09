@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knowledge as Code — a pattern for durable, self-healing knowledge bases</title>
+<meta name="description" content="Knowledge as Code applies software engineering practices to knowledge management: plain-text canonical, self-healing, multi-output, zero-dependency, Git-native, ontology-driven. An open pattern by Sam Rogers, stewarded by PAICE.work PBC.">
+<meta name="keywords" content="knowledge as code, knowledge management, documentation, git-native, ontology, self-healing docs, JSON API, MCP server, static site, plain text, version control, open pattern">
+<meta name="author" content="Sam Rogers">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<meta name="theme-color" content="#059669">
+<link rel="canonical" href="https://knowledge-as-code.com/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Knowledge as Code">
+<meta property="og:title" content="Knowledge as Code — an open pattern for durable knowledge bases">
+<meta property="og:description" content="Plain-text canonical. Self-healing. Multi-output. Zero-dependency. Git-native. Ontology-driven. Six properties that turn documentation into a buildable artifact.">
+<meta property="og:url" content="https://knowledge-as-code.com/">
+<meta property="og:image" content="https://knowledge-as-code.com/imgs/og.png">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-01-20T00:00:00Z">
+<meta property="article:modified_time" content="2026-04-09T00:00:00Z">
+<meta property="article:author" content="Sam Rogers">
+<meta property="article:publisher" content="https://paice.work/">
+<meta property="article:section" content="Open Patterns">
+<meta property="article:tag" content="knowledge-as-code">
+<meta property="article:tag" content="documentation">
+<meta property="article:tag" content="ontology">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Knowledge as Code">
+<meta name="twitter:description" content="An open pattern that treats knowledge like code: plain text, self-healing, multi-output, Git-native, zero-dependency, ontology-driven.">
+<meta name="twitter:image" content="https://knowledge-as-code.com/imgs/og.png">
+<meta name="twitter:creator" content="@snapsynapse">
+
+<!-- JSON-LD: TechArticle -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Knowledge as Code",
+  "alternativeHeadline": "An open pattern for durable, self-healing knowledge bases",
+  "description": "Knowledge as Code applies software engineering practices to knowledge management: plain-text canonical, self-healing, multi-output, zero-dependency, Git-native, ontology-driven.",
+  "inLanguage": "en",
+  "url": "https://knowledge-as-code.com/",
+  "mainEntityOfPage": { "@type": "WebPage", "@id": "https://knowledge-as-code.com/" },
+  "datePublished": "2026-01-20",
+  "dateModified": "2026-04-09",
+  "author": {
+    "@type": "Person",
+    "name": "Sam Rogers",
+    "url": "https://paice.work/",
+    "affiliation": { "@type": "Organization", "name": "PAICE.work PBC" }
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "PAICE.work PBC",
+    "url": "https://paice.work/",
+    "logo": { "@type": "ImageObject", "url": "https://paice.work/logo.png" }
+  },
+  "image": "https://knowledge-as-code.com/imgs/og.png",
+  "keywords": ["knowledge as code", "documentation", "ontology", "git-native", "self-healing docs", "JSON API", "MCP server"],
+  "isPartOf": { "@type": "CreativeWork", "name": "PAICE.work Open Patterns" },
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "copyrightHolder": { "@type": "Organization", "name": "PAICE.work PBC" },
+  "copyrightYear": 2026,
+  "citation": [
+    { "@type": "WebPage", "name": "AI Tool Watch — reference implementation", "url": "https://aitool.watch/" },
+    { "@type": "WebPage", "name": "Graceful Boundaries", "url": "https://gracefulboundaries.dev/" },
+    { "@type": "WebPage", "name": "Skill Provenance", "url": "https://skillprovenance.dev/" },
+    { "@type": "WebPage", "name": "Original long-form writeup", "url": "https://snapsynapse.com/insights/knowledge-as-code/" }
+  ]
+}
+</script>
+
+<!-- JSON-LD: DefinedTerm (stake the term) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "DefinedTerm",
+  "name": "Knowledge as Code",
+  "alternateName": ["KaC", "knowledge-as-code"],
+  "description": "An open pattern that applies software engineering practices to knowledge management. Characterized by six properties: plain-text canonical, self-healing, multi-output, zero-dependency, Git-native, and ontology-driven.",
+  "url": "https://knowledge-as-code.com/",
+  "inDefinedTermSet": {
+    "@type": "DefinedTermSet",
+    "name": "PAICE.work Open Patterns",
+    "url": "https://paice.work/"
+  },
+  "sameAs": [
+    "https://snapsynapse.com/insights/knowledge-as-code/",
+    "https://github.com/snapsynapse/knowledge-as-code-template"
+  ]
+}
+</script>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --text: #141613;
+    --muted: #5a6258;
+    --border: #e6e5dc;
+    --accent: #059669;        /* emerald */
+    --accent-ink: #064e3b;
+    --accent-soft: #d1fae5;
+    --highlight: #eab308;     /* amber */
+    --highlight-ink: #713f12;
+    --highlight-soft: #fef3c7;
+    --code-bg: #0f1511;
+    --code-text: #e8f0ea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0f0c;
+      --surface: #121814;
+      --text: #ecefe8;
+      --muted: #9aa396;
+      --border: #1f2a22;
+      --accent: #34d399;
+      --accent-ink: #a7f3d0;
+      --accent-soft: #0c2a1d;
+      --highlight: #facc15;
+      --highlight-ink: #fde68a;
+      --highlight-soft: #2a210a;
+      --code-bg: #060907;
+      --code-text: #e8f0ea;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, pre, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: saturate(180%) blur(10px);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 980px; margin: 0 auto;
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+  }
+  .brand { font-weight: 700; letter-spacing: -0.01em; }
+  .brand .dot { color: var(--highlight); }
+  .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; }
+  .nav-links a { color: var(--muted); }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+  @media (max-width: 640px) { .nav-links a:not(.gh-star) { display: none; } }
+
+  .gh-star {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text) !important;
+    font-weight: 600;
+    font-size: 13px;
+    transition: border-color 0.1s ease, transform 0.05s ease;
+  }
+  .gh-star:hover {
+    border-color: var(--highlight);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+  .gh-star svg { flex: 0 0 auto; }
+  .gh-star .star-icon { color: var(--highlight); }
+  .gh-star .count {
+    padding-left: 8px;
+    margin-left: 2px;
+    border-left: 1px solid var(--border);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 1.5ch;
+  }
+  .gh-star .count:empty { display: none; }
+
+  main { max-width: 820px; margin: 0 auto; padding: 56px 24px 96px; }
+  article > section { margin-top: 72px; }
+  article > section:first-of-type { margin-top: 24px; }
+  .canonical-note {
+    margin-top: 40px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .canonical-note strong { color: var(--text); }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 2.9rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    margin: 0 0 14px;
+  }
+  h1 .mark {
+    background: linear-gradient(180deg, transparent 62%, var(--highlight-soft) 62%);
+    padding: 0 4px;
+  }
+  .byline {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 22px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+  }
+  .byline .sep { color: var(--border); }
+  .byline a { color: var(--muted); }
+  .byline a:hover { color: var(--accent); }
+  .byline .version {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+  @media (prefers-color-scheme: dark) {
+    .byline .version { color: var(--accent); }
+  }
+  h2 {
+    font-size: 1.6rem;
+    letter-spacing: -0.015em;
+    margin: 0 0 16px;
+  }
+  h3 { font-size: 1.05rem; margin: 0 0 6px; }
+  p { color: var(--text); }
+  .lede { font-size: 1.2rem; color: var(--muted); max-width: 62ch; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 4px 10px;
+    background: var(--accent-soft);
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    border: 1px solid transparent;
+    transition: transform 0.05s ease;
+  }
+  .btn:hover { text-decoration: none; transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-ink); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+  }
+  .card h3 {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1rem;
+  }
+  .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--highlight-soft);
+    color: var(--highlight-ink);
+    font-size: 12px;
+    font-weight: 700;
+    font-family: ui-monospace, monospace;
+  }
+  .card p { color: var(--muted); font-size: 14px; margin: 0; }
+
+  .audience { border-left: 3px solid var(--accent); padding-left: 18px; }
+  .audience + .audience { margin-top: 22px; }
+  .audience h3 { color: var(--accent-ink); }
+  @media (prefers-color-scheme: dark) { .audience h3 { color: var(--accent); } }
+  .audience p { color: var(--muted); margin: 4px 0 0; }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 28px;
+  }
+  @media (max-width: 640px) { .split { grid-template-columns: 1fr; } }
+  .split .card h3 { font-size: 1.05rem; margin-bottom: 10px; }
+  .split .card h3 .kbd {
+    display: inline-block;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    margin-right: 8px;
+    vertical-align: 2px;
+  }
+  @media (prefers-color-scheme: dark) { .split .card h3 .kbd { color: var(--accent); } }
+  .split .card p { font-size: 14px; margin: 0 0 14px; }
+  .split ul.files {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .split ul.files li { padding: 6px 0; }
+  .split ul.files a {
+    font-family: ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+    word-break: break-all;
+  }
+  .split .card.primary-card {
+    background: var(--highlight-soft);
+    border-color: color-mix(in srgb, var(--highlight) 40%, transparent);
+  }
+  .split .card.primary-card h3,
+  .split .card.primary-card p { color: var(--highlight-ink); }
+  .split .card.primary-card .kbd {
+    background: color-mix(in srgb, var(--highlight) 30%, transparent);
+    color: var(--highlight-ink);
+  }
+  .split .card.primary-card a.big-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--highlight-ink);
+    text-decoration: none;
+    padding: 10px 16px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--highlight) 50%, transparent);
+  }
+  @media (prefers-color-scheme: dark) {
+    .split .card.primary-card a.big-link {
+      background: rgba(0,0,0,0.35);
+      color: var(--highlight);
+      border-color: color-mix(in srgb, var(--highlight) 45%, transparent);
+    }
+  }
+  .split .card.primary-card a.big-link:hover { text-decoration: none; transform: translateY(-1px); }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.55;
+    border: 1px solid var(--border);
+  }
+  pre .c { color: #7a8a7f; }
+  pre .k { color: #fde68a; }
+
+  .callout {
+    background: var(--highlight-soft);
+    border: 1px solid color-mix(in srgb, var(--highlight) 40%, transparent);
+    border-radius: 12px;
+    padding: 22px 24px;
+  }
+  .callout .eyebrow {
+    background: transparent;
+    color: var(--highlight-ink);
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  .callout h3 { font-size: 1.2rem; margin-bottom: 8px; color: var(--highlight-ink); }
+  .callout p { margin: 0 0 10px; color: var(--highlight-ink); }
+  @media (prefers-color-scheme: dark) {
+    .callout h3, .callout p, .callout .eyebrow { color: var(--highlight-ink); }
+  }
+  .callout a { color: var(--highlight-ink); text-decoration: underline; font-weight: 600; }
+
+  ul.plain { list-style: none; padding: 0; margin: 16px 0 0; }
+  ul.plain li {
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  ul.plain li:last-child { border-bottom: 1px solid var(--border); }
+  ul.plain .step {
+    flex: 0 0 auto;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--accent);
+    padding-top: 3px;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 72px;
+  }
+  .footer-inner {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .footer-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .footer-meta p { margin: 0 0 0.25rem; }
+  footer a { color: var(--muted); }
+  footer a:hover { color: var(--accent); }
+  @media (max-width: 768px) {
+    .footer-grid { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="brand">knowledge<span class="dot">·</span>as<span class="dot">·</span>code</div>
+    <div class="nav-links">
+      <a href="#what">What</a>
+      <a href="#why">Why</a>
+      <a href="#reference">Reference</a>
+      <a href="#see-it">See it</a>
+      <a href="#start">Get started</a>
+      <a class="gh-star" href="https://github.com/snapsynapse/knowledge-as-code-template" target="_blank" rel="noopener" aria-label="Star snapsynapse/knowledge-as-code-template on GitHub">
+        <svg class="star-icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/>
+        </svg>
+        <span>Star</span>
+        <span class="count" id="gh-star-count"></span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main>
+<article>
+
+<section>
+  <span class="eyebrow">An open pattern</span>
+  <h1><span class="mark">Knowledge as Code</span></h1>
+  <p class="byline">
+    By <a href="https://paice.work/" rel="author">Sam Rogers</a>, <a href="https://paice.work/">PAICE.work PBC</a>
+    <span class="sep">·</span>
+    Published <time datetime="2026-01-20">January 20, 2026</time>
+    <span class="sep">·</span>
+    Updated <time datetime="2026-04-09">April 9, 2026</time>
+    <span class="sep">·</span>
+    <span class="version">v1.0</span>
+    <span class="sep">·</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC&nbsp;BY&nbsp;4.0</a>
+  </p>
+  <p class="lede">
+    Knowledge as Code applies software engineering practices to knowledge management.
+    Plain-text canonical files, automated verification, and a single source that produces
+    HTML, JSON APIs, and MCP servers — with no database, no vendor, and no silent decay.
+  </p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="#start">Get started</a>
+    <a class="btn btn-ghost" href="https://github.com/snapsynapse/knowledge-as-code-template" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="margin-right:2px">
+        <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
+      </svg>
+      View on GitHub →
+    </a>
+    <a class="btn btn-ghost" href="https://aitool.watch" target="_blank" rel="noopener">See it in production →</a>
+  </div>
+</section>
+
+<section id="what">
+  <h2>What it is</h2>
+  <p style="color:var(--muted); max-width:62ch;">
+    Six interrelated properties define the pattern. Adopt them together and your knowledge base
+    stops drifting, stops requiring babysitting, and starts behaving like the rest of your stack.
+  </p>
+  <div class="grid" style="margin-top: 28px;">
+    <div class="card">
+      <h3><span class="num">1</span> Plain-text canonical</h3>
+      <p>Human-readable, version-controlled files. No database. No vendor lock-in. What you commit is the source of truth.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">2</span> Self-healing</h3>
+      <p>Automated verification detects when knowledge has drifted from reality and flags discrepancies as issues for human review.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">3</span> Multi-output</h3>
+      <p>One source compiles to HTML, JSON APIs, MCP servers, and SEO pages. Write once; serve anywhere an agent or human looks.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">4</span> Zero-dependency</h3>
+      <p>Builds with language built-ins only. Nothing breaks after years of inactivity. The repo you clone today still builds in 2036.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">5</span> Git-native</h3>
+      <p>Git is the collaboration layer, the audit trail, and the deployment trigger. No additional CMS or workflow tool required.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">6</span> Ontology-driven</h3>
+      <p>Vendor-neutral taxonomies map to specific implementations. Swap the data; the structure — and the consumers — keep working.</p>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <h2>Why it matters</h2>
+  <p style="color:var(--muted); max-width:62ch;">
+    Traditional documentation decays silently. Wikis rot. Notion pages go stale. A landing page
+    you published eighteen months ago now quietly lies to your users. Knowledge as Code resists
+    this through verification cascades — multiple models cross-check data weekly and surface
+    discrepancies as reviewable changes rather than corrupted prose.
+  </p>
+
+  <div style="margin-top: 32px;">
+    <div class="audience">
+      <h3>For devtool builders &amp; DevRel</h3>
+      <p>Capability matrices, plan comparisons, compat tables, and changelogs stay honest without a human auditing them every sprint. Ship the structured data your docs site, your API, and your customers' agents all consume from a single commit.</p>
+    </div>
+    <div class="audience">
+      <h3>For AI &amp; agent builders</h3>
+      <p>Agents need queryable, well-typed, citation-friendly knowledge. A KaC repo emits a JSON API and an MCP server alongside its HTML — your LLMs read the same source your users do, with provenance baked in.</p>
+    </div>
+    <div class="audience">
+      <h3>For open-source maintainers</h3>
+      <p>No platform to outlive your project. No service to pay for. A KaC knowledge base is a normal repo: forkable, archivable, auditable, and durable long after whichever hosting vendor you picked pivots or shuts down.</p>
+    </div>
+  </div>
+</section>
+
+<section id="reference">
+  <h2>A reference implementation</h2>
+  <p style="color:var(--muted); max-width:62ch;">
+    <a href="https://aitool.watch" target="_blank" rel="noopener">AITool.watch</a> is a
+    maintained registry of AI capabilities, implementations, and products — built entirely on
+    the Knowledge as Code pattern. It tracks 18 capabilities across 66 implementations spanning
+    ChatGPT, Claude, Gemini, Copilot, Grok, and Perplexity.
+  </p>
+  <div class="callout" style="margin-top:22px;">
+    <span class="eyebrow">Live example</span>
+    <h3>aitool.watch</h3>
+    <p>
+      Capability-first taxonomy. Each entry carries "What counts" and "what doesn't count"
+      boundaries, plan-tier requirements, and launch dates. The site, JSON API, and MCP server
+      all regenerate from a folder of markdown files every time someone merges a PR.
+    </p>
+    <p style="margin-top:10px;">
+      <a href="https://aitool.watch" target="_blank" rel="noopener">Browse the live site →</a>
+    </p>
+  </div>
+  <p style="color:var(--muted); margin-top: 22px;">
+    It sits alongside sibling specs like
+    <a href="https://gracefulboundaries.dev/" target="_blank" rel="noopener">Graceful Boundaries</a>
+    (machine-readable error responses) and
+    <a href="https://skillprovenance.dev/" target="_blank" rel="noopener">Skill Provenance</a>
+    (portable version identity for agent skills) — all open patterns in the same family.
+  </p>
+</section>
+
+<section id="see-it">
+  <h2>See the pattern in action</h2>
+  <p style="color:var(--muted); max-width:62ch;">
+    Most people don't understand Knowledge as Code until they see both halves at once — the
+    built site a visitor experiences, and the plain markdown files a contributor edits. The
+    trick is that they live at the same URL.
+  </p>
+
+  <div class="split">
+    <div class="card primary-card">
+      <h3><span class="kbd">/demo/</span> The built site</h3>
+      <p>
+        A complete Knowledge as Code site generated from the example data in this very repo.
+        Homepage, entity detail pages, a coverage matrix, a comparison tool, a JSON API, an
+        RSS feed, and an MCP server — all from 7 markdown files.
+      </p>
+      <a class="big-link" href="/demo/">Open the live demo →</a>
+    </div>
+
+    <div class="card">
+      <h3><span class="kbd">.md</span> The source markdown</h3>
+      <p>
+        This is what a contributor writes. YAML frontmatter for metadata, Markdown prose for
+        the body. Git diffs are human-readable. No database, no CMS, no migrations.
+      </p>
+      <ul class="files">
+        <li>→ <a href="/data/examples/frameworks/iso-27001.md">data/examples/frameworks/iso-27001.md</a></li>
+        <li>→ <a href="/data/examples/requirements/access-control.md">data/examples/requirements/access-control.md</a></li>
+        <li>→ <a href="/data/examples/organizations/iso.md">data/examples/organizations/iso.md</a></li>
+        <li>→ <a href="/project.yml">project.yml</a> <span style="color:var(--muted);font-family:inherit;font-size:12px;">— the ontology config</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="color:var(--muted); margin-top: 24px; font-size: 14px;">
+    Click a markdown file above, then open the matching page in the demo. The left-hand column
+    is the input. The right-hand column is the output. Everything in between is a single
+    <code style="font-size:12px;padding:2px 6px;border-radius:4px;background:var(--accent-soft);color:var(--accent-ink);">node scripts/build.js</code> command.
+  </p>
+</section>
+
+<section id="start">
+  <h2>Get started</h2>
+  <p style="color:var(--muted); max-width:62ch;">
+    The reference template has no installation step. Clone it, run the build, and open the
+    generated site. Everything else is editing markdown.
+  </p>
+  <pre><span class="c"># 1. Clone the template</span>
+git clone https://github.com/snapsynapse/knowledge-as-code-template.git
+cd knowledge-as-code-template
+
+<span class="c"># 2. Build the site + JSON API (no npm install required)</span>
+node scripts/build.js
+
+<span class="c"># 3. Validate cross-references any time</span>
+node scripts/validate.js</pre>
+
+  <ul class="plain">
+    <li><span class="step">01</span><div><strong>Define your ontology.</strong> Edit <code>project.yml</code> to describe the entities your domain cares about — primary anchors, containers, authorities, and mappings.</div></li>
+    <li><span class="step">02</span><div><strong>Add data as markdown.</strong> Drop one file per entity into <code>data/examples/</code> with YAML frontmatter. Cross-references resolve by id.</div></li>
+    <li><span class="step">03</span><div><strong>Build and publish.</strong> <code>node scripts/build.js</code> emits <code>docs/</code> — HTML, JSON API, and MCP server. Push to GitHub Pages or any static host.</div></li>
+    <li><span class="step">04</span><div><strong>Wire up verification.</strong> Schedule the verifier to re-check claims against their sources and open issues when drift appears.</div></li>
+  </ul>
+
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://github.com/snapsynapse/knowledge-as-code-template" target="_blank" rel="noopener">Clone the template</a>
+    <a class="btn btn-ghost" href="https://snapsynapse.com/insights/knowledge-as-code/" target="_blank" rel="noopener">Read the full write-up →</a>
+  </div>
+
+  <aside class="canonical-note">
+    <strong>Canonical reference.</strong> This page is the authoritative definition of the
+    Knowledge as Code pattern. The <a href="https://snapsynapse.com/insights/knowledge-as-code/">long-form
+    essay on snapsynapse.com</a> and any cross-posts on Dev.to, LinkedIn, or Medium are derived
+    from this source and should cite <a href="https://knowledge-as-code.com/">knowledge-as-code.com</a> as canonical.
+    Last substantive revision: <time datetime="2026-04-09">2026-04-09</time>.
+    <a href="https://github.com/snapsynapse/knowledge-as-code-template/commits/main/index.html">Revision history →</a>
+  </aside>
+</section>
+
+</article>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-meta">
+        <p>Knowledge as Code &middot; <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a></p>
+        <p>A <a href="https://paice.work/">PAICE.work</a> project.</p>
+        <p style="margin-top: 0.5rem;">See also: <a href="https://gracefulboundaries.dev/">Graceful Boundaries</a> &middot; <a href="https://skillprovenance.dev/">Skill Provenance</a> &middot; <a href="https://aitool.watch/">AI Tool Watch</a></p>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/snapsynapse/knowledge-as-code-template">GitHub</a>
+        <a href="https://snapsynapse.com/insights/knowledge-as-code/">Overview</a>
+        <a href="https://github.com/snapsynapse/knowledge-as-code-template/blob/main/README.md">README</a>
+        <a href="https://github.com/snapsynapse/knowledge-as-code-template/blob/main/data/_schema.md">Schema</a>
+        <a href="https://github.com/snapsynapse/knowledge-as-code-template/commits/main/index.html">Revisions</a>
+        <a href="https://clawhub.ai/snapsynapse/knowledge-as-code-template">ClawHub</a>
+        <a href="https://github.com/sponsors/snapsynapse">Sponsor</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Live GitHub star count. Fails silently if rate-limited or offline.
+  (function () {
+    var el = document.getElementById('gh-star-count');
+    if (!el) return;
+    fetch('https://api.github.com/repos/snapsynapse/knowledge-as-code-template', {
+      headers: { 'Accept': 'application/vnd.github+json' }
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || typeof data.stargazers_count !== 'number') return;
+        var n = data.stargazers_count;
+        el.textContent = n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+      })
+      .catch(function () { /* silent */ });
+  })();
+</script>
+</body>
+</html>

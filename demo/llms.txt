@@ -1,0 +1,28 @@
+# Example Knowledge Base
+
+> A structured reference tracking example entities across categories.
+> Tracks 2 frameworks, 3 requirements, and 4 provisions across 2 organizations.
+
+## Frameworks
+
+- [ISO 27001](https://knowledge-as-code.com/demo/container/iso-27001/): active
+- [NIST Cybersecurity Framework](https://knowledge-as-code.com/demo/container/nist-csf/): active
+
+## Requirements
+
+- [Access Control](https://knowledge-as-code.com/demo/primary/access-control/): 2 frameworks support this
+- [Data Quality](https://knowledge-as-code.com/demo/primary/data-quality/): 1 frameworks support this
+- [Incident Response](https://knowledge-as-code.com/demo/primary/incident-response/): 1 frameworks support this
+
+## Tools
+
+- [Coverage Matrix](https://knowledge-as-code.com/demo/matrix.html): Which requirements each framework supports
+- [Compare](https://knowledge-as-code.com/demo/compare.html): Side-by-side framework comparison
+- [Timeline](https://knowledge-as-code.com/demo/timeline.html): Key dates and milestones
+
+## Machine-Readable
+
+- [JSON API](https://knowledge-as-code.com/demo/api/v1/index.json): Programmatic access to all data
+- [agents.json](https://knowledge-as-code.com/demo/agents.json): Agent discovery metadata
+- [Sitemap](https://knowledge-as-code.com/demo/sitemap.xml): All pages
+- [RSS Feed](https://knowledge-as-code.com/demo/index.xml): Recent updates

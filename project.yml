@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 name: "Example Knowledge Base"
 short_name: "example"
-url: "https://example.com"
+url: "https://example.com/"
 repo: "https://github.com/your-org/your-repo"
 description: "A structured reference tracking example entities across categories."
 

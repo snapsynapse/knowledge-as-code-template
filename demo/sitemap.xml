@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://knowledge-as-code.com/demo/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/containers.html</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/primaries.html</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/matrix.html</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/timeline.html</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/compare.html</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/about.html</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/pattern.html</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/container/iso-27001/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/container/nist-csf/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/primary/access-control/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/primary/data-quality/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/primary/incident-response/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/authority/iso/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/authority/nist/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/requires/iso-27001/access-control/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/requires/iso-27001/data-quality/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/requires/nist-csf/incident-response/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/requires/nist-csf/access-control/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/compare/iso-27001-vs-nist-csf/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/applies-to/international/</loc><lastmod>2026-04-09</lastmod></url>
+  <url><loc>https://knowledge-as-code.com/demo/applies-to/federal/</loc><lastmod>2026-04-09</lastmod></url>
+</urlset>

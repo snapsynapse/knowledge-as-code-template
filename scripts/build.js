@@ -15,7 +15,10 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const DOCS_DIR = path.join(ROOT, 'docs');
+// Output directory for the generated site.
+// Override with KAC_OUTPUT_DIR=demo (or any folder name) to write elsewhere.
+// Default is 'docs' so GitHub Pages can serve from main/docs with no config.
+const DOCS_DIR = path.join(ROOT, process.env.KAC_OUTPUT_DIR || 'docs');
 const API_DIR = path.join(DOCS_DIR, 'api', 'v1');
 const ASSETS_DIR = path.join(DOCS_DIR, 'assets');
 
@@ -1205,6 +1208,11 @@ open docs/index.html</code></pre>
 function build() {
     const startTime = Date.now();
     const config = loadConfig();
+
+    // Env-var overrides for the rare case where you need to build the same
+    // project.yml at a different URL (e.g. a subpath deployment).
+    if (process.env.KAC_SITE_URL) config.url = process.env.KAC_SITE_URL;
+
     console.log(`Building ${config.name || 'project'}...\n`);
 
     const dataDir = findDataDir(config);
@@ -1506,10 +1514,8 @@ function build() {
     // 404 page
     fs.writeFileSync(path.join(DOCS_DIR, '404.html'), generate404Page(config, configCSS));
 
-    // Copy static assets if not present
-    const srcCSS = path.join(ROOT, 'docs', 'assets', 'styles.css');
-    const srcSearch = path.join(ROOT, 'docs', 'assets', 'search.js');
-    // These are already in docs/assets/ from the repo — no copy needed
+    // Static assets (styles.css, search.js, tables.js) are pre-committed to the
+    // output directory and read directly by generated pages via relative paths.
 
     const elapsed = Date.now() - startTime;
     const totalPages = 7 + patternPageCount + containers.length + primaries.length + authorities.length + reqCount + cmpCount + appCount;

@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0",
+  "site": {
+    "name": "Example Knowledge Base",
+    "url": "https://knowledge-as-code.com/demo/",
+    "description": "A structured reference tracking example entities across categories.",
+    "repo": "https://github.com/your-org/your-repo"
+  },
+  "capabilities": [
+    {
+      "id": "container-comparison",
+      "name": "Framework Comparison",
+      "description": "Compare 2 frameworks across 3 requirements",
+      "url": "https://knowledge-as-code.com/demo/compare.html"
+    },
+    {
+      "id": "coverage-matrix",
+      "name": "Coverage Matrix",
+      "description": "See which requirements each framework supports",
+      "url": "https://knowledge-as-code.com/demo/matrix.html"
+    },
+    {
+      "id": "json-api",
+      "name": "JSON API",
+      "description": "Programmatic access to all data",
+      "url": "https://knowledge-as-code.com/demo/api/v1/index.json",
+      "endpoints": [
+        {
+          "path": "api/v1/containers.json",
+          "description": "All frameworks"
+        },
+        {
+          "path": "api/v1/primaries.json",
+          "description": "All requirements"
+        },
+        {
+          "path": "api/v1/authorities.json",
+          "description": "All organizations"
+        },
+        {
+          "path": "api/v1/mappings.json",
+          "description": "All mappings"
+        },
+        {
+          "path": "api/v1/matrix.json",
+          "description": "Coverage matrix"
+        },
+        {
+          "path": "api/v1/comparisons.json",
+          "description": "Pre-computed comparisons"
+        }
+      ]
+    }
+  ],
+  "content": {
+    "containers": [
+      {
+        "id": "iso-27001",
+        "name": "ISO 27001",
+        "status": "active",
+        "url": "https://knowledge-as-code.com/demo/container/iso-27001/"
+      },
+      {
+        "id": "nist-csf",
+        "name": "NIST Cybersecurity Framework",
+        "status": "active",
+        "url": "https://knowledge-as-code.com/demo/container/nist-csf/"
+      }
+    ],
+    "primaries": [
+      {
+        "id": "access-control",
+        "name": "Access Control",
+        "group": "governance",
+        "url": "https://knowledge-as-code.com/demo/primary/access-control/"
+      },
+      {
+        "id": "data-quality",
+        "name": "Data Quality",
+        "group": "technical",
+        "url": "https://knowledge-as-code.com/demo/primary/data-quality/"
+      },
+      {
+        "id": "incident-response",
+        "name": "Incident Response",
+        "group": "operational",
+        "url": "https://knowledge-as-code.com/demo/primary/incident-response/"
+      }
+    ],
+    "authorities": [
+      {
+        "id": "iso",
+        "name": "International Organization for Standardization",
+        "url": "https://knowledge-as-code.com/demo/authority/iso/"
+      },
+      {
+        "id": "nist",
+        "name": "National Institute of Standards and Technology",
+        "url": "https://knowledge-as-code.com/demo/authority/nist/"
+      }
+    ]
+  },
+  "discovery": {
+    "llms_txt": "https://knowledge-as-code.com/demo/llms.txt",
+    "sitemap": "https://knowledge-as-code.com/demo/sitemap.xml",
+    "rss": "https://knowledge-as-code.com/demo/index.xml",
+    "robots": "https://knowledge-as-code.com/demo/robots.txt"
+  },
+  "meta": {
+    "last_updated": "2026-04-09",
+    "built_with": "Knowledge as Code",
+    "pattern_url": "https://knowledge-as-code.com",
+    "template_url": "https://github.com/snapsynapse/knowledge-as-code-template"
+  },
+  "related_sites": [
+    {
+      "name": "Knowledge as Code",
+      "url": "https://knowledge-as-code.com",
+      "description": "The pattern definition and community hub"
+    },
+    {
+      "name": "Graceful Boundaries",
+      "url": "https://github.com/snapsynapse/graceful-boundaries",
+      "description": "How services communicate operational limits to humans and agents"
+    },
+    {
+      "name": "Siteline",
+      "url": "https://siteline.to",
+      "description": "AI agent readiness scanner for websites"
+    }
+  ]
+}

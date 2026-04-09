@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 — Knowledge as Code</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://knowledge-as-code.com/">
+<style>
+  :root {
+    --bg: #fafaf7; --text: #141613; --muted: #5a6258;
+    --border: #e6e5dc; --accent: #059669; --highlight: #eab308;
+    --highlight-soft: #fef3c7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0b0f0c; --text: #ecefe8; --muted: #9aa396;
+            --border: #1f2a22; --accent: #34d399;
+            --highlight-soft: #2a210a; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .wrap { max-width: 520px; text-align: center; }
+  .code {
+    display: inline-block;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    padding: 4px 12px;
+    background: var(--highlight-soft);
+    border-radius: 999px;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 2.6rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+  }
+  p { color: var(--muted); margin: 0 0 28px; }
+  a.btn {
+    display: inline-flex;
+    padding: 11px 20px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    border: 1px solid var(--accent);
+  }
+  a.btn:hover { opacity: 0.92; }
+  a.ghost {
+    margin-left: 10px;
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: none;
+  }
+  a.ghost:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="code">404</span>
+  <h1>Page not found.</h1>
+  <p>The URL you followed doesn't exist on this site. Try the home page or jump into the live demo.</p>
+  <a class="btn" href="/">Home</a>
+  <a class="ghost" href="/demo/">See the demo →</a>
+</div>
+</body>
+</html>

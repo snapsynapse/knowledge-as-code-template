@@ -18,17 +18,10 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Generated output (rebuild with: node scripts/build.js)
-# docs/ is generated — track only static assets and GitHub Pages fixtures
-docs/*
-!docs/.nojekyll
-!docs/CNAME
-!docs/404.html
-!docs/assets/
-docs/assets/*
-!docs/assets/styles.css
-!docs/assets/search.js
-!docs/assets/tables.js
+# Template forks: build.js writes to docs/ by default.
+# Uncomment the line below if you want to keep generated output out of git
+# and deploy via the bundled workflow instead.
+# docs/
 
 # Environment
 .env

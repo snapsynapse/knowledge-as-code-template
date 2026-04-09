@@ -1,4 +1,4 @@
-name: Build
+name: CI
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -24,12 +24,11 @@ jobs:
       - name: Validate cross-references
         run: node scripts/validate.js
 
-      - name: Build site
+      - name: Build site (sanity check — output discarded)
         run: node scripts/build.js
 
-      - name: Deploy to GitHub Pages
-        if: github.event_name != 'pull_request'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+# GitHub Pages serves directly from `main` branch root on this repo.
+# No deploy step is needed — pushing to main is the deploy.
+#
+# Template forks that want automated deploy-to-gh-pages can add back the
+# peaceiris/actions-gh-pages step here and set permissions.contents to write.

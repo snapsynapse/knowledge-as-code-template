@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://knowledge-as-code.com/demo/sitemap.xml
+# Machine-readable site info: https://knowledge-as-code.com/demo/agents.json
+# LLM context: https://knowledge-as-code.com/demo/llms.txt

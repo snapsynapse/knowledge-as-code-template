@@ -1,0 +1,81 @@
+# Knowledge-as-Code Template — Content Provenance Manifest
+#
+# Tracks SHA-256 hashes of canonical content for tamper detection and
+# reproducibility. Run `./scripts/validate-hashes.sh` to verify, or
+# `./scripts/validate-hashes.sh --update` to recompute after intentional edits.
+#
+# Hash mechanism adapted from skill-provenance (https://skillprovenance.dev).
+# Only the integrity pattern is adopted — not the full skill-provenance protocol.
+#
+# This is a starter manifest. Forks should add entries for their own canonical
+# content: protocol prose, ontology bindings, JSON Schemas, vendored
+# dependencies, and any authored instrument/obligation/authority records.
+# CI runs validate-hashes.sh only when this file exists.
+#
+# What typically gets hashed:
+#   - project.yml
+#   - build/validate scripts under scripts/
+#   - Protocol prose (README, PROTOCOL, PRIOR-ART, VERIFICATION)
+#   - Published data records under data/
+#   - JSON Schemas + JSON-LD context
+#   - Vendored upstream snapshots (e.g., vendor/gist/)
+#   - License files
+#
+# What does NOT get hashed:
+#   - Build outputs (docs/)
+#   - Editor/OS artifacts
+#   - This file itself
+
+bundle: knowledge-as-code-template
+bundle_version: 0.1.0
+bundle_date: 2026-04-19
+description: >
+  Knowledge as Code starter template — scaffolds a KaC site with
+  Primary/Container/Authority/Secondary entities, gist ontology binding,
+  content-provenance hashing, and WCAG 2.1 AA CI.
+
+upstream:
+  - name: skill-provenance
+    url: https://skillprovenance.dev
+    used_for: hash mechanism only (validate-hashes.sh script pattern)
+
+files:
+  - path: LICENSE
+    role: legal
+    hash: sha256:575a1860494d1c00d382cb85f34eec6739183885c26f086a0130eded7c47d86c
+    note: MIT license
+
+  - path: README.md
+    role: protocol
+    hash: sha256:6e4b493358401d9c345aa9636cfb787a9917e61fd8e417003eb693ac505aa830
+    note: Template overview
+
+  - path: project.yml
+    role: config
+    hash: sha256:f6e4ce97d45ce474e3728105917af3fe87720ef1bec010de4825773b36abfbaf
+    note: KaC build config — entity model, navigation, theme, ontology binding
+
+  - path: scripts/build.js
+    role: tooling
+    hash: sha256:58f765f60ba0f7040522d4706eb58e1ee56341a88046b154f3850b8149068709
+    note: Static site generator
+
+  - path: scripts/validate.js
+    role: tooling
+    hash: sha256:76fe16c22cd47042522912ae15bdf6f7556debc43db609029abc5efd1b1fc231
+    note: Cross-reference validator
+
+  - path: scripts/verify.js
+    role: tooling
+    hash: sha256:f5ae58c4dff423cbd4f41270105faefd292782cf3c2f149664ccb8d79eedee24
+    note: Staleness / freshness checker
+
+  - path: scripts/check-links.js
+    role: tooling
+    hash: sha256:205a39fe8ab1db1f9c1dc94f42c2c5e544e9e536d03e78141bb6b22a7bc762f7
+    note: Internal link checker
+
+  - path: scripts/validate-hashes.sh
+    role: tooling
+    hash: sha256:019b9a6ea7fe9c7de93f9edd7d13eef706139ccba8a4192bb0033f207b40365c
+    note: This manifest's verifier

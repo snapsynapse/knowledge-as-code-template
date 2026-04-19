@@ -21,14 +21,53 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Verify content hashes
+        run: |
+          if [ -f MANIFEST.yaml ]; then
+            ./scripts/validate-hashes.sh
+          else
+            echo "No MANIFEST.yaml — skipping hash verification."
+          fi
+
       - name: Validate cross-references
         run: node scripts/validate.js
 
-      - name: Build site (sanity check — output discarded)
+      - name: Build site (sanity check)
         run: node scripts/build.js
 
+  a11y:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build site
+        run: node scripts/build.js
+
+      - name: Start local server
+        run: |
+          npx --yes http-server ./docs -p 8088 -c-1 > /tmp/http.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fs http://localhost:8088/ > /dev/null && break || sleep 0.5
+          done
+          curl -fs http://localhost:8088/ > /dev/null || (cat /tmp/http.log; exit 1)
+
+      - name: Run pa11y-ci (WCAG 2.1 AA)
+        run: |
+          if [ -f docs/sitemap.xml ]; then
+            SITE_BASE=$(grep -oE '<loc>[^<]+</loc>' docs/sitemap.xml | head -1 | sed -E 's|<loc>(.+)/?</loc>|\1|' | sed -E 's|/$||')
+            npx --yes pa11y-ci \
+              --sitemap http://localhost:8088/sitemap.xml \
+              --sitemap-find "$SITE_BASE" \
+              --sitemap-replace 'http://localhost:8088' \
+              --threshold 0
+          else
+            npx --yes pa11y-ci http://localhost:8088/ --threshold 0
+          fi
+
 # GitHub Pages serves directly from `main` branch root on this repo.
-# No deploy step is needed — pushing to main is the deploy.
-#
 # Template forks that want automated deploy-to-gh-pages can add back the
 # peaceiris/actions-gh-pages step here and set permissions.contents to write.

@@ -64,6 +64,9 @@ entities:
     directory: organizations
 
   secondary:
+    # Secondary entities are defined inline in container files (as provision sections)
+    # and in the mapping file — not as standalone .md files. The directory field is
+    # unused by the build script; name/plural/relationship are used for display only.
     name: Provision
     plural: Provisions
     directory: provisions
@@ -150,6 +153,29 @@ social:
 # ---------------------------------------------------------------------------
 verification:
   staleness_days: 90
+
+# ---------------------------------------------------------------------------
+# Ontology framework — optional semantic layer (opt-in, zero cost when off)
+#
+# Adds @type to JSON API items and emits api/v1/context.jsonld.
+# gist is a minimalist enterprise upper ontology by Semantic Arts (CC BY 4.0).
+# Attribution required when publishing sites that use gist IRIs.
+# To disable: set enabled: false (removes @type fields and context.jsonld).
+# ---------------------------------------------------------------------------
+ontology:
+  enabled: true
+  framework: "gist"
+  base_iri: "https://ontologies.semanticarts.com/gist/"
+  attribution: "Semantic Arts, Inc. gist ontology (CC BY 4.0) https://semanticarts.com/gist"
+  entities:
+    primary:
+      gist_class: "gist:KnowledgeConcept"
+    container:
+      gist_class: "gist:Specification"
+    authority:
+      gist_class: "gist:Organization"
+    secondary:
+      gist_class: "gist:Commitment"
 
 # ---------------------------------------------------------------------------
 # Ecosystem — related projects shown on pattern/about pages

@@ -1273,16 +1273,31 @@ function build() {
     const data = { primaries, containers, authorities, mappingIndex, matrix, comparisons, totalProvisions };
     const configCSS = generateConfigCSS(config);
 
+    // Ontology soft-label helpers (Tier 1). Active only when project.yml sets ontology.enabled: true.
+    const ont = (config.ontology?.enabled === true || config.ontology?.enabled === 'true') ? config.ontology : null;
+    function ontType(role) { return ont?.entities?.[role]?.gist_class || null; }
+    function withType(role, obj) { const t = ontType(role); return t ? { '@type': t, ...obj } : obj; }
+
     // --- JSON API ---
-    fs.writeFileSync(path.join(API_DIR, 'primaries.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: primaries.length }, items: primaries.map(p => ({ id: p.id, name: p.name || humanizeId(p.id), group: p.group || '', status: p.status || 'active' })) }, null, 2));
-    fs.writeFileSync(path.join(API_DIR, 'containers.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: containers.length }, items: containers.map(c => ({ id: c.id, name: c.name, status: c.status, effective: c.effective, provision_count: c.provisions.length })) }, null, 2));
-    fs.writeFileSync(path.join(API_DIR, 'authorities.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: authorities.length }, items: authorities.map(a => ({ id: a.id, name: a.name || humanizeId(a.id), jurisdiction: a.jurisdiction || '' })) }, null, 2));
+    fs.writeFileSync(path.join(API_DIR, 'primaries.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: primaries.length }, items: primaries.map(p => withType('primary', { id: p.id, name: p.name || humanizeId(p.id), group: p.group || '', status: p.status || 'active' })) }, null, 2));
+    fs.writeFileSync(path.join(API_DIR, 'containers.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: containers.length }, items: containers.map(c => withType('container', { id: c.id, name: c.name, status: c.status, effective: c.effective, provision_count: c.provisions.length })) }, null, 2));
+    fs.writeFileSync(path.join(API_DIR, 'authorities.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: authorities.length }, items: authorities.map(a => withType('authority', { id: a.id, name: a.name || humanizeId(a.id), jurisdiction: a.jurisdiction || '' })) }, null, 2));
     fs.writeFileSync(path.join(API_DIR, 'mappings.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: mappingIndex.length }, items: mappingIndex }, null, 2));
     fs.writeFileSync(path.join(API_DIR, 'matrix.json'), JSON.stringify({ meta: { generated: new Date().toISOString() }, matrix }, null, 2));
     fs.writeFileSync(path.join(API_DIR, 'comparisons.json'), JSON.stringify({ meta: { generated: new Date().toISOString() }, comparisons }, null, 2));
-    fs.writeFileSync(path.join(API_DIR, 'index.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), version: '1.0', project: config.short_name || 'kac' }, files: { primaries: { path: 'primaries.json' }, containers: { path: 'containers.json' }, authorities: { path: 'authorities.json' }, mappings: { path: 'mappings.json' }, matrix: { path: 'matrix.json' }, comparisons: { path: 'comparisons.json' } } }, null, 2));
+    const indexMeta = { generated: new Date().toISOString(), version: '1.0', project: config.short_name || 'kac' };
+    if (ont) { indexMeta.ontology = { framework: ont.framework, base_iri: ont.base_iri, context: 'context.jsonld', attribution: ont.attribution }; }
+    fs.writeFileSync(path.join(API_DIR, 'index.json'), JSON.stringify({ meta: indexMeta, files: { primaries: { path: 'primaries.json' }, containers: { path: 'containers.json' }, authorities: { path: 'authorities.json' }, mappings: { path: 'mappings.json' }, matrix: { path: 'matrix.json' }, comparisons: { path: 'comparisons.json' } } }, null, 2));
 
-    console.log('  JSON API: 6 files');
+    if (ont) {
+        const ctx = { '@context': { gist: ont.base_iri, kac: (config.url || '').replace(/\/?$/, '/') + 'api/v1/' } };
+        for (const [role, cfg] of Object.entries(ont.entities || {})) {
+            if (cfg.gist_class) ctx['@context'][cfg.gist_class] = ont.base_iri + cfg.gist_class.replace(/^gist:/, '');
+        }
+        fs.writeFileSync(path.join(API_DIR, 'context.jsonld'), JSON.stringify(ctx, null, 2));
+    }
+
+    console.log(`  JSON API: ${ont ? 7 : 6} files${ont ? ' (+ context.jsonld)' : ''}`);
 
     // --- HTML pages ---
     const sitemapPages = [];

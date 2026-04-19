@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-04-09T23:00:18.277Z",
+    "generated": "2026-04-19T02:53:43.767Z",
     "count": 4
   },
   "items": [
@@ -11,7 +11,7 @@
       ],
       "regulation": "iso-27001",
       "authority": "iso",
-      "source_file": "data/examples/container/iso-27001.md",
+      "source_file": "data/examples/frameworks/iso-27001.md",
       "source_heading": "Information Security Controls (Annex A)"
     },
     {
@@ -21,7 +21,7 @@
       ],
       "regulation": "iso-27001",
       "authority": "iso",
-      "source_file": "data/examples/container/iso-27001.md",
+      "source_file": "data/examples/frameworks/iso-27001.md",
       "source_heading": "Data Quality Requirements (Clause 7.5)"
     },
     {
@@ -31,7 +31,7 @@
       ],
       "regulation": "nist-csf",
       "authority": "nist",
-      "source_file": "data/examples/container/nist-csf.md",
+      "source_file": "data/examples/frameworks/nist-csf.md",
       "source_heading": "Incident Response (RS.AN, RS.MI)"
     },
     {
@@ -41,7 +41,7 @@
       ],
       "regulation": "nist-csf",
       "authority": "nist",
-      "source_file": "data/examples/container/nist-csf.md",
+      "source_file": "data/examples/frameworks/nist-csf.md",
       "source_heading": "Access Control (PR.AA)"
     }
   ]

@@ -1,10 +1,11 @@
 {
   "meta": {
-    "generated": "2026-04-09T23:00:18.276Z",
+    "generated": "2026-04-19T02:53:43.766Z",
     "count": 2
   },
   "items": [
     {
+      "@type": "gist:Specification",
       "id": "iso-27001",
       "name": "ISO 27001",
       "status": "active",
@@ -12,6 +13,7 @@
       "provision_count": 2
     },
     {
+      "@type": "gist:Specification",
       "id": "nist-csf",
       "name": "NIST Cybersecurity Framework",
       "status": "active",

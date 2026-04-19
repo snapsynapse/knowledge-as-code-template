@@ -23,7 +23,8 @@ Every entity file starts with YAML frontmatter between `---` delimiters. See exi
 **Primary entities:**
 ```yaml
 ---
-title: Data Encryption
+id: data-encryption
+name: Data Encryption
 group: technical
 last_verified: 2025-01-15
 ---
@@ -32,7 +33,7 @@ last_verified: 2025-01-15
 **Container entities:**
 ```yaml
 ---
-title: ISO 27001
+name: ISO 27001
 status: active
 authority: iso
 last_verified: 2025-01-15
@@ -42,8 +43,8 @@ last_verified: 2025-01-15
 **Authority entities:**
 ```yaml
 ---
-title: International Organization for Standardization
-type: standards-body
+id: iso
+name: International Organization for Standardization
 last_verified: 2025-01-15
 ---
 ```
@@ -132,7 +133,7 @@ Container entity files have a specific structure with a timeline table and provi
 
 ```markdown
 ---
-title: Example Framework
+name: Example Framework
 status: active
 authority: org-id
 ---

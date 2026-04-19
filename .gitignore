@@ -19,8 +19,10 @@ Thumbs.db
 npm-debug.log*
 
 # Template forks: build.js writes to docs/ by default.
-# Uncomment the line below if you want to keep generated output out of git
-# and deploy via the bundled workflow instead.
+# Option A (recommended): Uncomment docs/ below. The bundled GitHub Actions
+# workflow builds and deploys automatically — no need to commit generated output.
+# Option B: Commit docs/ so GitHub Pages can serve it without a workflow.
+# This repo uses Option B for its /demo/ output; template forks should use Option A.
 # docs/
 
 # Environment

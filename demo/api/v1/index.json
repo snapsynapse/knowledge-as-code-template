@@ -1,8 +1,14 @@
 {
   "meta": {
-    "generated": "2026-04-09T23:00:18.277Z",
+    "generated": "2026-04-19T02:53:43.767Z",
     "version": "1.0",
-    "project": "example"
+    "project": "example",
+    "ontology": {
+      "framework": "gist",
+      "base_iri": "https://ontologies.semanticarts.com/gist/",
+      "context": "context.jsonld",
+      "attribution": "Semantic Arts, Inc. gist ontology (CC BY 4.0) https://semanticarts.com/gist"
+    }
   },
   "files": {
     "primaries": {

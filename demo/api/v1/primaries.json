@@ -1,22 +1,25 @@
 {
   "meta": {
-    "generated": "2026-04-09T23:00:18.275Z",
+    "generated": "2026-04-19T02:53:43.765Z",
     "count": 3
   },
   "items": [
     {
+      "@type": "gist:KnowledgeConcept",
       "id": "access-control",
       "name": "Access Control",
       "group": "governance",
       "status": "active"
     },
     {
+      "@type": "gist:KnowledgeConcept",
       "id": "data-quality",
       "name": "Data Quality",
       "group": "technical",
       "status": "active"
     },
     {
+      "@type": "gist:KnowledgeConcept",
       "id": "incident-response",
       "name": "Incident Response",
       "group": "operational",

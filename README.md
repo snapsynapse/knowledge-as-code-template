@@ -4,7 +4,11 @@ A template for building structured, version-controlled knowledge bases with an o
 
 **[Knowledge as Code](https://knowledge-as-code.com)** is a pattern created for [PAICE.work](https://paice.work/) PBC. It applies software engineering practices to knowledge management: plain text, Git-native, zero-dependency, ontology-driven, multi-output from a single source.
 
-## Live Examples
+## What it produces
+
+**[Live demo →](https://knowledge-as-code.com/demo/)** — the output of this template's example data, deployed on GitHub Pages. Includes a searchable HTML site, coverage matrix, timeline, comparison tool, and JSON API.
+
+Built examples using this template:
 
 - [AI Tool Watch](https://aitool.watch) — AI model capabilities across 12 products
 - [Every AI Law](https://everyailaw.com) — global AI regulatory landscape
@@ -12,11 +16,11 @@ A template for building structured, version-controlled knowledge bases with an o
 
 ## Quick Start
 
-1. **Use this template** -- click "Use this template" on GitHub, or clone locally
-2. **Edit `project.yml`** -- define your domain entities, groups, colors, and site identity
-3. **Replace example data** -- see [Replacing example data](#replacing-example-data) below
-4. **Build** -- `node scripts/build.js` (or `npm run build`)
-5. **Deploy** -- push to GitHub, Pages deploys automatically
+1. **Use this template** -- on GitHub, click the green "Use this template" button (not "Clone"). This creates a new repo with no git history and no upstream connection. Cloning is fine for local exploration but won't give you a clean starting repo.
+2. **Edit `project.yml`** -- start with the entity names (`entities.primary.name`, `entities.container.name`, etc.) and groups. You can adjust colors and navigation later. Leave `url` until your GitHub repo is configured.
+3. **Replace example data** -- delete the files in `data/examples/requirements/`, `data/examples/frameworks/`, `data/examples/organizations/`, and `data/examples/mapping/index.yml`, then add your own. See [Replacing example data](#replacing-example-data) and [`data/_schema.md`](data/_schema.md) for the format.
+4. **Build** -- `node scripts/build.js`. A successful build prints `Build complete — N HTML pages, N JSON API files`. Check the `docs/` directory for the output, and open any HTML file in a browser to verify it looks right.
+5. **Deploy** -- push to GitHub. The included workflow deploys to GitHub Pages automatically.
 
 ## What You Get
 
@@ -63,6 +67,50 @@ Authority → Container → Provision → Primary
 
 Primaries are stable; containers are unstable. When a framework is amended, its provisions change, but the underlying requirements persist.
 
+### How the pieces connect
+
+```
+project.yml                 data/examples/
+(names, colors, config)     (one .md file per entity)
+         \                         /
+          \                       /
+           +----> scripts/build.js <----+  data/examples/mapping/index.yml
+                        |               (connects containers to primaries)
+           +------------+------------+
+           |            |            |
+        docs/        docs/        docs/api/v1/
+       (HTML site)  llms.txt       (JSON API)
+       (sitemap)    agents.json    context.jsonld
+```
+
+You edit `project.yml` and `data/`. The build script reads both and writes everything under `docs/`. You never edit `docs/` directly.
+
+### gist semantic layer
+
+By default, every built site includes a semantic layer backed by [gist](https://semanticarts.com/gist/) — a minimalist upper ontology for the enterprise by Semantic Arts. This adds:
+
+- `@type` annotations on every item in the JSON API (e.g. `"@type": "gist:KnowledgeConcept"`)
+- `api/v1/context.jsonld` — a JSON-LD context file mapping KaC terms to gist IRIs
+- `ontology` block in `api/v1/index.json` with the framework name, base IRI, and attribution
+
+The default role-to-class mapping:
+
+| KaC role | gist class |
+|----------|-----------|
+| primary | `gist:KnowledgeConcept` |
+| container | `gist:Specification` |
+| authority | `gist:Organization` |
+| secondary | `gist:Commitment` |
+
+Override any mapping in `project.yml` under `ontology.entities.<role>.gist_class`. To disable entirely:
+
+```yaml
+ontology:
+  enabled: false
+```
+
+When enabled, CC BY 4.0 attribution to Semantic Arts is required on any published site. The attribution string is included automatically in `api/v1/index.json`.
+
 ## Configuration
 
 All domain-specific settings live in `project.yml`:
@@ -93,6 +141,8 @@ The template ships with example data in `data/examples/` (ISO 27001, NIST CSF). 
    ```
 
 The build script looks for data in `data/examples/` first, then `data/`. You can rename `data/examples/` to `data/` if you prefer a flatter structure.
+
+**What to keep:** Only `data/` contents and `project.yml` values need replacing. Do not delete `scripts/`, `.github/workflows/`, `mcp-server.js`, `mcp.json`, or `package.json` — these are the template engine and deployment config.
 
 ## Commands
 
@@ -143,16 +193,36 @@ The MCP server exposes your knowledge base as tools that AI agents can call. Too
 node mcp-server.js
 ```
 
-The server reads `project.yml` at startup and exposes tools for listing and retrieving each entity type. For example, with the default config you get tools like `list_requirements`, `get_requirement`, `list_frameworks`, `get_framework`, etc. The exact tool names depend on your entity configuration.
+The server reads `project.yml` at startup and exposes tools for listing and retrieving each entity type. Tool names are derived from your entity config by lowercasing and replacing non-alphanumeric characters with hyphens:
+
+| Config value | Tool name |
+|-------------|-----------|
+| `plural: Requirements` | `list_requirements` |
+| `name: Requirement` | `get_requirement` |
+| `plural: Frameworks` | `list_frameworks` |
+| `name: Framework` | `get_framework` |
+| `plural: Organizations` | `list_organizations` |
+| `name: Organization` | `get_organization` |
+
+Two fixed tools are always present regardless of config: `get_matrix` and `get_mappings`.
+
+## Validation
+
+`node scripts/validate.js` checks cross-references before building. Common errors and fixes:
+
+| Error message | Cause | Fix |
+|--------------|-------|-----|
+| `Mapping "X" references unknown container "Y"` | `regulation` field in mapping doesn't match any container filename | Check the container file exists and the `regulation` value matches the filename (without `.md`) |
+| `Mapping "X" references unknown primary "Y"` | `obligations` entry doesn't match any primary filename | Check the primary file exists and the ID matches |
+| `Mapping "X" references unknown authority "Y"` | `authority` field doesn't match any authority filename | Check the authority file exists |
+| `Container "X" references unknown authority "Y"` | `authority` frontmatter in container file doesn't match any authority | Create the authority file or correct the ID |
+| `No data directory found` | Neither `data/examples/` nor `data/` exists | Check your data directory path and config |
 
 ## Verification
 
-Knowledge as Code includes a verification scaffold for detecting stale data:
+`node scripts/verify.js` detects stale entities and validates cross-reference completeness. A weekly GitHub Actions workflow runs it automatically and opens an issue on drift.
 
-- Add `last_verified: YYYY-MM-DD` to entity frontmatter
-- Run `node scripts/verify.js` to check for staleness
-- Configure threshold in `project.yml` under `verification.staleness_days`
-- See [VERIFICATION.md](VERIFICATION.md) for details on adding AI-assisted verification
+See [VERIFICATION.md](VERIFICATION.md) for the full guide: staleness thresholds, CI integration, and AI-assisted content review.
 
 ## Ecosystem
 
@@ -179,6 +249,8 @@ Read the full pattern definition at [knowledge-as-code.com](https://knowledge-as
 ## Attribution
 
 Knowledge as Code is a [PAICE.work](https://paice.work/) project. See [ATTRIBUTION.md](ATTRIBUTION.md) for details.
+
+The default semantic layer uses [gist](https://semanticarts.com/gist/) by Semantic Arts, Inc., licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Required attribution: "Semantic Arts, Inc. gist ontology (CC BY 4.0) https://semanticarts.com/gist".
 
 ## Deploying
 

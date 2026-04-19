@@ -1,0 +1,10 @@
+{
+  "@context": {
+    "gist": "https://ontologies.semanticarts.com/gist/",
+    "kac": "https://knowledge-as-code.com/demo/api/v1/",
+    "gist:KnowledgeConcept": "https://ontologies.semanticarts.com/gist/KnowledgeConcept",
+    "gist:Specification": "https://ontologies.semanticarts.com/gist/Specification",
+    "gist:Organization": "https://ontologies.semanticarts.com/gist/Organization",
+    "gist:Commitment": "https://ontologies.semanticarts.com/gist/Commitment"
+  }
+}

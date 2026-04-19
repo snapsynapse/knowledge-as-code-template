@@ -22,30 +22,16 @@ The script validates that:
 - Every mapping references valid primary entity IDs
 - Every mapping references valid container IDs
 
-## Setting `last_verified` in Entity Frontmatter
+## Setup
 
-Add a `last_verified` field with an ISO date to any entity's frontmatter:
-
-```yaml
----
-title: Data Encryption
-group: technical
-last_verified: 2025-01-15
----
-```
-
-When you review an entity and confirm its content is current, update this date. The verification script will then consider it fresh until the staleness threshold is exceeded.
-
-## Configuring the Staleness Threshold
-
-In `project.yml`, set the number of days before an entity is considered stale:
+Add `last_verified: YYYY-MM-DD` to any entity's frontmatter and set the staleness window in `project.yml`:
 
 ```yaml
 verification:
-  staleness_days: 90
+  staleness_days: 90   # default; use 30 for fast-moving domains, 180 for stable reference data
 ```
 
-The default is 90 days. Adjust this based on how frequently your domain changes. Fast-moving regulatory environments may warrant 30 days; stable reference data might use 180.
+When you review an entity and confirm its content is current, update the date. Entities without `last_verified` are reported as "never verified."
 
 ## Running Verification
 

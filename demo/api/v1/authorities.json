@@ -1,15 +1,17 @@
 {
   "meta": {
-    "generated": "2026-04-09T23:00:18.276Z",
+    "generated": "2026-04-19T02:53:43.767Z",
     "count": 2
   },
   "items": [
     {
+      "@type": "gist:Organization",
       "id": "iso",
       "name": "International Organization for Standardization",
       "jurisdiction": "International"
     },
     {
+      "@type": "gist:Organization",
       "id": "nist",
       "name": "National Institute of Standards and Technology",
       "jurisdiction": "Federal"

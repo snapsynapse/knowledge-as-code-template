@@ -146,15 +146,18 @@ The heading name should match your container entity's plural name (e.g., "Regula
 The mapping file connects containers to primaries through secondary (provision) entities:
 
 ```yaml
-- id: iso-27001-access-control        # Unique provision ID
-  regulation: iso-27001               # Container file name (without .md)
-  authority: iso                      # Authority ID
-  source_heading: Information Security Controls (Annex A)  # Must match an ## H2 in the container file
-  obligations:                        # List of primary entity IDs this provision maps to
+- id: iso-27001-access-control        # Required. Unique provision ID (kebab-case)
+  regulation: iso-27001               # Required. Container file name (without .md)
+  authority: iso                      # Required. Authority ID
+  source_heading: Information Security Controls (Annex A)  # Required. Must match an ## H2 in the container file
+  source_file: data/examples/frameworks/iso-27001.md       # Optional. Path to container file for tooling/traceability
+  obligations:                        # Required. List of primary entity IDs this provision maps to
     - access-control
 ```
 
 The `regulation` field should use your container entity name from config (the field name comes from `project.yml`). The `obligations` field should use your primary entity name from config.
+
+`source_file` is informational — the build script resolves container files by `regulation` ID, not this path. It is useful for documentation tooling and traceability. If included, use the path relative to the repo root and match your configured `entities.container.directory`.
 
 ## File naming
 

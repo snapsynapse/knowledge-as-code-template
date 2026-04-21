@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "generated": "2026-04-19T21:55:29.772Z",
+    "count": 4
+  },
+  "items": [
+    {
+      "id": "iso-27001-access-control",
+      "obligations": [
+        "access-control"
+      ],
+      "regulation": "iso-27001",
+      "authority": "iso",
+      "source_file": "data/examples/frameworks/iso-27001.md",
+      "source_heading": "Information Security Controls (Annex A)"
+    },
+    {
+      "id": "iso-27001-data-quality",
+      "obligations": [
+        "data-quality"
+      ],
+      "regulation": "iso-27001",
+      "authority": "iso",
+      "source_file": "data/examples/frameworks/iso-27001.md",
+      "source_heading": "Data Quality Requirements (Clause 7.5)"
+    },
+    {
+      "id": "nist-csf-incident-response",
+      "obligations": [
+        "incident-response"
+      ],
+      "regulation": "nist-csf",
+      "authority": "nist",
+      "source_file": "data/examples/frameworks/nist-csf.md",
+      "source_heading": "Incident Response (RS.AN, RS.MI)"
+    },
+    {
+      "id": "nist-csf-access-control",
+      "obligations": [
+        "access-control"
+      ],
+      "regulation": "nist-csf",
+      "authority": "nist",
+      "source_file": "data/examples/frameworks/nist-csf.md",
+      "source_heading": "Access Control (PR.AA)"
+    }
+  ]
+}

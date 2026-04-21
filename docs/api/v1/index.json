@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "generated": "2026-04-19T21:55:29.772Z",
+    "version": "1.0",
+    "project": "example",
+    "ontology": {
+      "framework": "gist",
+      "base_iri": "https://ontologies.semanticarts.com/gist/",
+      "context": "context.jsonld",
+      "attribution": "Semantic Arts, Inc. gist ontology (CC BY 4.0) https://semanticarts.com/gist"
+    }
+  },
+  "files": {
+    "primaries": {
+      "path": "primaries.json"
+    },
+    "containers": {
+      "path": "containers.json"
+    },
+    "authorities": {
+      "path": "authorities.json"
+    },
+    "mappings": {
+      "path": "mappings.json"
+    },
+    "matrix": {
+      "path": "matrix.json"
+    },
+    "comparisons": {
+      "path": "comparisons.json"
+    }
+  }
+}

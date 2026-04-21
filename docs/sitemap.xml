@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://example.com/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/containers.html</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/primaries.html</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/matrix.html</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/timeline.html</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/compare.html</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/about.html</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/pattern.html</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/container/iso-27001/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/container/nist-csf/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/primary/access-control/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/primary/data-quality/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/primary/incident-response/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/authority/iso/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/authority/nist/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/requires/iso-27001/access-control/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/requires/iso-27001/data-quality/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/requires/nist-csf/incident-response/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/requires/nist-csf/access-control/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/compare/iso-27001-vs-nist-csf/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/applies-to/international/</loc><lastmod>2026-04-19</lastmod></url>
+  <url><loc>https://example.com/applies-to/federal/</loc><lastmod>2026-04-19</lastmod></url>
+</urlset>

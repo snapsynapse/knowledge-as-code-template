@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "generated": "2026-04-19T21:55:29.772Z"
+  },
+  "matrix": {
+    "access-control": {
+      "iso-27001": {
+        "covered": true,
+        "provisions": [
+          "iso-27001-access-control"
+        ]
+      },
+      "nist-csf": {
+        "covered": true,
+        "provisions": [
+          "nist-csf-access-control"
+        ]
+      }
+    },
+    "data-quality": {
+      "iso-27001": {
+        "covered": true,
+        "provisions": [
+          "iso-27001-data-quality"
+        ]
+      }
+    },
+    "incident-response": {
+      "nist-csf": {
+        "covered": true,
+        "provisions": [
+          "nist-csf-incident-response"
+        ]
+      }
+    }
+  }
+}

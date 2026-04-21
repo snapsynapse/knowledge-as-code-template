@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge as Code - Example Knowledge Base</title>
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="canonical" href="https://example.com/pattern.html">
+    <link rel="stylesheet" href="assets/styles.css">
+    <style>/* Generated from project.yml — do not edit manually */
+.group-badge.governance { background: #7c4dff; }
+:is(html, body).light-mode .group-badge.governance { background: #4527a0; }
+.matrix-table .matrix-row-header.group-governance { border-left-color: #7c4dff; }
+:is(html, body).light-mode .matrix-table .matrix-row-header.group-governance { border-left-color: #4527a0; }
+.group-badge.technical { background: #4fc3f7; }
+:is(html, body).light-mode .group-badge.technical { background: #0277bd; }
+.matrix-table .matrix-row-header.group-technical { border-left-color: #4fc3f7; }
+:is(html, body).light-mode .matrix-table .matrix-row-header.group-technical { border-left-color: #0277bd; }
+.group-badge.operational { background: #ff6e40; }
+:is(html, body).light-mode .group-badge.operational { background: #bf360c; }
+.matrix-table .matrix-row-header.group-operational { border-left-color: #ff6e40; }
+:is(html, body).light-mode .matrix-table .matrix-row-header.group-operational { border-left-color: #bf360c; }
+.status-badge.active { background: #4caf50; color: #000; }
+:is(html, body).light-mode .status-badge.active { background: #1b7d1b; color: #fff; }
+.status-badge.draft { background: #ff9800; color: #000; }
+:is(html, body).light-mode .status-badge.draft { background: #e65100; color: #fff; }
+.status-badge.deprecated { background: #607d8b; color: #000; }
+:is(html, body).light-mode .status-badge.deprecated { background: #455a64; color: #fff; }
+:root { --accent: #4fc3f7; }
+:is(html, body).light-mode { --accent: #0055aa; }
+</style>
+    <meta name="description" content="A pattern for building knowledge bases that verify themselves.">
+    <meta property="og:title" content="Knowledge as Code">
+    <meta property="og:description" content="A pattern for building knowledge bases that verify themselves.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://example.com/[object Object]">
+    <meta property="og:url" content="https://example.com/pattern.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="[object Object]">
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('theme') === 'light' || localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light-mode');
+                localStorage.setItem('theme', 'light');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header">
+        <h1><a href="index.html" onclick="passTheme(this)">Example Knowledge Base</a></h1>
+        <button class="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Toggle menu" aria-expanded="false" aria-controls="siteNav">
+            <span class="hamburger-icon"></span>
+        </button>
+        <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+            <a href="index.html" class="site-nav-link" onclick="passTheme(this)">Home</a>
+            <a href="containers.html" class="site-nav-link" onclick="passTheme(this)">Frameworks</a>
+            <a href="primaries.html" class="site-nav-link" onclick="passTheme(this)">Requirements</a>
+            <a href="matrix.html" class="site-nav-link" onclick="passTheme(this)">Matrix</a>
+            <a href="timeline.html" class="site-nav-link" onclick="passTheme(this)">Timeline</a>
+            <a href="compare.html" class="site-nav-link" onclick="passTheme(this)">Compare</a>
+            <a href="about.html" class="site-nav-link" onclick="passTheme(this)">About</a>
+            <a href="pattern.html" class="site-nav-link active" onclick="passTheme(this)">Pattern</a>
+        </nav>
+        <div class="header-actions">
+            <div class="site-search" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="searchResults">
+                <input type="search" id="siteSearchInput" class="search-input" placeholder="Search..." aria-label="Search" aria-autocomplete="list" aria-controls="searchResults" autocomplete="off">
+                <ul id="searchResults" class="search-results" role="listbox" hidden></ul>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">&#x1F313;</button>
+        </div>
+    </header>
+    <div class="container" id="main-content">
+        
+        <link rel="canonical" href="https://knowledge-as-code.com">
+        <div class="about-content">
+        <h1>Knowledge as Code</h1>
+        <p><em>A pattern for building knowledge bases that verify themselves, resist decay, and serve both humans and machines from plain text files.</em></p>
+        <p>Canonical pattern definition: <a href="https://knowledge-as-code.com">https://knowledge-as-code.com</a></p>
+
+        <h2>The Pattern</h2>
+        <p>Knowledge as Code applies software engineering practices to knowledge management. The knowledge lives in version-controlled plain text files. It is validated by automated processes. It produces multiple outputs from a single source. And it actively resists becoming outdated.</p>
+
+        <h2>Six Properties</h2>
+        <table class="data-table">
+            <thead><tr><th>Property</th><th>What It Means</th><th>In This Project</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Plain text canonical</strong></td><td>Knowledge in human-readable, version-controlled files. No database, no CMS, no vendor lock-in.</td><td>Markdown and YAML files in <code>data/</code></td></tr>
+                <tr><td><strong>Self-healing</strong></td><td>Automated verification detects when knowledge drifts from reality. Flags decay before humans notice.</td><td>Verification scripts and AI-assisted freshness checks</td></tr>
+                <tr><td><strong>Multi-output</strong></td><td>One source produces every format needed — human-readable, machine-readable, agent-queryable.</td><td>HTML site, JSON API, MCP server, SEO bridge pages, sitemap, <code>llms.txt</code></td></tr>
+                <tr><td><strong>Zero-dependency</strong></td><td>No external packages. Nothing breaks when you come back in a year.</td><td>One Node.js script, no <code>package.json</code>, no <code>node_modules</code></td></tr>
+                <tr><td><strong>Git-native</strong></td><td>Git is the collaboration layer, audit trail, and deployment trigger.</td><td>Issues, PRs, CI/CD, version history — all through Git</td></tr>
+                <tr><td><strong>Ontology-driven</strong></td><td>A vendor-neutral taxonomy maps to domain-specific implementations.</td><td>3 Requirements across 2 Frameworks</td></tr>
+            </tbody>
+        </table>
+
+        <h2>The Ontology</h2>
+        <p>Every Knowledge-as-Code project has four entity roles:</p>
+        <div style="text-align: center; padding: 1.5rem 0; font-size: 1.1rem;">
+            <strong>Organization</strong> → <strong>Framework</strong> → <strong>Provision</strong> → <strong>Requirement</strong>
+        </div>
+        <table class="data-table">
+            <thead><tr><th>Role</th><th>This Project</th><th>What It Is</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Primary</strong></td><td>Requirement</td><td>Stable anchors that persist when sources change</td></tr>
+                <tr><td><strong>Container</strong></td><td>Framework</td><td>Grouping entities that contain provisions</td></tr>
+                <tr><td><strong>Authority</strong></td><td>Organization</td><td>Source entities that produce containers</td></tr>
+                <tr><td><strong>Secondary</strong></td><td>Provision</td><td>Mapping entities connecting containers to primaries</td></tr>
+            </tbody>
+        </table>
+        <p>Primaries are stable; containers are unstable. When a framework is amended, its provisions change, but the underlying requirements persist.</p>
+
+        <h2>Standing on Shoulders</h2>
+        <ul>
+            <li><strong>File over App</strong> — <a href="https://stephango.com/file-over-app">Steph Ango</a> on durable digital artifacts as files you control</li>
+            <li><strong>Docs as Code</strong> — Managing documentation with version control, pull requests, CI, plain text formats. <a href="https://www.writethedocs.org/guide/docs-as-code/">Write the Docs</a> community</li>
+            <li><strong>Living Documentation</strong> — Cyrille Martraire on documentation that evolves with the system it describes</li>
+            <li><strong>GitOps</strong> — Git as single source of truth with automated drift detection. Coined by <a href="https://docs.gitops.weaveworks.org/">Weaveworks</a> (2017)</li>
+            <li><strong>Anti-entropy</strong> — Distributed systems pattern for detecting and repairing state divergence (Dynamo, Cassandra)</li>
+        </ul>
+
+        
+        <h2>Live Examples</h2>
+        <div class="card-grid">
+            <div class="obligation-card">
+                <div class="card-title"><a href="https://aitool.watch">AI Tool Watch</a></div>
+                <div class="card-description">AI model capabilities across 12 products</div>
+            </div>
+            <div class="obligation-card">
+                <div class="card-title"><a href="https://everyailaw.com">Every AI Law</a></div>
+                <div class="card-description">Global AI regulatory landscape</div>
+            </div>
+            <div class="obligation-card">
+                <div class="card-title"><a href="https://meetings.snapsynapse.com">Meeting Standards Reference</a></div>
+                <div class="card-description">Meeting facilitation standards</div>
+            </div>
+        </div>
+
+        
+        <h2>Ecosystem</h2>
+        <ul>
+            <li><strong><a href="https://knowledge-as-code.com">Knowledge as Code</a></strong> — The pattern definition and community hub</li>
+            <li><strong><a href="https://github.com/snapsynapse/graceful-boundaries">Graceful Boundaries</a></strong> — How services communicate operational limits to humans and agents</li>
+            <li><strong><a href="https://siteline.to">Siteline</a></strong> — AI agent readiness scanner for websites</li>
+        </ul>
+
+        <h2>Get Started</h2>
+        <pre><code>git clone https://github.com/snapsynapse/knowledge-as-code-template.git
+cd knowledge-as-code-template
+node scripts/build.js
+open docs/index.html</code></pre>
+        <p>Template: <a href="https://github.com/snapsynapse/knowledge-as-code-template">github.com/snapsynapse/knowledge-as-code-template</a></p>
+
+        <hr>
+        <p><em>Knowledge as Code is a <a href="https://paice.work">PAICE.work</a> project.</em></p>
+        </div>
+    
+    </div>
+    <footer>
+        <p>Maintained with <a href="https://github.com/your-org/your-repo">version control</a>. This is a reference tool, not professional advice.</p>
+        <p>&copy; 2026 | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern by <a href="https://paice.work">PAICE.work</a></p>
+    </footer>
+    <script src="assets/search.js"></script>
+    <script src="assets/tables.js"></script>
+    <script>
+        function toggleTheme() {
+            document.documentElement.classList.toggle('light-mode');
+            localStorage.setItem('theme', document.documentElement.classList.contains('light-mode') ? 'light' : 'dark');
+        }
+        function toggleMobileMenu() {
+            var btn = document.querySelector('.hamburger-btn');
+            var menu = document.getElementById('siteNav');
+            var isOpen = menu.classList.toggle('open');
+            btn.classList.toggle('active', isOpen);
+            btn.setAttribute('aria-expanded', isOpen);
+        }
+        document.addEventListener('click', function(e) {
+            var menu = document.getElementById('siteNav');
+            var btn = document.querySelector('.hamburger-btn');
+            if (menu && btn && menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.remove('open');
+                btn.classList.remove('active');
+                btn.setAttribute('aria-expanded', 'false');
+            }
+        });
+        function passTheme(link) {
+            if (document.documentElement.classList.contains('light-mode')) {
+                var url = new URL(link.href, window.location.href);
+                url.searchParams.set('theme', 'light');
+                link.href = url.pathname + url.search + url.hash;
+            }
+        }
+        (function() {
+            var btn = document.createElement('button');
+            btn.className = 'back-to-top';
+            btn.setAttribute('aria-label', 'Back to top');
+            btn.textContent = '\u2191';
+            document.body.appendChild(btn);
+            window.addEventListener('scroll', function() { btn.classList.toggle('visible', window.scrollY > 400); });
+            btn.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        })();
+    </script>
+</body>
+</html>

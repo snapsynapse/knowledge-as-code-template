@@ -35,6 +35,28 @@ jobs:
       - name: Build site (sanity check)
         run: node scripts/build.js
 
+      - name: Build demo output (sanity check)
+        env:
+          KAC_OUTPUT_DIR: demo
+          KAC_SITE_URL: https://knowledge-as-code.com/demo/
+        run: |
+          node scripts/build.js
+          test -f demo/index.html
+          test -f demo/assets/styles.css
+          test -f demo/api/v1/index.json
+
+      - name: Run eval suite
+        run: node scripts/eval.js
+
+      - name: Verify generated outputs are current
+        if: github.repository == 'snapsynapse/knowledge-as-code-template'
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=all -- docs demo)" ]; then
+            echo "Generated outputs are not up to date. Rebuild docs/ and demo/ and commit the result."
+            git status --short --untracked-files=all -- docs demo
+            exit 1
+          fi
+
   a11y:
     runs-on: ubuntu-latest
     needs: build

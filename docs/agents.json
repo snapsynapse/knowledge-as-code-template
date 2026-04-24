@@ -107,7 +107,7 @@
     "robots": "https://example.com/robots.txt"
   },
   "meta": {
-    "last_updated": "2026-04-19",
+    "last_updated": "2026-04-24",
     "built_with": "Knowledge as Code",
     "pattern_url": "https://knowledge-as-code.com",
     "template_url": "https://github.com/snapsynapse/knowledge-as-code-template"

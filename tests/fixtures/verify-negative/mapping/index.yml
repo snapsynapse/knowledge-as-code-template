@@ -1,0 +1,5 @@
+- id: fresh-requirement-map
+  regulation: unverified-framework
+  authority: fixture-org
+  obligations:
+    - fresh-requirement

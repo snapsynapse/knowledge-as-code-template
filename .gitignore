@@ -19,10 +19,12 @@ Thumbs.db
 npm-debug.log*
 
 # Template forks: build.js writes to docs/ by default.
-# Option A (recommended): Uncomment docs/ below. The bundled GitHub Actions
-# workflow builds and deploys automatically — no need to commit generated output.
-# Option B: Commit docs/ so GitHub Pages can serve it without a workflow.
-# This repo uses Option B for its /demo/ output; template forks should use Option A.
+# Option A: Uncomment docs/ below and treat it as a pure build artifact.
+#   Use your own Pages/deploy workflow and do not commit generated output.
+# Option B: Keep docs/ tracked and publish directly from committed output.
+# This canonical repo tracks generated output intentionally:
+#   - docs/ is the template-default generated artifact
+#   - demo/ is the published reference build for knowledge-as-code.com/demo/
 # docs/
 
 # Environment

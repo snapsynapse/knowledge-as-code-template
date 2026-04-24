@@ -6,7 +6,9 @@
   "scripts": {
     "build": "node scripts/build.js",
     "validate": "node scripts/validate.js",
-    "verify": "node scripts/verify.js"
+    "verify": "node scripts/verify.js",
+    "check-links": "node scripts/check-links.js",
+    "eval": "node scripts/eval.js"
   },
   "author": "PAICE.work PBC <https://paice.work/>",
   "homepage": "https://github.com/snapsynapse/knowledge-as-code-template",

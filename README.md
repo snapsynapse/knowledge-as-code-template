@@ -20,7 +20,20 @@ Built examples using this template:
 2. **Edit `project.yml`** -- start with the entity names (`entities.primary.name`, `entities.container.name`, etc.) and groups. You can adjust colors and navigation later. Leave `url` until your GitHub repo is configured.
 3. **Replace example data** -- delete the files in `data/examples/requirements/`, `data/examples/frameworks/`, `data/examples/organizations/`, and `data/examples/mapping/index.yml`, then add your own. See [Replacing example data](#replacing-example-data) and [`data/_schema.md`](data/_schema.md) for the format.
 4. **Build** -- `node scripts/build.js`. A successful build prints `Build complete — N HTML pages, N JSON API files`. Check the `docs/` directory for the output, and open any HTML file in a browser to verify it looks right.
-5. **Deploy** -- push to GitHub. The included workflow deploys to GitHub Pages automatically.
+5. **Deploy** -- choose your Pages strategy. This repo validates builds in CI, but it does not auto-deploy template forks by default. If you want automated deployment, add a Pages publish step for your repo.
+
+## Output Policy
+
+This repository intentionally tracks generated output in both `docs/` and `demo/`.
+
+- `docs/` is the template-default generated site output.
+- `demo/` is the canonical reference build used for `https://knowledge-as-code.com/demo/`.
+- Neither directory should be edited by hand. Regenerate them with `node scripts/build.js` or the `KAC_OUTPUT_DIR=demo KAC_SITE_URL="https://knowledge-as-code.com/demo/" node scripts/build.js` variant.
+
+Template forks do not need to follow this policy. A fork can either:
+
+- ignore `docs/` and publish via its own CI/deploy workflow, or
+- commit `docs/` as a generated artifact if that matches its hosting model.
 
 ## What You Get
 
@@ -140,6 +153,14 @@ The template ships with example data in `data/examples/` (ISO 27001, NIST CSF). 
    node scripts/build.js      # Generate the site
    ```
 
+For repo-level verification before opening a PR, prefer:
+
+```bash
+npm run eval
+```
+
+That runs the broader smoke/eval suite covering builds, links, API shape, parser fixtures, MCP smoke, and documentation consistency.
+
 The build script looks for data in `data/examples/` first, then `data/`. You can rename `data/examples/` to `data/` if you prefer a flatter structure.
 
 **What to keep:** Only `data/` contents and `project.yml` values need replacing. Do not delete `scripts/`, `.github/workflows/`, `mcp-server.js`, `mcp.json`, or `package.json` — these are the template engine and deployment config.
@@ -150,6 +171,7 @@ The build script looks for data in `data/examples/` first, then `data/`. You can
 node scripts/build.js      # Build the site (or: npm run build)
 node scripts/validate.js   # Validate cross-references (or: npm run validate)
 node scripts/verify.js     # Check entity freshness (or: npm run verify)
+node scripts/eval.js       # Run smoke, link, API, parser, MCP, and docs evals (or: npm run eval)
 ```
 
 ## Architecture
@@ -259,7 +281,7 @@ When you use this template, update the following:
 1. Edit `project.yml` with your domain entities, colors, and site identity
 2. Replace example data in `data/examples/` with your own
 3. Update `docs/CNAME` with your custom domain (or remove it)
-4. Push to GitHub — Pages deploys automatically via the included workflow
+4. Push to GitHub and publish using your chosen Pages workflow or artifact strategy
 
 ## Sponsor
 

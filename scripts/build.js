@@ -13,6 +13,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const { loadMappingIndex, parseTable } = require('./lib/data-loaders');
+const { parseFrontmatter, parseYaml } = require('./lib/parsers');
 
 const ROOT = path.join(__dirname, '..');
 // Output directory for the generated site.
@@ -21,115 +23,6 @@ const ROOT = path.join(__dirname, '..');
 const DOCS_DIR = path.join(ROOT, process.env.KAC_OUTPUT_DIR || 'docs');
 const API_DIR = path.join(DOCS_DIR, 'api', 'v1');
 const ASSETS_DIR = path.join(DOCS_DIR, 'assets');
-
-// ---------------------------------------------------------------------------
-// YAML-lite parser (handles project.yml without dependencies)
-// ---------------------------------------------------------------------------
-
-function parseYaml(content) {
-    const lines = content.split('\n');
-    const result = {};
-    // Stack tracks: { obj, indent, key, isList }
-    const stack = [{ obj: result, indent: -2 }];
-
-    for (let i = 0; i < lines.length; i++) {
-        const raw = lines[i];
-        if (raw.trim() === '' || raw.trim().startsWith('#')) continue;
-
-        const indent = raw.search(/\S/);
-        const trimmed = raw.trim();
-
-        // Pop stack back to appropriate parent
-        while (stack.length > 1 && stack[stack.length - 1].indent >= indent) stack.pop();
-
-        const isList = trimmed.startsWith('- ');
-        const lineContent = isList ? trimmed.slice(2).trim() : trimmed;
-
-        if (isList) {
-            // Inline object: - { key: val, key: val }
-            if (lineContent.startsWith('{') && lineContent.endsWith('}')) {
-                const obj = {};
-                lineContent.slice(1, -1).split(',').forEach(pair => {
-                    const ci = pair.indexOf(':');
-                    if (ci !== -1) obj[pair.slice(0, ci).trim()] = pair.slice(ci + 1).trim().replace(/^["']|["']$/g, '');
-                });
-                const parent = stack[stack.length - 1].obj;
-                const lastKey = stack[stack.length - 1].lastListKey;
-                if (lastKey && Array.isArray(parent[lastKey])) parent[lastKey].push(obj);
-                continue;
-            }
-
-            // List item with key:value — start of a multi-line object or single-line
-            const ci = lineContent.indexOf(':');
-            if (ci !== -1) {
-                const k = lineContent.slice(0, ci).trim();
-                const v = lineContent.slice(ci + 1).trim().replace(/^["']|["']$/g, '');
-
-                // Look ahead: are there continuation lines at deeper indent?
-                const nextI = i + 1;
-                const hasChildren = nextI < lines.length &&
-                    lines[nextI].trim() !== '' && !lines[nextI].trim().startsWith('#') &&
-                    !lines[nextI].trim().startsWith('- ') &&
-                    lines[nextI].search(/\S/) > indent;
-
-                const parent = stack[stack.length - 1].obj;
-                const listKey = stack[stack.length - 1].lastListKey;
-
-                if (hasChildren || v === '') {
-                    // Multi-line list object: create obj, add first key, push for continuation
-                    const obj = {};
-                    if (v) obj[k] = v;
-                    if (listKey && Array.isArray(parent[listKey])) {
-                        parent[listKey].push(obj);
-                    }
-                    stack.push({ obj, indent, lastListKey: null });
-                } else {
-                    // Single key:value list item — wrap as object
-                    const obj = {};
-                    obj[k] = v;
-                    if (listKey && Array.isArray(parent[listKey])) parent[listKey].push(obj);
-                }
-            } else {
-                // Simple list item: - value
-                const parent = stack[stack.length - 1].obj;
-                const listKey = stack[stack.length - 1].lastListKey;
-                if (listKey && Array.isArray(parent[listKey])) {
-                    parent[listKey].push(lineContent.replace(/^["']|["']$/g, ''));
-                }
-            }
-            continue;
-        }
-
-        // Regular key: value
-        const ci = trimmed.indexOf(':');
-        if (ci === -1) continue;
-
-        const key = trimmed.slice(0, ci).trim();
-        const val = trimmed.slice(ci + 1).trim().replace(/^["']|["']$/g, '');
-        const parent = stack[stack.length - 1].obj;
-
-        if (val === '') {
-            // Look ahead to determine if this is a list or object
-            const nextI = i + 1;
-            let nextNonEmpty = null;
-            for (let j = nextI; j < lines.length; j++) {
-                if (lines[j].trim() && !lines[j].trim().startsWith('#')) { nextNonEmpty = lines[j].trim(); break; }
-            }
-
-            if (nextNonEmpty && nextNonEmpty.startsWith('- ')) {
-                parent[key] = [];
-                stack.push({ obj: parent, indent, lastListKey: key });
-            } else {
-                parent[key] = {};
-                stack.push({ obj: parent[key], indent });
-            }
-        } else {
-            parent[key] = val;
-        }
-    }
-
-    return result;
-}
 
 function loadConfig() {
     const configPath = path.join(ROOT, 'project.yml');
@@ -160,6 +53,20 @@ function ensureDir(dir) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
+function copyStaticAssets() {
+    const assetSourceDir = path.join(__dirname, 'assets');
+    const assetFiles = ['styles.css', 'search.js', 'tables.js'];
+
+    assetFiles.forEach(file => {
+        const source = path.join(assetSourceDir, file);
+        const target = path.join(ASSETS_DIR, file);
+        if (!fs.existsSync(source)) {
+            throw new Error(`Missing static asset source: ${source}`);
+        }
+        fs.copyFileSync(source, target);
+    });
+}
+
 function formatDate(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr + 'T00:00:00');
@@ -174,60 +81,6 @@ function extractSection(body, heading) {
 
 function parseBulletList(text) {
     return text.split('\n').map(l => l.trim()).filter(l => l.startsWith('- ')).map(l => l.slice(2).trim());
-}
-
-// ---------------------------------------------------------------------------
-// Parsing
-// ---------------------------------------------------------------------------
-
-function parseFrontmatter(content) {
-    const match = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!match) return { frontmatter: {}, body: content };
-
-    const frontmatter = {};
-    let currentKey = null;
-    let listValues = [];
-
-    match[1].split('\n').forEach(line => {
-        if (line.match(/^\s+-\s+/)) {
-            if (currentKey) listValues.push(line.replace(/^\s+-\s+/, '').trim());
-            return;
-        }
-        if (currentKey && listValues.length > 0) {
-            frontmatter[currentKey] = listValues;
-            listValues = [];
-            currentKey = null;
-        }
-        const [key, ...valueParts] = line.split(':');
-        if (key && valueParts.length) {
-            const value = valueParts.join(':').trim();
-            if (value === '') {
-                currentKey = key.trim();
-            } else {
-                frontmatter[key.trim()] = value;
-                currentKey = null;
-            }
-        }
-    });
-    if (currentKey && listValues.length > 0) {
-        frontmatter[currentKey] = listValues;
-    }
-
-    return { frontmatter, body: content.slice(match[0].length).trim() };
-}
-
-function parseTable(tableText) {
-    const lines = tableText.trim().split('\n').filter(l => l.trim());
-    if (lines.length < 2) return [];
-    const headers = lines[0].split('|').map(h => h.trim()).filter(Boolean);
-    const rows = [];
-    for (let i = 2; i < lines.length; i++) {
-        const cells = lines[i].split('|').map(c => c.trim()).filter(Boolean);
-        const row = {};
-        headers.forEach((h, idx) => { row[h.toLowerCase().replace(/\s+/g, '_')] = cells[idx] || ''; });
-        rows.push(row);
-    }
-    return rows;
 }
 
 function parseProvisionSection(section) {
@@ -304,27 +157,6 @@ function loadContainers(dir) {
             const provisions = provisionSections.map(parseProvisionSection).filter(Boolean);
             return { id, ...frontmatter, timeline, provisions, _body: body, _file: f };
         });
-}
-
-function loadMappingIndex(filePath) {
-    if (!fs.existsSync(filePath)) return [];
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const entries = [];
-    let current = null;
-
-    for (const line of content.split('\n')) {
-        if (line.startsWith('- id:')) {
-            if (current) entries.push(current);
-            current = { id: line.replace('- id:', '').trim(), obligations: [] };
-        } else if (current) {
-            const match = line.match(/^\s+(\w[\w_]*):\s*(.+)/);
-            if (match && match[1] !== 'obligations') current[match[1]] = match[2].trim();
-            const listMatch = line.match(/^\s+-\s+(.+)/);
-            if (listMatch) current.obligations.push(listMatch[1].trim());
-        }
-    }
-    if (current) entries.push(current);
-    return entries;
 }
 
 // ---------------------------------------------------------------------------
@@ -1529,12 +1361,12 @@ function build() {
     // 404 page
     fs.writeFileSync(path.join(DOCS_DIR, '404.html'), generate404Page(config, configCSS));
 
-    // Static assets (styles.css, search.js, tables.js) are pre-committed to the
-    // output directory and read directly by generated pages via relative paths.
+    copyStaticAssets();
 
     const elapsed = Date.now() - startTime;
     const totalPages = 7 + patternPageCount + containers.length + primaries.length + authorities.length + reqCount + cmpCount + appCount;
-    console.log(`\nBuild complete in ${elapsed}ms — ${totalPages} HTML pages, 6 JSON API files`);
+    const apiFileCount = ont ? 7 : 6;
+    console.log(`\nBuild complete in ${elapsed}ms — ${totalPages} HTML pages, ${apiFileCount} JSON API files${ont ? ' (+ context.jsonld)' : ''}`);
 }
 
 build();

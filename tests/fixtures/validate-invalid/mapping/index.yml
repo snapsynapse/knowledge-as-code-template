@@ -1,0 +1,5 @@
+- id: fixture-invalid-mapping
+  regulation: missing-framework
+  authority: missing-authority
+  obligations:
+    - missing-obligation

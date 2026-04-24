@@ -45,7 +45,7 @@ The script exits with code 0 if no entities are stale, and code 1 if any stale e
 
 The included workflow (`.github/workflows/verify.yml`) runs verification on a weekly schedule (Mondays at 9am UTC) and can be triggered manually via `workflow_dispatch`.
 
-The workflow uses `continue-on-error: true` so that stale entities produce warnings rather than blocking other CI processes. Remove this flag if you want stale entities to fail the pipeline.
+The workflow captures the verifier exit code explicitly, stores it in a step output, and then opens or updates a drift issue when verification fails. That keeps the automation actionable without relying on `continue-on-error`.
 
 ## AI-Assisted Verification
 

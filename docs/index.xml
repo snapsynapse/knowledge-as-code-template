@@ -5,7 +5,7 @@
     <link>https://example.com/</link>
     <description>A structured reference tracking example entities across categories.</description>
     <atom:link href="https://example.com/index.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sun, 19 Apr 2026 21:55:29 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 24 Apr 2026 02:45:42 GMT</lastBuildDate>
     <item>
       <title>ISO 27001</title>
       <link>https://example.com/container/iso-27001/</link>

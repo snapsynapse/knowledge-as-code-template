@@ -19,7 +19,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const DOCS_DIR = path.join(__dirname, '..', 'docs');
+const DOCS_DIR = process.env.KAC_LINK_CHECK_DIR
+    ? path.resolve(process.cwd(), process.env.KAC_LINK_CHECK_DIR)
+    : path.join(__dirname, '..', 'docs');
 
 // ---------------------------------------------------------------------------
 // Collect all HTML files
@@ -82,9 +84,10 @@ function resolveLink(href, sourceFile) {
     const cleanHref = href.split('?')[0].split('#')[0];
     if (!cleanHref) return null;
 
-    // Resolve relative to the directory of the source file
     const sourceDir = path.dirname(sourceFile);
-    const resolved = path.resolve(sourceDir, cleanHref);
+    const resolved = cleanHref.startsWith('/')
+        ? path.join(DOCS_DIR, cleanHref.slice(1))
+        : path.resolve(sourceDir, cleanHref);
 
     // Check if it resolves to a file
     if (fs.existsSync(resolved)) return null; // OK
@@ -104,10 +107,11 @@ function resolveLink(href, sourceFile) {
 // ---------------------------------------------------------------------------
 
 function main() {
-    console.log('Checking internal links in docs/...\n');
+    const label = path.relative(path.join(__dirname, '..'), DOCS_DIR) || 'docs';
+    console.log(`Checking internal links in ${label}/...\n`);
 
     if (!fs.existsSync(DOCS_DIR)) {
-        console.error('Error: docs/ directory not found. Run "node scripts/build.js" first.');
+        console.error(`Error: ${label}/ directory not found. Run "node scripts/build.js" first.`);
         process.exit(1);
     }
 

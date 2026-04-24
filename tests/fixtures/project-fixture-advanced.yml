@@ -1,0 +1,26 @@
+name: "Advanced Fixture"
+short_name: advanced
+social:
+  twitter_card: "summary_large_image"
+  twitter_site: "@fixture"
+ontology:
+  enabled: true
+  entities:
+    primary:
+      gist_class: "gist:KnowledgeConcept"
+ecosystem:
+  - { name: "Knowledge as Code", url: "https://knowledge-as-code.com", description: "Pattern site" }
+  - { name: "Agentlink", url: "https://agentlink.run/", description: "Agent runtime" }
+nav:
+  - id: home
+    label: "Home"
+    href: index.html
+  - id: compare
+    label: "Compare: Frameworks"
+    href: compare.html
+theme:
+  accent: "#123456"
+bridges:
+  compare: true
+  applies_to:
+    field: jurisdiction

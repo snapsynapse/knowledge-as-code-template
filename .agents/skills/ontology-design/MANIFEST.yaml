@@ -1,0 +1,48 @@
+bundle: ontology-design
+bundle_version: 1.0.0
+bundle_date: "2026-03-26"
+
+description: >
+  Interactive skill for designing Knowledge-as-Code ontologies.
+  Guides users through domain analysis and entity role mapping
+  to produce a draft project.yml configuration.
+
+compatibility:
+  designed_for:
+    surfaces: [cli, ide]
+    capabilities:
+      - file_read
+      - file_write
+  tested_on:
+    - platform: Claude Code
+      model: Claude Opus 4.6
+      surface: cli
+      status: pass
+      date: "2026-03-26"
+      notes: Initial creation and testing
+  compatible_with: [Claude Code, Claude Chat]
+  spec_version: agentskills.io/1.0
+  frontmatter_mode: claude
+
+dependencies: []
+
+files:
+  - path: SKILL.md
+    role: skill
+    version: 1
+    hash: pending
+    note: v1 — upgraded frontmatter to metadata block format
+  - path: MANIFEST.yaml
+    role: reference
+    version: 1
+    note: Skill Provenance manifest
+  - path: CHANGELOG.md
+    role: reference
+    version: 1
+    hash: "sha256:16a3ba806c929f7fe29a5568e03827fd6645e2298a6863699f07f9d1a0acc1f1"
+    note: Version history
+  - path: evals.json
+    role: evals
+    version: 1
+    hash: "sha256:fc63401dd9a1109430693253c505c86d5b1e74183a4a60920c6c1de233fa0e32"
+    note: Evaluation scenarios for skill quality

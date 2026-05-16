@@ -1,0 +1,69 @@
+[
+  {
+    "id": "eval-1",
+    "name": "greenfield_domain_analysis",
+    "description": "Given a new domain, skill identifies entities and maps to KaC roles",
+    "prompt": "I want to build a knowledge base for tracking recipes across different cuisines and cookbook authors",
+    "expectations": {
+      "structural": [
+        "Produces draft project.yml entities section",
+        "Identifies all 4 entity roles"
+      ],
+      "behavioral": [
+        "Asks clarifying questions about what is stable vs changing",
+        "References ONTOLOGY.md examples or worked examples"
+      ],
+      "content": [
+        "Primary maps to stable concepts like techniques or ingredient categories",
+        "Container maps to changing sources like cookbooks or recipe collections",
+        "Authority maps to authors or publishers",
+        "Secondary maps to specific recipes or recipe entries"
+      ]
+    }
+  },
+  {
+    "id": "eval-2",
+    "name": "ambiguous_primary_container",
+    "description": "Domain where Primary vs Container distinction is non-obvious",
+    "prompt": "I want to track software licenses across open-source projects",
+    "expectations": {
+      "structural": [
+        "Produces draft project.yml"
+      ],
+      "behavioral": [
+        "Explicitly discusses why licenses are Primary (stable legal text) vs projects are Container (change licenses over time)",
+        "Warns about common anti-pattern of making projects Primary"
+      ]
+    }
+  },
+  {
+    "id": "eval-3",
+    "name": "existing_deployment_comparison",
+    "description": "References real KaC deployments as worked examples",
+    "prompt": "Show me how the AI Capability Reference maps to the KaC ontology",
+    "expectations": {
+      "behavioral": [
+        "Explains: Capabilities=Primary, Products=Container, Vendors=Authority, Implementations=Secondary",
+        "References the three live deployments"
+      ]
+    }
+  },
+  {
+    "id": "eval-4",
+    "name": "generates_valid_config",
+    "description": "The generated project.yml section should be syntactically valid",
+    "prompt": "I want to track cybersecurity certifications across companies. Design the ontology and give me the project.yml.",
+    "expectations": {
+      "structural": [
+        "Output contains valid YAML for the entities section",
+        "All four entity roles are defined with name, plural, and directory",
+        "Groups have colors defined",
+        "Statuses have colors defined"
+      ],
+      "behavioral": [
+        "Suggests sensible group categories for the domain",
+        "Suggests appropriate statuses"
+      ]
+    }
+  }
+]

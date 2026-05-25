@@ -18,10 +18,14 @@ function parseSimpleFrontmatter(content) {
 function parseTable(tableText) {
     const lines = tableText.trim().split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
-    const headers = lines[0].split('|').map(h => h.trim()).filter(Boolean);
+    const parseCells = line => {
+        const trimmed = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+        return trimmed.split('|').map(c => c.trim());
+    };
+    const headers = parseCells(lines[0]);
     const rows = [];
     for (let i = 2; i < lines.length; i++) {
-        const cells = lines[i].split('|').map(c => c.trim()).filter(Boolean);
+        const cells = parseCells(lines[i]);
         const row = {};
         headers.forEach((h, idx) => {
             row[h.toLowerCase().replace(/\s+/g, '_')] = cells[idx] || '';

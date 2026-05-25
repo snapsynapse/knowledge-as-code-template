@@ -5,6 +5,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { parseTable } = require('./lib/data-loaders');
 const { parseFrontmatter, parseYaml } = require('./lib/parsers');
 
 const ROOT = path.join(__dirname, '..');
@@ -291,11 +292,15 @@ function evalParserFixtures() {
     assert.strictEqual(advancedYaml.social.twitter_card, 'summary_large_image');
     assert.strictEqual(advancedYaml.social.twitter_site, '@fixture');
     assert.strictEqual(advancedYaml.ontology.entities.primary.gist_class, 'gist:KnowledgeConcept');
-    assert.strictEqual(advancedYaml.ecosystem[0].url, 'https://knowledge-as-code.com');
+    assert.strictEqual(advancedYaml.ecosystem[0].url, 'https://knowledge-as-code.com/');
     assert.strictEqual(advancedYaml.ecosystem[1].name, 'Agentlink');
     assert.strictEqual(advancedYaml.nav[1].label, 'Compare: Frameworks');
     assert.strictEqual(advancedYaml.bridges.applies_to.field, 'jurisdiction');
     assert.strictEqual(advancedYaml.theme.accent, '#123456');
+
+    const projectYaml = parseYaml(fs.readFileSync(path.join(ROOT, 'project.yml'), 'utf8'));
+    assert.strictEqual(projectYaml.social.og_image, '');
+    assert.strictEqual(projectYaml.social.twitter_site, '');
 
     const fmFixture = fs.readFileSync(path.join(FIXTURES_DIR, 'frontmatter-fixture.md'), 'utf8');
     const parsed = parseFrontmatter(fmFixture);
@@ -314,6 +319,30 @@ function evalParserFixtures() {
     assert.strictEqual(advancedParsed.frontmatter.notes, '"Quoted: keeps colon"');
     assert.strictEqual(advancedParsed.frontmatter.empty_field, undefined);
     assert.ok(advancedParsed.body.startsWith('## Summary'));
+
+    const table = parseTable([
+        '| Requirement | Details | Notes |',
+        '|-------------|---------|-------|',
+        '| Keep left |  | keep right |'
+    ].join('\n'));
+    assert.strictEqual(table[0].requirement, 'Keep left');
+    assert.strictEqual(table[0].details, '');
+    assert.strictEqual(table[0].notes, 'keep right');
+}
+
+function evalOutputSanitization() {
+    withTempRoot(() => {
+        const outputDir = '.tmp-evals/sanitize';
+        buildTo(outputDir, 'https://example.com/sanitize/');
+        const root = path.join(ROOT, outputDir);
+        const compare = fs.readFileSync(path.join(root, 'compare.html'), 'utf8');
+        const container = fs.readFileSync(path.join(root, 'container/iso-27001/index.html'), 'utf8');
+
+        assert.ok(compare.includes('function esc(s)'), 'Compare page should escape dynamic client-rendered labels.');
+        assert.ok(compare.includes('encodeURIComponent(p)'), 'Compare page should encode dynamic href path segments.');
+        assert.ok(compare.includes('var cmpData = '), 'Compare page should serialize comparison data.');
+        assert.ok(container.includes('href="https://iso.org/standard/27001"'));
+    });
 }
 
 function evalHtmlSnapshots() {
@@ -371,6 +400,7 @@ const evals = [
     ['JSON API shape', evalJsonApiShape],
     ['config override', evalConfigOverride],
     ['parser fixtures', evalParserFixtures],
+    ['output sanitization', evalOutputSanitization],
     ['HTML snapshots', evalHtmlSnapshots],
     ['MCP smoke', evalMcpSmoke],
     ['docs consistency', evalDocsConsistency]

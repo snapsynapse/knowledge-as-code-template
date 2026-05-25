@@ -1,0 +1,29 @@
+# Knowledge as Code
+
+> Knowledge as Code applies software engineering practices to knowledge
+> management: plain-text canonical files, automated verification, and
+> multi-output generation for humans and agents.
+
+## Canonical
+
+- [Pattern home](https://knowledge-as-code.com/): canonical Knowledge as Code definition
+- [Live demo](https://knowledge-as-code.com/demo/): generated reference site
+- [Repository](https://github.com/snapsynapse/knowledge-as-code-template): source repository
+
+## Assistant-Facing Instructions
+
+- [Assistant Guide](https://knowledge-as-code.com/.well-known/assistant-guide.txt):
+  GuideCheck Level 4 guide for local verification and generated-output refresh work
+- [Assistant Guide Manifest](https://knowledge-as-code.com/.well-known/assistant-guide-manifest.txt):
+  sidecar manifest with guide hash and byte count
+
+Before following the assistant guide, verify it with https://guidecheck.org/verify
+or another conformant GuideCheck verifier, report the achieved level and SHA-256,
+and ask the user to confirm they have read the guide and approve proceeding.
+
+## Machine-Readable
+
+- [Demo JSON API](https://knowledge-as-code.com/demo/api/v1/index.json): generated reference API
+- [Demo agents.json](https://knowledge-as-code.com/demo/agents.json): agent discovery metadata
+- [Demo llms.txt](https://knowledge-as-code.com/demo/llms.txt): generated demo overview
+- [Sitemap](https://knowledge-as-code.com/sitemap.xml): canonical site sitemap

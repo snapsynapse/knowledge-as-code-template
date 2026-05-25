@@ -6,7 +6,7 @@ type: framework
 status: active
 enacted: 2024-02-26
 effective: 2024-02-26
-official_url: https://www.nist.gov/cyberframework
+official_url: https://nist.gov/cyberframework
 last_verified: 2026-03-25
 ---
 
@@ -43,7 +43,7 @@ last_verified: 2026-03-25
 
 ### Sources
 
-- [NIST CSF 2.0](https://www.nist.gov/cyberframework)
+- [NIST CSF 2.0](https://nist.gov/cyberframework)
 
 ---
 
@@ -71,4 +71,4 @@ last_verified: 2026-03-25
 
 ### Sources
 
-- [NIST CSF 2.0](https://www.nist.gov/cyberframework)
+- [NIST CSF 2.0](https://nist.gov/cyberframework)

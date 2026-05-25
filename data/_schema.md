@@ -52,7 +52,7 @@ type: standard                    # Optional. Category label
 status: active                   # Required. Must match a status in project.yml
 enacted: 2022-10-25              # Optional. Date of enactment
 effective: 2022-10-25            # Optional. Date it took effect
-official_url: https://...        # Optional. Link to official source
+official_url: https://...        # Optional. Link to official source; https only
 last_verified: 2026-03-25        # Optional. Date of last verification check
 ---
 ```
@@ -111,6 +111,8 @@ last_verified: 2026-03-25        # Optional. Date of last verification check
 - The `### Requirements` table is optional but recommended.
 - The `### Talking Point` must be a blockquote with the text in double quotes.
 - The `### Sources` section uses markdown link syntax.
+- Source links should use `https` bare domains. The generated site drops unsafe protocols and normalizes `www` hostnames to bare domains.
+- Markdown tables may include empty cells; empty cells are preserved instead of shifting later columns.
 
 ## Authority entities
 
@@ -123,7 +125,7 @@ last_verified: 2026-03-25        # Optional. Date of last verification check
 id: iso                                           # Required. Kebab-case identifier
 name: International Organization for Standardization  # Required. Full name
 jurisdiction: International                       # Optional. Geographic scope
-website: https://www.iso.org                      # Optional. Official website
+website: https://iso.org/                         # Optional. Official website; https only
 last_verified: 2026-03-25                         # Optional. Verification date
 ---
 ```
@@ -164,6 +166,15 @@ The `regulation` field should use your container entity name from config (the fi
 - All files use kebab-case: `access-control.md`, `iso-27001.md`
 - The filename (without `.md`) is used as the entity ID for primaries and authorities
 - Container files use the `name` frontmatter field (lowercased, spaces replaced with hyphens) as their ID
+
+## URL and style safety
+
+- External URLs are emitted only when they parse as `https`.
+- Hostnames beginning with `www.` are normalized to the bare domain in generated output.
+- `javascript:`, `data:`, `http:`, and malformed external URLs are omitted from generated links.
+- Group, status, and theme colors in `project.yml` should be hex colors. Invalid values fall back to safe defaults.
+- Group and status names are normalized before use as CSS class names.
+- Generated comparison-page labels are escaped before client-side insertion.
 
 ## Adding new entities
 

@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://knowledge-as-code.com/sitemap.xml
+Assistant-Guide: https://knowledge-as-code.com/.well-known/assistant-guide.txt

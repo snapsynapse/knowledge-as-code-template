@@ -33,10 +33,10 @@
     <meta property="og:title" content="Compare">
     <meta property="og:description" content="A structured reference tracking example entities across categories.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://knowledge-as-code.com/demo/[object Object]">
+    
     <meta property="og:url" content="https://knowledge-as-code.com/demo/compare.html">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="[object Object]">
+    
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
@@ -82,6 +82,11 @@
         <script>
         var cmpData = [{"id":"iso-27001","name":"ISO 27001","primaries":["access-control","data-quality"]},{"id":"nist-csf","name":"NIST Cybersecurity Framework","primaries":["incident-response","access-control"]}];
         var pNames = {"access-control":"Access Control","data-quality":"Data Quality","incident-response":"Incident Response"};
+        function esc(s) {
+            return String(s || '').replace(/[&<>"']/g, function(ch) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+            });
+        }
         function updateComparison() {
             var checked = Array.from(document.querySelectorAll('#compareSelector input:checked'));
             if (checked.length > 3) { checked[0].checked = false; checked = checked.slice(1); }
@@ -96,11 +101,11 @@
                 else has.forEach(function(i) { unique[i.id].push(p); });
             });
             var html = '<div class="compare-section"><h3>Shared (' + shared.length + ')</h3>' +
-                (shared.length ? '<ul class="compare-list">' + shared.map(function(p) { return '<li><a href="primary/' + p + '/index.html">' + (pNames[p]||p) + '</a></li>'; }).join('') + '</ul>' : '<p style="color:var(--text-secondary);">None shared.</p>') + '</div>';
+                (shared.length ? '<ul class="compare-list">' + shared.map(function(p) { return '<li><a href="primary/' + encodeURIComponent(p) + '/index.html">' + esc(pNames[p]||p) + '</a></li>'; }).join('') + '</ul>' : '<p style="color:var(--text-secondary);">None shared.</p>') + '</div>';
             items.forEach(function(i) {
                 var u = unique[i.id];
-                html += '<div class="compare-section"><h3>Only in ' + i.name + ' (' + u.length + ')</h3>' +
-                    (u.length ? '<ul class="compare-list">' + u.map(function(p) { return '<li><a href="primary/' + p + '/index.html">' + (pNames[p]||p) + '</a></li>'; }).join('') + '</ul>' : '<p style="color:var(--text-secondary);">None unique.</p>') + '</div>';
+                html += '<div class="compare-section"><h3>Only in ' + esc(i.name) + ' (' + u.length + ')</h3>' +
+                    (u.length ? '<ul class="compare-list">' + u.map(function(p) { return '<li><a href="primary/' + encodeURIComponent(p) + '/index.html">' + esc(pNames[p]||p) + '</a></li>'; }).join('') + '</ul>' : '<p style="color:var(--text-secondary);">None unique.</p>') + '</div>';
             });
             document.getElementById('compareResult').innerHTML = html;
             var url = new URL(window.location); url.searchParams.set('items', sel.join(',')); history.replaceState(null, '', url);
@@ -113,7 +118,7 @@
     </div>
     <footer>
         <p>Maintained with <a href="https://github.com/your-org/your-repo">version control</a>. This is a reference tool, not professional advice.</p>
-        <p>&copy; 2026 | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern by <a href="https://paice.work">PAICE.work</a></p>
+        <p>&copy; 2026 | Built with <a href="https://knowledge-as-code.com/">Knowledge-as-Code</a>, a pattern by <a href="https://paice.work/">PAICE.work</a></p>
     </footer>
     <script src="assets/search.js"></script>
     <script src="assets/tables.js"></script>

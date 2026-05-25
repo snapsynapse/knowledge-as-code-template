@@ -107,15 +107,15 @@
     "robots": "https://example.com/robots.txt"
   },
   "meta": {
-    "last_updated": "2026-04-24",
+    "last_updated": "2026-05-25",
     "built_with": "Knowledge as Code",
-    "pattern_url": "https://knowledge-as-code.com",
+    "pattern_url": "https://knowledge-as-code.com/",
     "template_url": "https://github.com/snapsynapse/knowledge-as-code-template"
   },
   "related_sites": [
     {
       "name": "Knowledge as Code",
-      "url": "https://knowledge-as-code.com",
+      "url": "https://knowledge-as-code.com/",
       "description": "The pattern definition and community hub"
     },
     {
@@ -125,7 +125,7 @@
     },
     {
       "name": "Siteline",
-      "url": "https://siteline.to",
+      "url": "https://siteline.to/",
       "description": "AI agent readiness scanner for websites"
     }
   ]

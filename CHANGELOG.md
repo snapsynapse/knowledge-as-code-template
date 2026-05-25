@@ -13,7 +13,19 @@ pattern.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+- Documented generated-output safety behavior for external URLs, CSS tokens, table parsing, and client-side comparison labels.
+- Adopted the GuideCheck Human-Verifiable Assistant Guide profile at Level 4 with `assistant-guide.txt`, a well-known canonical guide, a sidecar manifest, and discovery links.
+
+### Changed
+- Normalized example and public-facing URLs to `https` bare-domain form.
+
+### Fixed
+- Escaped generated compare-page labels and script data before client-side HTML insertion.
+- Validated generated CSS class names and color values before writing inline styles.
+- Restricted generated external links to `https` and normalized `www` hostnames to bare domains.
+- Preserved empty markdown table cells during parsing.
+- Parsed quoted empty YAML scalars as empty strings instead of objects.
 
 ## [1.0.0] — 2026-04-09
 
@@ -39,7 +51,7 @@ canonical pattern definition at <https://knowledge-as-code.com/>.
 - **`sitemap.xml`, `robots.txt`, `404.html`, `/imgs/og.png`** at repo root — full SEO surface.
 - **Open Graph + Twitter card metadata** for social sharing.
 - **"Built with Knowledge as Code" section** featuring three production sites: aitool.watch,
-  everyailaw.com, and meetings.snapsynapse.com.
+  everyailaw.com, and VirtualClassroom.watch.
 - **Self-healing verification** — `.github/workflows/verify.yml` now opens a GitHub issue when
   `verify.js` detects stale or missing entities, or comments on the existing open drift issue to
   prevent duplicate alerts across weekly runs. Includes an auto-created `knowledge-drift` label.

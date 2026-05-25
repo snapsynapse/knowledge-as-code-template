@@ -128,17 +128,17 @@ theme:
 # ---------------------------------------------------------------------------
 pattern:
   enabled: true
-  canonical_url: "https://knowledge-as-code.com"
+  canonical_url: "https://knowledge-as-code.com/"
   examples:
     - name: "AI Tool Watch"
-      url: "https://aitool.watch"
+      url: "https://aitool.watch/"
       description: "AI model capabilities across 12 products"
     - name: "Every AI Law"
-      url: "https://everyailaw.com"
+      url: "https://everyailaw.com/"
       description: "Global AI regulatory landscape"
-    - name: "Meeting Standards Reference"
-      url: "https://meetings.snapsynapse.com"
-      description: "Meeting facilitation standards"
+    - name: "Virtual Classroom Watch"
+      url: "https://VirtualClassroom.watch/"
+      description: "Virtual classroom and meeting standards"
 
 # ---------------------------------------------------------------------------
 # Social / Open Graph meta tags
@@ -182,11 +182,11 @@ ontology:
 # ---------------------------------------------------------------------------
 ecosystem:
   - name: "Knowledge as Code"
-    url: "https://knowledge-as-code.com"
+    url: "https://knowledge-as-code.com/"
     description: "The pattern definition and community hub"
   - name: "Graceful Boundaries"
     url: "https://github.com/snapsynapse/graceful-boundaries"
     description: "How services communicate operational limits to humans and agents"
   - name: "Siteline"
-    url: "https://siteline.to"
+    url: "https://siteline.to/"
     description: "AI agent readiness scanner for websites"

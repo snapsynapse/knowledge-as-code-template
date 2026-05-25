@@ -45,6 +45,43 @@ function escapeHTML(str) {
     return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function escapeStyle(str) {
+    return String(str || '').replace(/<\/style/gi, '<\\/style').replace(/[<>&]/g, '');
+}
+
+function cssClassName(str, fallback) {
+    return slugify(str) || fallback || 'item';
+}
+
+function cssColor(value, fallback) {
+    const color = String(value || '').trim();
+    if (/^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(color)) return color;
+    return fallback;
+}
+
+function safeScriptJson(value) {
+    return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g, c => ({
+        '<': '\\u003C',
+        '>': '\\u003E',
+        '&': '\\u0026',
+        '\u2028': '\\u2028',
+        '\u2029': '\\u2029'
+    })[c]);
+}
+
+function safeURL(url, fallback = '#') {
+    const raw = String(url || '').trim();
+    if (!raw) return fallback;
+    try {
+        const parsed = new URL(raw);
+        if (parsed.hostname.startsWith('www.')) parsed.hostname = parsed.hostname.slice(4);
+        if (parsed.protocol === 'https:') return parsed.href;
+    } catch (err) {
+        return fallback;
+    }
+    return fallback;
+}
+
 function humanizeId(id) {
     return String(id || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -172,9 +209,9 @@ function generateConfigCSS(config) {
 
     // Group colors
     groups.forEach(g => {
-        const name = g.name || g;
-        const color = g.color || '#888';
-        const colorLight = g.color_light || color;
+        const name = cssClassName(g.name || g, 'group');
+        const color = cssColor(g.color, '#888');
+        const colorLight = cssColor(g.color_light, color);
         css += `.group-badge.${name} { background: ${color}; }\n`;
         css += `:is(html, body).light-mode .group-badge.${name} { background: ${colorLight}; }\n`;
         css += `.matrix-table .matrix-row-header.group-${name} { border-left-color: ${color}; }\n`;
@@ -183,22 +220,22 @@ function generateConfigCSS(config) {
 
     // Status colors
     statuses.forEach(s => {
-        const name = s.name || s;
-        const color = s.color || '#888';
-        const colorLight = s.color_light || color;
+        const name = cssClassName(s.name || s, 'status');
+        const color = cssColor(s.color, '#888');
+        const colorLight = cssColor(s.color_light, color);
         css += `.status-badge.${name} { background: ${color}; color: #000; }\n`;
         css += `:is(html, body).light-mode .status-badge.${name} { background: ${colorLight}; color: #fff; }\n`;
     });
 
     // Theme accent overrides
     if (theme.accent) {
-        css += `:root { --accent: ${theme.accent}; }\n`;
+        css += `:root { --accent: ${cssColor(theme.accent, '#4fc3f7')}; }\n`;
     }
     if (theme.accent_light) {
-        css += `:is(html, body).light-mode { --accent: ${theme.accent_light}; }\n`;
+        css += `:is(html, body).light-mode { --accent: ${cssColor(theme.accent_light, '#0055aa')}; }\n`;
     }
 
-    return css;
+    return escapeStyle(css);
 }
 
 // ---------------------------------------------------------------------------
@@ -285,10 +322,10 @@ function renderSiteNav(config, activePage, prefix) {
 }
 
 function renderFooter(config) {
-    const repo = config.repo || '#';
+    const repo = safeURL(config.repo);
     return `<footer>
         <p>Maintained with <a href="${escapeHTML(repo)}">version control</a>. This is a reference tool, not professional advice.</p>
-        <p>&copy; ${new Date().getFullYear()} | Built with <a href="https://knowledge-as-code.com">Knowledge-as-Code</a>, a pattern by <a href="https://paice.work">PAICE.work</a></p>
+        <p>&copy; ${new Date().getFullYear()} | Built with <a href="https://knowledge-as-code.com/">Knowledge-as-Code</a>, a pattern by <a href="https://paice.work/">PAICE.work</a></p>
     </footer>`;
 }
 
@@ -308,15 +345,15 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
     <meta name="theme-color" content="#1a1a2e">
     ${canonical}
     <link rel="stylesheet" href="${prefix}assets/styles.css">
-    <style>${configCSS || ''}</style>
+    <style>${escapeStyle(configCSS || '')}</style>
     <meta name="description" content="${escapeHTML(desc)}">
     <meta property="og:title" content="${escapeHTML(title)}">
     <meta property="og:description" content="${escapeHTML(desc)}">
     <meta property="og:type" content="website">
-    ${config.social?.og_image ? `<meta property="og:image" content="${siteUrl}${config.social.og_image}">` : ''}
+    ${config.social?.og_image ? `<meta property="og:image" content="${escapeHTML(safeURL(siteUrl + config.social.og_image))}">` : ''}
     ${canonicalPath !== undefined ? `<meta property="og:url" content="${siteUrl}${canonicalPath || ''}">` : ''}
     <meta name="twitter:card" content="${config.social?.twitter_card || 'summary'}">
-    ${config.social?.twitter_site ? `<meta name="twitter:site" content="${config.social.twitter_site}">` : ''}
+    ${config.social?.twitter_site ? `<meta name="twitter:site" content="${escapeHTML(config.social.twitter_site)}">` : ''}
     ${renderThemeInit()}
 </head>
 <body>
@@ -346,16 +383,16 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
     <meta name="theme-color" content="#1a1a2e">
     <link rel="canonical" href="${siteUrl}${canonicalPath || ''}">
     <link rel="stylesheet" href="${prefix}assets/styles.css">
-    <style>${configCSS || ''}</style>
+    <style>${escapeStyle(configCSS || '')}</style>
     ${noindex ? '<meta name="robots" content="noindex">' : ''}
     <meta name="description" content="${escapeHTML(description || '')}">
     <meta property="og:title" content="${escapeHTML(title)}">
     <meta property="og:description" content="${escapeHTML(description || '')}">
     <meta property="og:type" content="website">
-    ${config.social?.og_image ? `<meta property="og:image" content="${siteUrl}${config.social.og_image}">` : ''}
+    ${config.social?.og_image ? `<meta property="og:image" content="${escapeHTML(safeURL(siteUrl + config.social.og_image))}">` : ''}
     ${canonicalPath !== undefined ? `<meta property="og:url" content="${siteUrl}${canonicalPath || ''}">` : ''}
     <meta name="twitter:card" content="${config.social?.twitter_card || 'summary'}">
-    ${config.social?.twitter_site ? `<meta name="twitter:site" content="${config.social.twitter_site}">` : ''}${jsonLd}
+    ${config.social?.twitter_site ? `<meta name="twitter:site" content="${escapeHTML(config.social.twitter_site)}">` : ''}${jsonLd}
     ${renderThemeInit()}
 </head>
 <body>
@@ -376,11 +413,11 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
 // ---------------------------------------------------------------------------
 
 function renderStatusBadge(status) {
-    return `<span class="status-badge ${escapeHTML(status || '')}">${escapeHTML((status || 'unknown').replace(/-/g, ' '))}</span>`;
+    return `<span class="status-badge ${escapeHTML(cssClassName(status, 'unknown'))}">${escapeHTML((status || 'unknown').replace(/-/g, ' '))}</span>`;
 }
 
 function renderGroupBadge(group) {
-    return `<span class="group-badge ${escapeHTML(group || '')}">${escapeHTML(group || '')}</span>`;
+    return `<span class="group-badge ${escapeHTML(cssClassName(group, 'other'))}">${escapeHTML(group || '')}</span>`;
 }
 
 function renderBreadcrumb(items, prefix) {
@@ -393,7 +430,11 @@ function renderBreadcrumb(items, prefix) {
 function renderProvisionCard(prov, linkPrefix = '../') {
     const reqRows = (prov.requirements || []).map(r => `<tr><td>${escapeHTML(r.requirement || '')}</td><td>${escapeHTML(r.details || '')}</td></tr>`).join('');
     const penRows = (prov.penalties || []).map(p => `<tr><td>${escapeHTML(p.violation || '')}</td><td>${escapeHTML(p.fine || '')}</td></tr>`).join('');
-    const sources = (prov.sources || []).map(s => `<a href="${escapeHTML(s.url)}" target="_blank" rel="noopener">${escapeHTML(s.title)}</a>`).join(' ');
+    const sources = (prov.sources || [])
+        .map(s => ({ ...s, url: safeURL(s.url) }))
+        .filter(s => s.url !== '#')
+        .map(s => `<a href="${escapeHTML(s.url)}" target="_blank" rel="noopener">${escapeHTML(s.title)}</a>`)
+        .join(' ');
 
     return `<div class="provision-card" id="${slugify(prov.name)}">
         <h3>${escapeHTML(prov.name)}</h3>
@@ -656,8 +697,13 @@ function generateComparePage(config, data, configCSS) {
         <div class="compare-selector" id="compareSelector">${checkboxes}</div>
         <div id="compareResult" class="compare-result"></div>
         <script>
-        var cmpData = ${JSON.stringify(containers.map(c => ({ id: c.id, name: c.name, primaries: [...new Set(mappingIndex.filter(m => m.regulation === c.id).flatMap(m => m.obligations))] })))};
-        var pNames = ${JSON.stringify(Object.fromEntries(primaries.map(p => [p.id, p.name || humanizeId(p.id)])))};
+        var cmpData = ${safeScriptJson(containers.map(c => ({ id: c.id, name: c.name, primaries: [...new Set(mappingIndex.filter(m => m.regulation === c.id).flatMap(m => m.obligations))] })))};
+        var pNames = ${safeScriptJson(Object.fromEntries(primaries.map(p => [p.id, p.name || humanizeId(p.id)])))};
+        function esc(s) {
+            return String(s || '').replace(/[&<>"']/g, function(ch) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+            });
+        }
         function updateComparison() {
             var checked = Array.from(document.querySelectorAll('#compareSelector input:checked'));
             if (checked.length > 3) { checked[0].checked = false; checked = checked.slice(1); }
@@ -672,11 +718,11 @@ function generateComparePage(config, data, configCSS) {
                 else has.forEach(function(i) { unique[i.id].push(p); });
             });
             var html = '<div class="compare-section"><h3>Shared (' + shared.length + ')</h3>' +
-                (shared.length ? '<ul class="compare-list">' + shared.map(function(p) { return '<li><a href="primary/' + p + '/index.html">' + (pNames[p]||p) + '</a></li>'; }).join('') + '</ul>' : '<p style="color:var(--text-secondary);">None shared.</p>') + '</div>';
+                (shared.length ? '<ul class="compare-list">' + shared.map(function(p) { return '<li><a href="primary/' + encodeURIComponent(p) + '/index.html">' + esc(pNames[p]||p) + '</a></li>'; }).join('') + '</ul>' : '<p style="color:var(--text-secondary);">None shared.</p>') + '</div>';
             items.forEach(function(i) {
                 var u = unique[i.id];
-                html += '<div class="compare-section"><h3>Only in ' + i.name + ' (' + u.length + ')</h3>' +
-                    (u.length ? '<ul class="compare-list">' + u.map(function(p) { return '<li><a href="primary/' + p + '/index.html">' + (pNames[p]||p) + '</a></li>'; }).join('') + '</ul>' : '<p style="color:var(--text-secondary);">None unique.</p>') + '</div>';
+                html += '<div class="compare-section"><h3>Only in ' + esc(i.name) + ' (' + u.length + ')</h3>' +
+                    (u.length ? '<ul class="compare-list">' + u.map(function(p) { return '<li><a href="primary/' + encodeURIComponent(p) + '/index.html">' + esc(pNames[p]||p) + '</a></li>'; }).join('') + '</ul>' : '<p style="color:var(--text-secondary);">None unique.</p>') + '</div>';
             });
             document.getElementById('compareResult').innerHTML = html;
             var url = new URL(window.location); url.searchParams.set('items', sel.join(',')); history.replaceState(null, '', url);
@@ -713,7 +759,7 @@ function generateAboutPage(config, data, configCSS) {
             <li><span class="api-endpoint"><a href="api/v1/containers.json">api/v1/containers.json</a></span> — All ${cPlural.toLowerCase()}</li>
         </ul>
         <h3>Contributing</h3>
-        <p>See the <a href="${escapeHTML(config.repo || '#')}">repository</a> for contribution guidelines.</p>
+        <p>See the <a href="${escapeHTML(safeURL(config.repo))}">repository</a> for contribution guidelines.</p>
     </div>`;
 
     return renderPageShell(config, { title: 'About', activePage: 'about', content, canonicalPath: 'about.html', configCSS });
@@ -739,7 +785,7 @@ function generateContainerDetail(config, container, data, configCSS) {
                 ${container.jurisdiction ? `<span><strong>Scope:</strong> ${escapeHTML(container.jurisdiction)}</span>` : ''}
                 ${renderStatusBadge(container.status)}
                 ${container.effective ? `<span><strong>Effective:</strong> ${formatDate(container.effective)}</span>` : ''}
-                ${container.official_url ? `<span><a href="${escapeHTML(container.official_url)}" target="_blank" rel="noopener">Official source</a></span>` : ''}
+                ${safeURL(container.official_url) !== '#' ? `<span><a href="${escapeHTML(safeURL(container.official_url))}" target="_blank" rel="noopener">Official source</a></span>` : ''}
             </div>
         </div>
         ${cPrimaries.length ? `<h3>${config.entities?.primary?.plural || 'Primaries'} Covered</h3>
@@ -792,7 +838,7 @@ function generateAuthorityDetail(config, auth, data, configCSS) {
             <h2>${escapeHTML(auth.name || humanizeId(auth.id))}</h2>
             <div class="detail-meta">
                 ${auth.jurisdiction ? `<span><strong>Scope:</strong> ${escapeHTML(auth.jurisdiction)}</span>` : ''}
-                ${auth.website ? `<span><a href="${escapeHTML(auth.website)}" target="_blank" rel="noopener">${escapeHTML(auth.website)}</a></span>` : ''}
+                ${safeURL(auth.website) !== '#' ? `<span><a href="${escapeHTML(safeURL(auth.website))}" target="_blank" rel="noopener">${escapeHTML(safeURL(auth.website))}</a></span>` : ''}
             </div>
         </div>
         <h3>${config.entities?.container?.plural || 'Containers'} (${authContainers.length})</h3>
@@ -922,7 +968,7 @@ function generate404Page(config, configCSS) {
     <title>Page Not Found - ${escapeHTML(config.name || '')}</title>
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="/assets/styles.css">
-    <style>${configCSS || ''}</style>
+    <style>${escapeStyle(configCSS || '')}</style>
     ${renderThemeInit()}
 </head>
 <body>
@@ -953,14 +999,14 @@ function generatePatternPage(config, data, configCSS) {
     const secondaryName = config.entities?.secondary?.name || 'Secondary';
     const examples = config.pattern?.examples || [];
     const ecosystem = config.ecosystem || [];
-    const canonicalUrl = config.pattern?.canonical_url || '';
+    const canonicalUrl = safeURL(config.pattern?.canonical_url);
 
     const content = `
-        ${canonicalUrl ? `<link rel="canonical" href="${escapeHTML(canonicalUrl)}">` : ''}
+        ${canonicalUrl !== '#' ? `<link rel="canonical" href="${escapeHTML(canonicalUrl)}">` : ''}
         <div class="about-content">
         <h1>Knowledge as Code</h1>
         <p><em>A pattern for building knowledge bases that verify themselves, resist decay, and serve both humans and machines from plain text files.</em></p>
-        ${canonicalUrl ? `<p>Canonical pattern definition: <a href="${escapeHTML(canonicalUrl)}">${escapeHTML(canonicalUrl)}</a></p>` : ''}
+        ${canonicalUrl !== '#' ? `<p>Canonical pattern definition: <a href="${escapeHTML(canonicalUrl)}">${escapeHTML(canonicalUrl)}</a></p>` : ''}
 
         <h2>The Pattern</h2>
         <p>Knowledge as Code applies software engineering practices to knowledge management. The knowledge lives in version-controlled plain text files. It is validated by automated processes. It produces multiple outputs from a single source. And it actively resists becoming outdated.</p>
@@ -997,7 +1043,7 @@ function generatePatternPage(config, data, configCSS) {
         <h2>Standing on Shoulders</h2>
         <ul>
             <li><strong>File over App</strong> — <a href="https://stephango.com/file-over-app">Steph Ango</a> on durable digital artifacts as files you control</li>
-            <li><strong>Docs as Code</strong> — Managing documentation with version control, pull requests, CI, plain text formats. <a href="https://www.writethedocs.org/guide/docs-as-code/">Write the Docs</a> community</li>
+            <li><strong>Docs as Code</strong> — Managing documentation with version control, pull requests, CI, plain text formats. <a href="https://writethedocs.org/guide/docs-as-code/">Write the Docs</a> community</li>
             <li><strong>Living Documentation</strong> — Cyrille Martraire on documentation that evolves with the system it describes</li>
             <li><strong>GitOps</strong> — Git as single source of truth with automated drift detection. Coined by <a href="https://docs.gitops.weaveworks.org/">Weaveworks</a> (2017)</li>
             <li><strong>Anti-entropy</strong> — Distributed systems pattern for detecting and repairing state divergence (Dynamo, Cassandra)</li>
@@ -1007,7 +1053,7 @@ function generatePatternPage(config, data, configCSS) {
         <h2>Live Examples</h2>
         <div class="card-grid">
             ${examples.map(ex => `<div class="obligation-card">
-                <div class="card-title"><a href="${escapeHTML(ex.url)}">${escapeHTML(ex.name)}</a></div>
+                <div class="card-title"><a href="${escapeHTML(safeURL(ex.url))}">${escapeHTML(ex.name)}</a></div>
                 <div class="card-description">${escapeHTML(ex.description || '')}</div>
             </div>`).join('\n            ')}
         </div>` : ''}
@@ -1015,7 +1061,7 @@ function generatePatternPage(config, data, configCSS) {
         ${ecosystem.length > 0 ? `
         <h2>Ecosystem</h2>
         <ul>
-            ${ecosystem.map(p => `<li><strong><a href="${escapeHTML(p.url)}">${escapeHTML(p.name)}</a></strong> — ${escapeHTML(p.description || '')}</li>`).join('\n            ')}
+            ${ecosystem.map(p => `<li><strong><a href="${escapeHTML(safeURL(p.url))}">${escapeHTML(p.name)}</a></strong> — ${escapeHTML(p.description || '')}</li>`).join('\n            ')}
         </ul>` : ''}
 
         <h2>Get Started</h2>
@@ -1026,7 +1072,7 @@ open docs/index.html</code></pre>
         <p>Template: <a href="https://github.com/snapsynapse/knowledge-as-code-template">github.com/snapsynapse/knowledge-as-code-template</a></p>
 
         <hr>
-        <p><em>Knowledge as Code is a <a href="https://paice.work">PAICE.work</a> project.</em></p>
+        <p><em>Knowledge as Code is a <a href="https://paice.work/">PAICE.work</a> project.</em></p>
         </div>
     `;
 
@@ -1263,7 +1309,7 @@ function build() {
             name: config.name || 'Knowledge Base',
             url: siteUrl,
             description: config.description || '',
-            repo: config.repo || ''
+            repo: safeURL(config.repo, '')
         },
         capabilities: [
             {
@@ -1307,12 +1353,12 @@ function build() {
         meta: {
             last_updated: new Date().toISOString().split('T')[0],
             built_with: 'Knowledge as Code',
-            pattern_url: 'https://knowledge-as-code.com',
+            pattern_url: 'https://knowledge-as-code.com/',
             template_url: 'https://github.com/snapsynapse/knowledge-as-code-template'
         }
     };
     if (config.ecosystem) {
-        agentsJson.related_sites = config.ecosystem.map(p => ({ name: p.name, url: p.url, description: p.description || '' }));
+        agentsJson.related_sites = config.ecosystem.map(p => ({ name: p.name, url: safeURL(p.url, ''), description: p.description || '' }));
     }
     fs.writeFileSync(path.join(DOCS_DIR, 'agents.json'), JSON.stringify(agentsJson, null, 2));
 

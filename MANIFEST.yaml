@@ -47,32 +47,47 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:6e4b493358401d9c345aa9636cfb787a9917e61fd8e417003eb693ac505aa830
+    hash: sha256:67e284b2ae2fa7cddee5354f34b1c21f76908bab7f50fcdd8ca9abac8e62723c
     note: Template overview
+
+  - path: assistant-guide.txt
+    role: guidecheck
+    hash: sha256:dd3912efc5225ba7439ab95c880102ab01789d56ef5a8d8b3882ae2e0c33675d
+    note: Repository-root GuideCheck assistant guide copy
+
+  - path: .well-known/assistant-guide.txt
+    role: guidecheck
+    hash: sha256:dd3912efc5225ba7439ab95c880102ab01789d56ef5a8d8b3882ae2e0c33675d
+    note: Canonical GuideCheck assistant guide
+
+  - path: .well-known/assistant-guide-manifest.txt
+    role: guidecheck
+    hash: sha256:6ab8b1b2b9f72be25be2de00c2081cc7d5250531adb859db410b92645f5c8d82
+    note: GuideCheck sidecar manifest
 
   - path: project.yml
     role: config
-    hash: sha256:f6e4ce97d45ce474e3728105917af3fe87720ef1bec010de4825773b36abfbaf
+    hash: sha256:151688f162e670a0c51d5ef33af75753b0703e1419a6659b6ab6fc367d3d8e4d
     note: KaC build config — entity model, navigation, theme, ontology binding
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:58f765f60ba0f7040522d4706eb58e1ee56341a88046b154f3850b8149068709
+    hash: sha256:daa154b9d3cb9ea0704eb69e43b69bdaa177092fb0bef4cc6653a3b0137fbf7a
     note: Static site generator
 
   - path: scripts/validate.js
     role: tooling
-    hash: sha256:76fe16c22cd47042522912ae15bdf6f7556debc43db609029abc5efd1b1fc231
+    hash: sha256:d1da14cd8659bbfeaa6b6402464597b200c40c656be72cb3b2c6ffe5edebf284
     note: Cross-reference validator
 
   - path: scripts/verify.js
     role: tooling
-    hash: sha256:f5ae58c4dff423cbd4f41270105faefd292782cf3c2f149664ccb8d79eedee24
+    hash: sha256:fe0c7795346241b8457f17851007db60a6513aefd3aa6774eb3c9f10707571e8
     note: Staleness / freshness checker
 
   - path: scripts/check-links.js
     role: tooling
-    hash: sha256:205a39fe8ab1db1f9c1dc94f42c2c5e544e9e536d03e78141bb6b22a7bc762f7
+    hash: sha256:5ed0a6b58f8315e581c5d4636b4829e5243d95636b5fe8a09343517680b6a105
     note: Internal link checker
 
   - path: scripts/validate-hashes.sh

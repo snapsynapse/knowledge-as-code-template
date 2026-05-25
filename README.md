@@ -2,7 +2,7 @@
 
 A template for building structured, version-controlled knowledge bases with an ontology-first approach. Edit a config file, add markdown data, get a full HTML site + JSON API.
 
-**[Knowledge as Code](https://knowledge-as-code.com)** is a pattern created for [PAICE.work](https://paice.work/) PBC. It applies software engineering practices to knowledge management: plain text, Git-native, zero-dependency, ontology-driven, multi-output from a single source.
+**[Knowledge as Code](https://knowledge-as-code.com/)** is a pattern created for [PAICE.work](https://paice.work/) PBC. It applies software engineering practices to knowledge management: plain text, Git-native, zero-dependency, ontology-driven, multi-output from a single source.
 
 ## What it produces
 
@@ -10,9 +10,9 @@ A template for building structured, version-controlled knowledge bases with an o
 
 Built examples using this template:
 
-- [AI Tool Watch](https://aitool.watch) — AI model capabilities across 12 products
-- [Every AI Law](https://everyailaw.com) — global AI regulatory landscape
-- [Meeting Standards Reference](https://meetings.snapsynapse.com) — meeting facilitation standards
+- [AI Tool Watch](https://aitool.watch/) — AI model capabilities across 12 products
+- [Every AI Law](https://everyailaw.com/) — global AI regulatory landscape
+- [Virtual Classroom Watch](https://VirtualClassroom.watch/) — virtual classroom and meeting standards
 
 ## Quick Start
 
@@ -45,6 +45,7 @@ Template forks do not need to follow this policy. A fork can either:
 - **Sortable tables** — click any column header to sort
 - **MCP server** — AI agent access to your knowledge base
 - **Discovery files** — llms.txt, agents.json, RSS for machine consumption
+- **Safe generated output** — generated links, CSS tokens, and client-side comparison labels are normalized or escaped
 - **Zero dependencies** — Node.js built-ins only
 
 ## Project Structure
@@ -135,6 +136,8 @@ All domain-specific settings live in `project.yml`:
 - **Bridge pages** — which SEO pages to generate
 - **Theme** — accent colors
 
+Generated pages normalize external URLs to `https` and bare domains. Avoid `http`, `javascript:`, and `www` in project data; unsafe protocols are dropped from generated links. Configured colors should be hex values such as `#4fc3f7`; invalid color values fall back to safe defaults.
+
 ## Replacing example data
 
 The template ships with example data in `data/examples/` (ISO 27001, NIST CSF). To replace it with your own domain:
@@ -180,16 +183,30 @@ node scripts/eval.js       # Run smoke, link, API, parser, MCP, and docs evals (
 - **Zero dependencies** — no npm install, no supply chain risk
 - **Bespoke static generation** — the build script _is_ the specification
 - **GitOps** — Git is the single source of truth
+- **Defensive output encoding** — data is treated as untrusted when emitted into HTML, CSS, URLs, or inline scripts
 
 ## AI Agent Support
 
 Every Knowledge-as-Code site includes machine-readable discovery files:
 
+- **Assistant Guide** -- `/.well-known/assistant-guide.txt` is a GuideCheck Level 4 guide for local verification and generated-output refresh work
 - **MCP Server** -- `mcp-server.js` provides read-only access to all entities via Model Context Protocol
 - **llms.txt** -- Generated at `docs/llms.txt` with entity model, API endpoints, and entity listings
 - **agents.json** -- Machine-readable metadata at `docs/agents.json` for agent discovery
 - **RSS feed** -- Recent updates at `docs/index.xml`
 - **JSON API** -- Programmatic access at `docs/api/v1/`
+
+### GuideCheck conformance
+
+This repository adopts the [GuideCheck](https://guidecheck.org/) Human-Verifiable Assistant Guide profile at Level 4, the highest appropriate guide-file level. Level 5 is a runtime claim and is not asserted by this repository.
+
+Published artifacts:
+
+- `/.well-known/assistant-guide.txt` - canonical guide
+- `/assistant-guide.txt` - repository-root copy, byte-identical to the canonical guide
+- `/.well-known/assistant-guide-manifest.txt` - sidecar manifest carrying the guide hash and byte count
+
+Assistants should verify the guide with `https://guidecheck.org/verify` or another conformant verifier, report the achieved level and SHA-256, and ask for explicit user confirmation before executing any action blocks.
 
 ### Using the MCP server
 
@@ -252,8 +269,8 @@ Knowledge as Code is part of a broader set of open standards:
 
 - **[Graceful Boundaries](https://github.com/snapsynapse/graceful-boundaries)** — How services communicate operational limits to humans and agents
 - **[Skill Provenance](https://github.com/snapsynapse/skill-provenance)** — Version identity that travels with agent skill bundles
-- **[Siteline](https://siteline.to)** — AI agent readiness scanner for websites
-- **[Knowledge as Code](https://knowledge-as-code.com)** — The pattern definition and community hub
+- **[Siteline](https://siteline.to/)** — AI agent readiness scanner for websites
+- **[Knowledge as Code](https://knowledge-as-code.com/)** — The pattern definition and community hub
 
 ## The Pattern
 
@@ -266,7 +283,7 @@ Knowledge as Code has six defining properties:
 5. **Git-native** — Git is the collaboration layer, audit trail, and deployment trigger
 6. **Ontology-driven** — a vendor-neutral taxonomy maps to domain-specific implementations
 
-Read the full pattern definition at [knowledge-as-code.com](https://knowledge-as-code.com).
+Read the full pattern definition at [knowledge-as-code.com](https://knowledge-as-code.com/).
 
 ## Attribution
 

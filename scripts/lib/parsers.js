@@ -1,5 +1,9 @@
 'use strict';
 
+function unquoteScalar(value) {
+    return String(value || '').trim().replace(/^["']|["']$/g, '');
+}
+
 function parseYaml(content) {
     const lines = content.split('\n');
     const result = {};
@@ -22,7 +26,7 @@ function parseYaml(content) {
                 const obj = {};
                 lineContent.slice(1, -1).split(',').forEach(pair => {
                     const ci = pair.indexOf(':');
-                    if (ci !== -1) obj[pair.slice(0, ci).trim()] = pair.slice(ci + 1).trim().replace(/^["']|["']$/g, '');
+                    if (ci !== -1) obj[pair.slice(0, ci).trim()] = unquoteScalar(pair.slice(ci + 1));
                 });
                 const parent = stack[stack.length - 1].obj;
                 const lastKey = stack[stack.length - 1].lastListKey;
@@ -33,7 +37,8 @@ function parseYaml(content) {
             const ci = lineContent.indexOf(':');
             if (ci !== -1) {
                 const k = lineContent.slice(0, ci).trim();
-                const v = lineContent.slice(ci + 1).trim().replace(/^["']|["']$/g, '');
+                const rawV = lineContent.slice(ci + 1).trim();
+                const v = unquoteScalar(rawV);
                 const nextI = i + 1;
                 const hasChildren = nextI < lines.length &&
                     lines[nextI].trim() !== '' && !lines[nextI].trim().startsWith('#') &&
@@ -43,7 +48,7 @@ function parseYaml(content) {
                 const parent = stack[stack.length - 1].obj;
                 const listKey = stack[stack.length - 1].lastListKey;
 
-                if (hasChildren || v === '') {
+                if (hasChildren || rawV === '') {
                     const obj = {};
                     if (v) obj[k] = v;
                     if (listKey && Array.isArray(parent[listKey])) parent[listKey].push(obj);
@@ -57,7 +62,7 @@ function parseYaml(content) {
                 const parent = stack[stack.length - 1].obj;
                 const listKey = stack[stack.length - 1].lastListKey;
                 if (listKey && Array.isArray(parent[listKey])) {
-                    parent[listKey].push(lineContent.replace(/^["']|["']$/g, ''));
+                    parent[listKey].push(unquoteScalar(lineContent));
                 }
             }
             continue;
@@ -67,10 +72,11 @@ function parseYaml(content) {
         if (ci === -1) continue;
 
         const key = trimmed.slice(0, ci).trim();
-        const val = trimmed.slice(ci + 1).trim().replace(/^["']|["']$/g, '');
+        const rawVal = trimmed.slice(ci + 1).trim();
+        const val = unquoteScalar(rawVal);
         const parent = stack[stack.length - 1].obj;
 
-        if (val === '') {
+        if (rawVal === '') {
             const nextI = i + 1;
             let nextNonEmpty = null;
             for (let j = nextI; j < lines.length; j++) {

@@ -9,7 +9,7 @@ ontology:
     primary:
       gist_class: "gist:KnowledgeConcept"
 ecosystem:
-  - { name: "Knowledge as Code", url: "https://knowledge-as-code.com", description: "Pattern site" }
+  - { name: "Knowledge as Code", url: "https://knowledge-as-code.com/", description: "Pattern site" }
   - { name: "Agentlink", url: "https://agentlink.run/", description: "Agent runtime" }
 nav:
   - id: home

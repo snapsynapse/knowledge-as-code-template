@@ -4,6 +4,18 @@ A template for building structured, version-controlled knowledge bases with an o
 
 **[Knowledge as Code](https://knowledge-as-code.com/)** is a pattern created for [PAICE.work](https://paice.work/) PBC. It applies software engineering practices to knowledge management: plain text, Git-native, zero-dependency, ontology-driven, multi-output from a single source.
 
+## Who this is for
+
+Teams that want a knowledge base treated like code — version-controlled, ontology-first, multi-output — without standing up a database or CMS.
+
+## What problem it solves
+
+Knowledge bases usually live in databases or CMSs that aren't diffable, portable, or agent-readable. Knowledge-as-Code applies software engineering practice (plain text, Git-native, ontology-driven) to produce a searchable HTML site plus JSON API from one source.
+
+## Canonical URL
+
+https://knowledge-as-code.com/
+
 ## What it produces
 
 **[Live demo →](https://knowledge-as-code.com/demo/)** — the output of this template's example data, deployed on GitHub Pages. Includes a searchable HTML site, coverage matrix, timeline, comparison tool, and JSON API.

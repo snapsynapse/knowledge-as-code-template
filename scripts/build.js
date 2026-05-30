@@ -82,6 +82,15 @@ function safeURL(url, fallback = '#') {
     return fallback;
 }
 
+function safeInternalHref(href, fallback = 'index.html') {
+    const raw = String(href || '').trim();
+    if (!raw) return fallback;
+    if (/[\x00-\x20"'<>\\]/.test(raw)) return fallback;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) return fallback;
+    if (raw.startsWith('//')) return fallback;
+    return raw;
+}
+
 function humanizeId(id) {
     return String(id || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -308,7 +317,7 @@ function renderSiteNav(config, activePage, prefix) {
         </button>
         <nav class="site-nav" id="siteNav" aria-label="Main navigation">
             ${navItems.map(item =>
-                `<a href="${prefix}${item.href}" class="site-nav-link${item.id === activePage ? ' active' : ''}" onclick="passTheme(this)">${escapeHTML(item.label)}</a>`
+                `<a href="${escapeHTML(prefix + safeInternalHref(item.href))}" class="site-nav-link${item.id === activePage ? ' active' : ''}" onclick="passTheme(this)">${escapeHTML(item.label)}</a>`
             ).join('\n            ')}
         </nav>
         <div class="header-actions">
@@ -790,7 +799,7 @@ function generateContainerDetail(config, container, data, configCSS) {
         </div>
         ${cPrimaries.length ? `<h3>${config.entities?.primary?.plural || 'Primaries'} Covered</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">
-            ${cPrimaries.map(pId => { const p = primaries.find(pr => pr.id === pId); return `<a href="../../primary/${pId}/index.html" onclick="passTheme(this)" class="group-badge ${p?.group || ''}" style="text-decoration:none;">${escapeHTML(p?.name || humanizeId(pId))}</a>`; }).join(' ')}
+            ${cPrimaries.map(pId => { const p = primaries.find(pr => pr.id === pId); return `<a href="../../primary/${pId}/index.html" onclick="passTheme(this)" class="group-badge ${cssClassName(p?.group, 'other')}" style="text-decoration:none;">${escapeHTML(p?.name || humanizeId(pId))}</a>`; }).join(' ')}
         </div>` : ''}
         ${timelineRows ? `<h3>Timeline</h3><table class="data-table"><thead><tr><th>Milestone</th><th>Date</th><th>Notes</th></tr></thead><tbody>${timelineRows}</tbody></table>` : ''}
         <h3>Provisions (${container.provisions.length})</h3>

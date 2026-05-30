@@ -27,8 +27,8 @@
 #   - This file itself
 
 bundle: knowledge-as-code-template
-bundle_version: 0.1.0
-bundle_date: 2026-04-19
+bundle_version: 1.0.1
+bundle_date: 2026-05-30
 description: >
   Knowledge as Code starter template — scaffolds a KaC site with
   Primary/Container/Authority/Secondary entities, gist ontology binding,
@@ -47,7 +47,7 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:67e284b2ae2fa7cddee5354f34b1c21f76908bab7f50fcdd8ca9abac8e62723c
+    hash: sha256:61811994959fe4f8d52f1802593d79957527fa890f3573aeea1f3e96f0105c13
     note: Template overview
 
   - path: assistant-guide.txt
@@ -72,7 +72,7 @@ files:
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:daa154b9d3cb9ea0704eb69e43b69bdaa177092fb0bef4cc6653a3b0137fbf7a
+    hash: sha256:c735180a53071ae90facd6ddf9641ff26e32906acaf2775e3cef1fe872e6af9e
     note: Static site generator
 
   - path: scripts/validate.js

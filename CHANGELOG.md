@@ -13,7 +13,10 @@ pattern.
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-05-30
+
 ### Added
+- Added eval coverage for manifest hash freshness, changelog release-tag consistency, and generated-output injection boundaries.
 - Documented generated-output safety behavior for external URLs, CSS tokens, table parsing, and client-side comparison labels.
 - Adopted the GuideCheck Human-Verifiable Assistant Guide profile at Level 4 with `assistant-guide.txt`, a well-known canonical guide, a sidecar manifest, and discovery links.
 
@@ -21,6 +24,9 @@ pattern.
 - Normalized example and public-facing URLs to `https` bare-domain form.
 
 ### Fixed
+- Restricted generated navigation hrefs to safe internal paths before HTML emission.
+- Normalized coverage-badge group classes on generated container detail pages before HTML emission.
+- Refreshed the README content-provenance hash after the intentional schema documentation update.
 - Escaped generated compare-page labels and script data before client-side HTML insertion.
 - Validated generated CSS class names and color values before writing inline styles.
 - Restricted generated external links to `https` and normalized `www` hostnames to bare domains.
@@ -127,7 +133,8 @@ canonical pattern definition at <https://knowledge-as-code.com/>.
   site generator, `scripts/validate.js` cross-reference linter, example data for ISO 27001 and
   NIST CSF, dark/light themed static site output, JSON API, bridge pages, `CNAME` fixture.
 
-[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.0.1
 [1.0.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.0.0
 [0.4.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v0.4.0
 [0.3.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v0.3.0

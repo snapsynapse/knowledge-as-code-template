@@ -3,6 +3,7 @@
 
 const assert = require('assert');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { parseTable } = require('./lib/data-loaders');
@@ -45,6 +46,33 @@ function assertFile(filePath) {
 
 function assertIncludes(haystack, needle, message) {
     assert.ok(haystack.includes(needle), message || `Expected output to include "${needle}"`);
+}
+
+function assertNoExecutableHtml(html, label) {
+    assert.ok(!/<script>alert\(1\)<\/script>/i.test(html), `${label} should not contain raw script tags from source data.`);
+    assert.ok(!/<img\s/i.test(html), `${label} should not contain raw image tags from source data.`);
+    assert.ok(!/\s(?:onerror|onfocus|onmouseover)\s*=\s*["']/i.test(html), `${label} should not contain event-handler attributes from source data.`);
+    assert.ok(!/<[^>]+\s(?:autofocus|formaction|srcdoc)(?:\s|=|>)/i.test(html), `${label} should not contain injected active attributes from source data.`);
+    assert.ok(!/href="(?:javascript:|http:|\/\/)/i.test(html), `${label} should not contain unsafe href protocols.`);
+}
+
+function copyRepoToTemp(prefix) {
+    const tempRepo = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+    fs.cpSync(ROOT, tempRepo, {
+        recursive: true,
+        filter: source => {
+            const rel = path.relative(ROOT, source);
+            return rel !== '.git' && !rel.startsWith(`.git${path.sep}`) &&
+                rel !== '.tmp-evals' && !rel.startsWith(`.tmp-evals${path.sep}`);
+        }
+    });
+    return tempRepo;
+}
+
+function replaceInFile(filePath, search, replacement) {
+    const original = fs.readFileSync(filePath, 'utf8');
+    assert.ok(original.includes(search), `Expected ${filePath} to include fixture text: ${search}`);
+    fs.writeFileSync(filePath, original.replace(search, replacement));
 }
 
 function test(name, fn) {
@@ -342,7 +370,66 @@ function evalOutputSanitization() {
         assert.ok(compare.includes('encodeURIComponent(p)'), 'Compare page should encode dynamic href path segments.');
         assert.ok(compare.includes('var cmpData = '), 'Compare page should serialize comparison data.');
         assert.ok(container.includes('href="https://iso.org/standard/27001"'));
+
+        const maliciousRepo = copyRepoToTemp('kac-malicious-fixture-');
+        try {
+            const maliciousPrimary = path.join(maliciousRepo, 'data', 'examples', 'requirements', 'access-control.md');
+            replaceInFile(maliciousPrimary, 'name: Access Control', 'name: Access <script>alert(1)</script> Control');
+            replaceInFile(maliciousPrimary, 'group: governance', 'group: governance" autofocus onfocus="alert(1)');
+            replaceInFile(maliciousPrimary, 'Requirement to restrict system', '<img src=x onerror=alert(1)> Requirement to restrict system');
+
+            const maliciousContainerSource = path.join(maliciousRepo, 'data', 'examples', 'frameworks', 'iso-27001.md');
+            replaceInFile(maliciousContainerSource, 'status: active', 'status: active" onmouseover="alert(1)');
+            replaceInFile(maliciousContainerSource, 'official_url: https://iso.org/standard/27001', 'official_url: javascript:alert(1)');
+            replaceInFile(maliciousContainerSource, '[ISO 27001:2022](https://iso.org/standard/27001)', '[ISO 27001:2022](http://iso.org/standard/27001)');
+
+            const maliciousProject = path.join(maliciousRepo, 'project.yml');
+            replaceInFile(maliciousProject, 'label: Home', 'label: Home <script>alert(1)</script>');
+            replaceInFile(maliciousProject, 'href: index.html', 'href: index.html" onclick="alert(1)');
+
+            const maliciousBuild = spawnSync(process.execPath, ['scripts/build.js'], {
+                cwd: maliciousRepo,
+                encoding: 'utf8',
+                env: { ...process.env, KAC_OUTPUT_DIR: 'poc-out' }
+            });
+            assert.strictEqual(maliciousBuild.status, 0, `Malicious fixture build failed:\n${maliciousBuild.stdout}\n${maliciousBuild.stderr}`);
+
+            const maliciousContainer = fs.readFileSync(path.join(maliciousRepo, 'poc-out', 'container', 'iso-27001', 'index.html'), 'utf8');
+            const maliciousPrimaryHtml = fs.readFileSync(path.join(maliciousRepo, 'poc-out', 'primary', 'access-control', 'index.html'), 'utf8');
+            const maliciousIndex = fs.readFileSync(path.join(maliciousRepo, 'poc-out', 'index.html'), 'utf8');
+            const coverageBadge = maliciousContainer.match(/class="group-badge [^"]+"/);
+            assert.ok(coverageBadge, 'Malicious group should still render as one quoted class attribute.');
+            assert.ok(coverageBadge[0].includes('governance-autofocus-onfocus-alert-1'), 'Malicious group should be normalized to a safe CSS class token.');
+            assert.ok(maliciousIndex.includes('href="index.html"'), 'Unsafe nav href should fall back to a safe internal path.');
+            assertNoExecutableHtml(maliciousContainer, 'container detail page');
+            assertNoExecutableHtml(maliciousPrimaryHtml, 'primary detail page');
+            assertNoExecutableHtml(maliciousIndex, 'homepage');
+        } finally {
+            fs.rmSync(maliciousRepo, { recursive: true, force: true });
+        }
     });
+}
+
+function evalManifestFreshness() {
+    const result = runCommand('./scripts/validate-hashes.sh', []);
+    assert.strictEqual(result.status, 0, `Manifest hash verification failed:\n${result.stdout}\n${result.stderr}`);
+    assertIncludes(result.stdout, 'All hashes verified.');
+}
+
+function evalChangelogReleaseTags() {
+    const changelog = fs.readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8');
+    const linkedVersions = [...changelog.matchAll(/^\[([0-9]+\.[0-9]+\.[0-9]+)\]:\s+https:\/\/github\.com\/snapsynapse\/knowledge-as-code-template\/releases\/tag\/v\1$/gm)]
+        .map(match => `v${match[1]}`);
+    assert.ok(linkedVersions.length > 0, 'Expected changelog to contain release tag links.');
+
+    const result = runCommand('git', ['tag', '--list']);
+    assert.strictEqual(result.status, 0, `Could not list local tags:\n${result.stdout}\n${result.stderr}`);
+    const localTags = result.stdout.split(/\s+/).filter(Boolean);
+    if (localTags.length === 0) return;
+
+    for (const tag of linkedVersions) {
+        assert.ok(localTags.includes(tag), `Changelog links ${tag}, but no matching local tag exists.`);
+    }
 }
 
 function evalHtmlSnapshots() {
@@ -401,6 +488,8 @@ const evals = [
     ['config override', evalConfigOverride],
     ['parser fixtures', evalParserFixtures],
     ['output sanitization', evalOutputSanitization],
+    ['manifest freshness', evalManifestFreshness],
+    ['changelog release tags', evalChangelogReleaseTags],
     ['HTML snapshots', evalHtmlSnapshots],
     ['MCP smoke', evalMcpSmoke],
     ['docs consistency', evalDocsConsistency]

@@ -72,7 +72,7 @@ files:
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:8582144782273c2c6cca840912a2fd58d9b5b7c21d9b48eccd874d89f5e89dd0
+    hash: sha256:fb2934adc10d55633e587b240fa571c34c58e646b228f4b9c70d896bb3469965
     note: Static site generator
 
   - path: scripts/validate.js

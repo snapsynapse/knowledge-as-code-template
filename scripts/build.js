@@ -407,9 +407,9 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
 </head>
 <body>
     ${renderSiteNav(config, activePage, prefix)}
-    <div class="container" id="main-content">
+    <main class="container" id="main-content">
         ${content}
-    </div>
+    </main>
     ${renderFooter(config)}
     <script src="${prefix}assets/search.js"></script>
     <script src="${prefix}assets/tables.js"></script>
@@ -446,9 +446,9 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
 </head>
 <body>
     ${renderSiteNav(config, 'none', prefix)}
-    <div class="container" id="main-content">
+    <main class="container" id="main-content">
         ${content}
-    </div>
+    </main>
     ${renderFooter(config)}
     <script src="${prefix}assets/search.js"></script>
     <script src="${prefix}assets/tables.js"></script>
@@ -1022,7 +1022,7 @@ function generate404Page(config, configCSS) {
 </head>
 <body>
     ${renderSiteNav(config, 'none', '/')}
-    <div class="container" id="main-content" style="text-align:center;">
+    <main class="container" id="main-content" style="text-align:center;">
         <h1 style="margin-top:2rem;">404 — Page Not Found</h1>
         <p style="color:var(--text-secondary); margin: 1rem 0 2rem;">The page you're looking for doesn't exist or has moved.</p>
         <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
@@ -1030,7 +1030,7 @@ function generate404Page(config, configCSS) {
             <a href="/containers.html" class="bridge-cta">All ${escapeHTML(containerPlural)}</a>
             <a href="/primaries.html" class="bridge-cta">All ${escapeHTML(primaryPlural)}</a>
         </div>
-    </div>
+    </main>
     ${renderFooter(config)}
     ${renderThemeScript()}
 </body>

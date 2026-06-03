@@ -82,12 +82,13 @@ jobs:
           if [ -f docs/sitemap.xml ]; then
             SITE_BASE=$(grep -oE '<loc>[^<]+</loc>' docs/sitemap.xml | head -1 | sed -E 's|<loc>(.+)/?</loc>|\1|' | sed -E 's|/$||')
             npx --yes pa11y-ci \
+              --config .pa11yci.json \
               --sitemap http://localhost:8088/sitemap.xml \
               --sitemap-find "$SITE_BASE" \
               --sitemap-replace 'http://localhost:8088' \
               --threshold 0
           else
-            npx --yes pa11y-ci http://localhost:8088/ --threshold 0
+            npx --yes pa11y-ci --config .pa11yci.json http://localhost:8088/ --threshold 0
           fi
 
 # GitHub Pages serves directly from `main` branch root on this repo.

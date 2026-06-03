@@ -13,6 +13,9 @@ pattern.
 
 ## [Unreleased]
 
+### Fixed
+- Made `scripts/build.js` output reproducible by sourcing generated-output timestamps (`meta.generated`, `agents.json` `last_updated`, sitemap `lastmod`, RSS `lastBuildDate`) from the freshest date in the data rather than wall-clock time. The "generated outputs are current" CI gate could never pass before, because each rebuild stamped a new `new Date()` into committed artifacts.
+
 ## [1.0.1] — 2026-05-30
 
 ### Added

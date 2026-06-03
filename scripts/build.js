@@ -17,6 +17,30 @@ const { loadMappingIndex, parseTable } = require('./lib/data-loaders');
 const { parseFrontmatter, parseYaml } = require('./lib/parsers');
 
 const ROOT = path.join(__dirname, '..');
+
+// Deterministic build stamp. Sourced from the freshest date in the data
+// (last_verified / effective / timeline) instead of wall-clock time, so a
+// rebuild produces byte-identical output and the "generated outputs are
+// current" CI gate can actually pass. Falls back to the Unix epoch when the
+// data carries no dates (e.g. an empty template).
+let BUILD_DAY = '1970-01-01';
+
+function setBuildStamp(containers) {
+    let max = '';
+    for (const c of containers || []) {
+        for (const d of [c.last_verified, c.effective]) {
+            if (d && d > max) max = d;
+        }
+        for (const t of c.timeline || []) {
+            if (t.date && t.date > max) max = t.date;
+        }
+    }
+    BUILD_DAY = max || '1970-01-01';
+}
+const buildISO = () => `${BUILD_DAY}T00:00:00.000Z`;
+const buildUTC = () => new Date(`${BUILD_DAY}T00:00:00Z`).toUTCString();
+const buildYear = () => BUILD_DAY.slice(0, 4);
+
 // Output directory for the generated site.
 // Override with KAC_OUTPUT_DIR=demo (or any folder name) to write elsewhere.
 // Default is 'docs' so GitHub Pages can serve from main/docs with no config.
@@ -334,7 +358,7 @@ function renderFooter(config) {
     const repo = safeURL(config.repo);
     return `<footer>
         <p>Maintained with <a href="${escapeHTML(repo)}">version control</a>. This is a reference tool, not professional advice.</p>
-        <p>&copy; ${new Date().getFullYear()} | Built with <a href="https://knowledge-as-code.com/">Knowledge-as-Code</a>, a pattern by <a href="https://paice.work/">PAICE.work</a></p>
+        <p>&copy; ${buildYear()} | Built with <a href="https://knowledge-as-code.com/">Knowledge-as-Code</a>, a pattern by <a href="https://paice.work/">PAICE.work</a></p>
     </footer>`;
 }
 
@@ -660,7 +684,7 @@ function generateMatrixPage(config, data, configCSS) {
 
 function generateTimelinePage(config, data, configCSS) {
     const { containers } = data;
-    const today = new Date().toISOString().split('T')[0];
+    const today = BUILD_DAY;
     const scopeField = config.entities?.container?.scope_field || 'jurisdiction';
     const events = [];
 
@@ -958,7 +982,7 @@ function buildSearchIndex(config, data) {
 
 function generateSitemap(config, pages) {
     const base = config.url || '';
-    const lastmod = new Date().toISOString().split('T')[0];
+    const lastmod = BUILD_DAY;
     return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map(p => `  <url><loc>${base}${p}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}\n</urlset>`;
 }
 
@@ -1120,6 +1144,8 @@ function build() {
     const authorities = loadDir(authorityDir);
     const mappingIndex = loadMappingIndex(mappingPath);
 
+    setBuildStamp(containers);
+
     console.log(`  ${config.entities?.primary?.plural || 'Primaries'}: ${primaries.length}`);
     console.log(`  ${config.entities?.container?.plural || 'Containers'}: ${containers.length}`);
     console.log(`  ${config.entities?.authority?.plural || 'Authorities'}: ${authorities.length}`);
@@ -1166,13 +1192,13 @@ function build() {
     function withType(role, obj) { const t = ontType(role); return t ? { '@type': t, ...obj } : obj; }
 
     // --- JSON API ---
-    fs.writeFileSync(path.join(API_DIR, 'primaries.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: primaries.length }, items: primaries.map(p => withType('primary', { id: p.id, name: p.name || humanizeId(p.id), group: p.group || '', status: p.status || 'active' })) }, null, 2));
-    fs.writeFileSync(path.join(API_DIR, 'containers.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: containers.length }, items: containers.map(c => withType('container', { id: c.id, name: c.name, status: c.status, effective: c.effective, provision_count: c.provisions.length })) }, null, 2));
-    fs.writeFileSync(path.join(API_DIR, 'authorities.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: authorities.length }, items: authorities.map(a => withType('authority', { id: a.id, name: a.name || humanizeId(a.id), jurisdiction: a.jurisdiction || '' })) }, null, 2));
-    fs.writeFileSync(path.join(API_DIR, 'mappings.json'), JSON.stringify({ meta: { generated: new Date().toISOString(), count: mappingIndex.length }, items: mappingIndex }, null, 2));
-    fs.writeFileSync(path.join(API_DIR, 'matrix.json'), JSON.stringify({ meta: { generated: new Date().toISOString() }, matrix }, null, 2));
-    fs.writeFileSync(path.join(API_DIR, 'comparisons.json'), JSON.stringify({ meta: { generated: new Date().toISOString() }, comparisons }, null, 2));
-    const indexMeta = { generated: new Date().toISOString(), version: '1.0', project: config.short_name || 'kac' };
+    fs.writeFileSync(path.join(API_DIR, 'primaries.json'), JSON.stringify({ meta: { generated: buildISO(), count: primaries.length }, items: primaries.map(p => withType('primary', { id: p.id, name: p.name || humanizeId(p.id), group: p.group || '', status: p.status || 'active' })) }, null, 2));
+    fs.writeFileSync(path.join(API_DIR, 'containers.json'), JSON.stringify({ meta: { generated: buildISO(), count: containers.length }, items: containers.map(c => withType('container', { id: c.id, name: c.name, status: c.status, effective: c.effective, provision_count: c.provisions.length })) }, null, 2));
+    fs.writeFileSync(path.join(API_DIR, 'authorities.json'), JSON.stringify({ meta: { generated: buildISO(), count: authorities.length }, items: authorities.map(a => withType('authority', { id: a.id, name: a.name || humanizeId(a.id), jurisdiction: a.jurisdiction || '' })) }, null, 2));
+    fs.writeFileSync(path.join(API_DIR, 'mappings.json'), JSON.stringify({ meta: { generated: buildISO(), count: mappingIndex.length }, items: mappingIndex }, null, 2));
+    fs.writeFileSync(path.join(API_DIR, 'matrix.json'), JSON.stringify({ meta: { generated: buildISO() }, matrix }, null, 2));
+    fs.writeFileSync(path.join(API_DIR, 'comparisons.json'), JSON.stringify({ meta: { generated: buildISO() }, comparisons }, null, 2));
+    const indexMeta = { generated: buildISO(), version: '1.0', project: config.short_name || 'kac' };
     if (ont) { indexMeta.ontology = { framework: ont.framework, base_iri: ont.base_iri, context: 'context.jsonld', attribution: ont.attribution }; }
     fs.writeFileSync(path.join(API_DIR, 'index.json'), JSON.stringify({ meta: indexMeta, files: { primaries: { path: 'primaries.json' }, containers: { path: 'containers.json' }, authorities: { path: 'authorities.json' }, mappings: { path: 'mappings.json' }, matrix: { path: 'matrix.json' }, comparisons: { path: 'comparisons.json' } } }, null, 2));
 
@@ -1360,7 +1386,7 @@ function build() {
             robots: `${siteUrl}robots.txt`
         },
         meta: {
-            last_updated: new Date().toISOString().split('T')[0],
+            last_updated: BUILD_DAY,
             built_with: 'Knowledge as Code',
             pattern_url: 'https://knowledge-as-code.com/',
             template_url: 'https://github.com/snapsynapse/knowledge-as-code-template'
@@ -1396,7 +1422,7 @@ function build() {
         `    <link>${siteUrl}</link>`,
         `    <description>${escapeHTML(config.description || '')}</description>`,
         `    <atom:link href="${siteUrl}index.xml" rel="self" type="application/rss+xml"/>`,
-        `    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`,
+        `    <lastBuildDate>${buildUTC()}</lastBuildDate>`,
         rssItems,
         '  </channel>',
         '</rss>',

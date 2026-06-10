@@ -33,6 +33,7 @@ Built examples using this template:
 3. **Replace example data** -- delete the files in `data/examples/requirements/`, `data/examples/frameworks/`, `data/examples/organizations/`, and `data/examples/mapping/index.yml`, then add your own. See [Replacing example data](#replacing-example-data) and [`data/_schema.md`](data/_schema.md) for the format.
 4. **Build** -- `node scripts/build.js`. A successful build prints `Build complete — N HTML pages, N JSON API files`. Check the `docs/` directory for the output, and open any HTML file in a browser to verify it looks right.
 5. **Deploy** -- choose your Pages strategy. This repo validates builds in CI, but it does not auto-deploy template forks by default. If you want automated deployment, add a Pages publish step for your repo.
+6. **(Optional) Publish your knowledge base as an MCP server** -- if you want anyone to install your knowledge base as an MCP-aware agent tool via `npx -y your-package`, follow [PUBLISH-MCP.md](PUBLISH-MCP.md). It walks through the package.json prep, npm publish, and Official MCP Registry submission, with the gotchas that bit us when we did this for three sibling projects.
 
 ## Output Policy
 

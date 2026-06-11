@@ -13,6 +13,10 @@ Thumbs.db
 .vscode/
 *.sublime-*
 .claude/
+.agents/
+
+# Internal session/handoff notes — local only, not for the public-facing template
+_private/
 
 # Logs
 *.log

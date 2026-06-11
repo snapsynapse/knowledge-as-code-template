@@ -9,6 +9,7 @@
 - [Pattern home](https://knowledge-as-code.com/): canonical Knowledge as Code definition
 - [Live demo](https://knowledge-as-code.com/demo/): generated reference site
 - [Repository](https://github.com/snapsynapse/knowledge-as-code-template): source repository
+- [PUBLISH-MCP.md](https://github.com/snapsynapse/knowledge-as-code-template/blob/main/PUBLISH-MCP.md): how to publish a fork as an MCP server (npm + Official MCP Registry)
 
 ## Assistant-Facing Instructions
 

@@ -8,6 +8,9 @@ This file documents the file format for each entity type. All data files use YAM
 
 **Example:** `requirements/access-control.md`
 
+The filename without `.md` is the entity ID. It must be a lowercase slug using
+only `a-z`, `0-9`, and single hyphens, such as `access-control`.
+
 ```yaml
 ---
 id: access-control              # Required. Kebab-case identifier, must match filename
@@ -42,6 +45,9 @@ One paragraph describing the requirement.
 **Directory:** `data/examples/{container.directory}/`
 
 **Example:** `frameworks/iso-27001.md`
+
+The filename without `.md` is the container ID. It must be a lowercase slug
+using only `a-z`, `0-9`, and single hyphens, such as `iso-27001`.
 
 ```yaml
 ---
@@ -120,6 +126,9 @@ last_verified: 2026-03-25        # Optional. Date of last verification check
 
 **Example:** `organizations/iso.md`
 
+The filename without `.md` is the authority ID. It must be a lowercase slug
+using only `a-z`, `0-9`, and single hyphens, such as `iso`.
+
 ```yaml
 ---
 id: iso                                           # Required. Kebab-case identifier
@@ -145,7 +154,7 @@ The heading name should match your container entity's plural name (e.g., "Regula
 
 **Path:** `data/examples/mapping/index.yml` (configured in `project.yml` as `mapping.file`)
 
-The mapping file connects containers to primaries through secondary (provision) entities:
+The mapping file connects containers to primaries through secondary (provision) entities. Mapping IDs and every entity reference must use the same lowercase slug format as filenames.
 
 ```yaml
 - id: iso-27001-access-control        # Required. Unique provision ID (kebab-case)
@@ -163,9 +172,11 @@ The `regulation` field should use your container entity name from config (the fi
 
 ## File naming
 
-- All files use kebab-case: `access-control.md`, `iso-27001.md`
-- The filename (without `.md`) is used as the entity ID for primaries and authorities
-- Container files use the `name` frontmatter field (lowercased, spaces replaced with hyphens) as their ID
+- All files use lowercase slug filenames: `access-control.md`, `iso-27001.md`
+- Slugs may contain only `a-z`, `0-9`, and single hyphens
+- The filename without `.md` is used as the entity ID for primaries, containers, and authorities
+- Mapping IDs and mapping references must use the same slug format
+- `node scripts/validate.js` and `node scripts/build.js` reject unsafe IDs
 
 ## URL and style safety
 
@@ -175,6 +186,7 @@ The `regulation` field should use your container entity name from config (the fi
 - Group, status, and theme colors in `project.yml` should be hex colors. Invalid values fall back to safe defaults.
 - Group and status names are normalized before use as CSS class names.
 - Generated comparison-page labels are escaped before client-side insertion.
+- Generated URL path segments are derived only from validated entity IDs.
 
 ## Adding new entities
 

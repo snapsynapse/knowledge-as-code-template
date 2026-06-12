@@ -131,12 +131,45 @@ function safeInternalHref(href, fallback = 'index.html') {
     return raw;
 }
 
+function assertSafeId(id, label) {
+    const value = String(id || '');
+    if (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)) return value;
+    throw new Error(`${label || 'ID'} must be lowercase alphanumeric with single hyphens: ${value || '(empty)'}`);
+}
+
+function pathSegment(id, label) {
+    return encodeURIComponent(assertSafeId(id, label));
+}
+
 function humanizeId(id) {
     return String(id || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function ensureDir(dir) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function cleanGeneratedOutput() {
+    const outputRoot = path.resolve(DOCS_DIR);
+    const repoRoot = path.resolve(ROOT);
+    if (outputRoot === repoRoot || !outputRoot.startsWith(repoRoot + path.sep)) {
+        throw new Error(`Refusing to clean unsafe output directory: ${DOCS_DIR}`);
+    }
+
+    const ownedDirs = ['api', 'assets', 'container', 'primary', 'authority', 'requires', 'compare', 'applies-to'];
+    const ownedFiles = [
+        'index.html', 'containers.html', 'primaries.html', 'matrix.html', 'timeline.html',
+        'compare.html', 'about.html', 'pattern.html', '404.html', 'sitemap.xml',
+        'robots.txt', 'llms.txt', 'agents.json', 'index.xml', 'CNAME', '.nojekyll'
+    ];
+
+    ensureDir(DOCS_DIR);
+    for (const dir of ownedDirs) {
+        fs.rmSync(path.join(DOCS_DIR, dir), { recursive: true, force: true });
+    }
+    for (const file of ownedFiles) {
+        fs.rmSync(path.join(DOCS_DIR, file), { force: true });
+    }
 }
 
 function copyStaticAssets() {
@@ -225,7 +258,8 @@ function loadDir(dir) {
         .map(f => {
             const content = fs.readFileSync(path.join(dir, f), 'utf-8');
             const { frontmatter, body } = parseFrontmatter(content);
-            return { id: f.replace('.md', ''), ...frontmatter, _body: body, _file: f };
+            const id = assertSafeId(f.replace('.md', ''), `Entity filename ${f}`);
+            return { id, ...frontmatter, _body: body, _file: f };
         });
 }
 
@@ -236,13 +270,27 @@ function loadContainers(dir) {
         .map(f => {
             const content = fs.readFileSync(path.join(dir, f), 'utf-8');
             const { frontmatter, body } = parseFrontmatter(content);
-            const id = f.replace('.md', '');
+            const id = assertSafeId(f.replace('.md', ''), `Container filename ${f}`);
             const timelineMatch = body.match(/## Timeline\n\n([\s\S]*?)(?=\n---|\n## )/);
             const timeline = timelineMatch ? parseTable(timelineMatch[1]) : [];
             const provisionSections = body.split(/\n---\n/).slice(1);
             const provisions = provisionSections.map(parseProvisionSection).filter(Boolean);
             return { id, ...frontmatter, timeline, provisions, _body: body, _file: f };
         });
+}
+
+function validateDataIds({ primaries, containers, authorities, mappingIndex }) {
+    primaries.forEach(p => assertSafeId(p.id, 'Primary ID'));
+    containers.forEach(c => assertSafeId(c.id, 'Container ID'));
+    authorities.forEach(a => assertSafeId(a.id, 'Authority ID'));
+    mappingIndex.forEach(m => {
+        assertSafeId(m.id, 'Mapping ID');
+        if (m.regulation) assertSafeId(m.regulation, `Mapping ${m.id} container reference`);
+        if (m.container) assertSafeId(m.container, `Mapping ${m.id} container reference`);
+        if (m.framework) assertSafeId(m.framework, `Mapping ${m.id} container reference`);
+        if (m.authority) assertSafeId(m.authority, `Mapping ${m.id} authority reference`);
+        (m.obligations || []).forEach(obl => assertSafeId(obl, `Mapping ${m.id} primary reference`));
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -272,8 +320,8 @@ function generateConfigCSS(config) {
         const name = cssClassName(s.name || s, 'status');
         const color = cssColor(s.color, '#888');
         const colorLight = cssColor(s.color_light, color);
-        css += `.status-badge.${name} { background: ${color}; color: #000; }\n`;
-        css += `:is(html, body).light-mode .status-badge.${name} { background: ${colorLight}; color: #fff; }\n`;
+        css += `.status-badge.${name} { background: ${color}; color: ${readableTextColor(color)}; }\n`;
+        css += `:is(html, body).light-mode .status-badge.${name} { background: ${colorLight}; color: ${readableTextColor(colorLight)}; }\n`;
     });
 
     // Theme accent overrides
@@ -488,7 +536,7 @@ function renderProvisionCard(prov, linkPrefix = '../') {
     return `<div class="provision-card" id="${slugify(prov.name)}">
         <h3>${escapeHTML(prov.name)}</h3>
         <div class="provision-meta">
-            ${prov.obligation ? `<span><strong>Implements:</strong> <a href="${linkPrefix}primary/${escapeHTML(prov.obligation)}/index.html" onclick="passTheme(this)">${escapeHTML(humanizeId(prov.obligation))}</a></span>` : ''}
+            ${prov.obligation ? `<span><strong>Implements:</strong> <a href="${linkPrefix}primary/${pathSegment(prov.obligation, 'Provision primary reference')}/index.html" onclick="passTheme(this)">${escapeHTML(humanizeId(prov.obligation))}</a></span>` : ''}
             ${prov.status ? `<span>${renderStatusBadge(prov.status)}</span>` : ''}
             ${prov.effective ? `<span><strong>Effective:</strong> ${formatDate(prov.effective)}</span>` : ''}
         </div>
@@ -559,7 +607,7 @@ function generateHomepage(config, data, configCSS) {
             <thead><tr>${th(config.entities?.container?.name || 'Container', { sortType: 'string' })}${th('Scope', { sortType: 'string' })}${th('Status', { sortType: 'string' })}${th('Effective', { sortType: 'string' })}${th('Provisions', { sortType: 'number' })}</tr></thead>
             <tbody>
                 ${containers.map(c => `<tr>
-                    <td><a href="container/${c.id}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td>
+                    <td><a href="container/${pathSegment(c.id, 'Container ID')}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td>
                     <td>${escapeHTML(c.jurisdiction || '')}</td>
                     ${tdStatus(c.status)}
                     ${tdDate(c.effective)}
@@ -574,7 +622,7 @@ function generateHomepage(config, data, configCSS) {
                 const regCount = Object.keys(matrix[p.id] || {}).length;
                 const summary = p._body ? (p._body.match(/## Summary\n\n([^\n#]+)/) || [])[1]?.trim() || '' : '';
                 return `<div class="obligation-card">
-                    <div class="card-title"><a href="primary/${p.id}/index.html" onclick="passTheme(this)">${escapeHTML(p.name || humanizeId(p.id))}</a></div>
+                    <div class="card-title"><a href="primary/${pathSegment(p.id, 'Primary ID')}/index.html" onclick="passTheme(this)">${escapeHTML(p.name || humanizeId(p.id))}</a></div>
                     <div class="card-meta">${renderGroupBadge(p.group)} <span class="meta-item">${regCount} ${(config.entities?.container?.name || 'container').toLowerCase()}${regCount !== 1 ? 's' : ''}</span></div>
                     ${summary ? `<div class="card-description">${escapeHTML(summary)}</div>` : ''}
                 </div>`;
@@ -613,7 +661,7 @@ function generateContainersPage(config, data, configCSS) {
             <thead><tr>${th(cName, { sortType: 'string' })}${th('Scope', { sortType: 'string' })}${th('Status', { sortType: 'string' })}${th('Effective', { sortType: 'string' })}${th('Provisions', { sortType: 'number' })}</tr></thead>
             <tbody>
                 ${containers.map(c => `<tr data-scope="${escapeHTML(c[scopeField] || '')}">
-                    <td><a href="container/${c.id}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td>
+                    <td><a href="container/${pathSegment(c.id, 'Container ID')}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td>
                     <td>${escapeHTML(c[scopeField] || '')}</td>
                     ${tdStatus(c.status)}
                     ${tdDate(c.effective)}
@@ -653,7 +701,7 @@ function generatePrimariesPage(config, data, configCSS) {
                     const regCount = Object.keys(matrix[p.id] || {}).length;
                     const summary = p._body ? (p._body.match(/## Summary\n\n([^\n#]+)/) || [])[1]?.trim() || '' : '';
                     return `<div class="obligation-card">
-                        <div class="card-title"><a href="primary/${p.id}/index.html" onclick="passTheme(this)">${escapeHTML(p.name || humanizeId(p.id))}</a></div>
+                        <div class="card-title"><a href="primary/${pathSegment(p.id, 'Primary ID')}/index.html" onclick="passTheme(this)">${escapeHTML(p.name || humanizeId(p.id))}</a></div>
                         <div class="card-meta"><span class="meta-item">${regCount} ${cNameLower}${regCount !== 1 ? 's' : ''}</span></div>
                         ${summary ? `<div class="card-description">${escapeHTML(summary)}</div>` : ''}
                     </div>`;
@@ -669,7 +717,7 @@ function generateMatrixPage(config, data, configCSS) {
     const { primaries, containers, matrix } = data;
     const pName = config.entities?.primary?.name || 'Primary';
 
-    const headerCells = containers.map(c => `<th><a href="container/${c.id}/index.html" onclick="passTheme(this)" title="${escapeHTML(c.name)}">${escapeHTML(c.jurisdiction || c.id)}</a></th>`).join('');
+    const headerCells = containers.map(c => `<th><a href="container/${pathSegment(c.id, 'Container ID')}/index.html" onclick="passTheme(this)" title="${escapeHTML(c.name)}">${escapeHTML(c.jurisdiction || c.id)}</a></th>`).join('');
 
     const rows = primaries.map(p => {
         const pLabel = p.name || humanizeId(p.id);
@@ -677,11 +725,11 @@ function generateMatrixPage(config, data, configCSS) {
             const entry = (matrix[p.id] || {})[c.id];
             if (entry && entry.covered) {
                 const n = entry.provisions.length;
-                return `<td class="matrix-cell covered" title="${escapeHTML(pLabel)} — ${escapeHTML(c.name)}: ${n}"><a href="requires/${c.id}/${p.id}/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;">${n}</a></td>`;
+                return `<td class="matrix-cell covered" title="${escapeHTML(pLabel)} — ${escapeHTML(c.name)}: ${n}"><a href="requires/${pathSegment(c.id, 'Container ID')}/${pathSegment(p.id, 'Primary ID')}/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;">${n}</a></td>`;
             }
             return `<td class="matrix-cell empty">&mdash;</td>`;
         }).join('');
-        return `<tr><td class="matrix-row-header group-${p.group || 'other'}"><a href="primary/${p.id}/index.html" onclick="passTheme(this)" style="color:inherit;">${escapeHTML(pLabel)}</a></td>${cells}</tr>`;
+        return `<tr><td class="matrix-row-header group-${cssClassName(p.group, 'other')}"><a href="primary/${pathSegment(p.id, 'Primary ID')}/index.html" onclick="passTheme(this)" style="color:inherit;">${escapeHTML(pLabel)}</a></td>${cells}</tr>`;
     }).join('\n');
 
     const content = `
@@ -719,7 +767,7 @@ function generateTimelinePage(config, data, configCSS) {
         byYear[year].map(ev => `<div class="timeline-entry ${ev.date <= today ? 'past' : 'future'}">
             <div class="timeline-date">${formatDate(ev.date)}</div>
             <div class="timeline-content">
-                <a href="container/${ev.containerId}/index.html" onclick="passTheme(this)" class="timeline-regulation">${escapeHTML(ev.container)}</a>
+                <a href="container/${pathSegment(ev.containerId, 'Container ID')}/index.html" onclick="passTheme(this)" class="timeline-regulation">${escapeHTML(ev.container)}</a>
                 <span class="timeline-milestone">${escapeHTML(ev.milestone)}</span>
                 <span class="timeline-jurisdiction">${escapeHTML(ev.scope || '')}</span>
             </div>
@@ -839,14 +887,14 @@ function generateContainerDetail(config, container, data, configCSS) {
         </div>
         ${cPrimaries.length ? `<h3>${config.entities?.primary?.plural || 'Primaries'} Covered</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">
-            ${cPrimaries.map(pId => { const p = primaries.find(pr => pr.id === pId); return `<a href="../../primary/${pId}/index.html" onclick="passTheme(this)" class="group-badge ${cssClassName(p?.group, 'other')}" style="text-decoration:none;">${escapeHTML(p?.name || humanizeId(pId))}</a>`; }).join(' ')}
+            ${cPrimaries.map(pId => { const p = primaries.find(pr => pr.id === pId); return `<a href="../../primary/${pathSegment(pId, 'Primary ID')}/index.html" onclick="passTheme(this)" class="group-badge ${cssClassName(p?.group, 'other')}" style="text-decoration:none;">${escapeHTML(p?.name || humanizeId(pId))}</a>`; }).join(' ')}
         </div>` : ''}
         ${timelineRows ? `<h3>Timeline</h3><table class="data-table"><thead><tr><th>Milestone</th><th>Date</th><th>Notes</th></tr></thead><tbody>${timelineRows}</tbody></table>` : ''}
         <h3>Provisions (${container.provisions.length})</h3>
         ${container.provisions.map(p => renderProvisionCard(p, '../../')).join('\n')}
     `;
 
-    return renderBridgeShell(config, { title: container.name, depth: 2, content, canonicalPath: `container/${container.id}/`, description: `${container.name} — ${container.provisions.length} provisions.`, configCSS });
+    return renderBridgeShell(config, { title: container.name, depth: 2, content, canonicalPath: `container/${pathSegment(container.id, 'Container ID')}/`, description: `${container.name} — ${container.provisions.length} provisions.`, configCSS });
 }
 
 function generatePrimaryDetail(config, primary, data, configCSS) {
@@ -870,11 +918,11 @@ function generatePrimaryDetail(config, primary, data, configCSS) {
         ${whatDoesNot ? `<h3>What Does Not Count</h3><ul>${parseBulletList(whatDoesNot).map(i => `<li>${escapeHTML(i)}</li>`).join('')}</ul>` : ''}
         <h3>Implementing ${config.entities?.container?.plural || 'Containers'}</h3>
         ${coveredContainers.length ? `<table class="data-table"><thead><tr><th>${config.entities?.container?.name || 'Container'}</th><th>Scope</th><th>Status</th><th>Provisions</th></tr></thead><tbody>
-            ${coveredContainers.map(cId => { const c = containers.find(co => co.id === cId); if (!c) return ''; return `<tr><td><a href="../../container/${cId}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${escapeHTML(c.jurisdiction || '')}</td><td>${renderStatusBadge(c.status)}</td><td>${pMatrix[cId].provisions.length}</td></tr>`; }).join('\n')}
+            ${coveredContainers.map(cId => { const c = containers.find(co => co.id === cId); if (!c) return ''; return `<tr><td><a href="../../container/${pathSegment(cId, 'Container ID')}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${escapeHTML(c.jurisdiction || '')}</td><td>${renderStatusBadge(c.status)}</td><td>${pMatrix[cId].provisions.length}</td></tr>`; }).join('\n')}
         </tbody></table>` : `<p style="color:var(--text-secondary);">No ${cName}s currently implement this.</p>`}
     `;
 
-    return renderBridgeShell(config, { title: primary.name || humanizeId(primary.id), depth: 2, content, canonicalPath: `primary/${primary.id}/`, description: `${primary.name || humanizeId(primary.id)} — ${summary.slice(0, 150)}`, configCSS });
+    return renderBridgeShell(config, { title: primary.name || humanizeId(primary.id), depth: 2, content, canonicalPath: `primary/${pathSegment(primary.id, 'Primary ID')}/`, description: `${primary.name || humanizeId(primary.id)} — ${summary.slice(0, 150)}`, configCSS });
 }
 
 function generateAuthorityDetail(config, auth, data, configCSS) {
@@ -892,11 +940,11 @@ function generateAuthorityDetail(config, auth, data, configCSS) {
         </div>
         <h3>${config.entities?.container?.plural || 'Containers'} (${authContainers.length})</h3>
         ${authContainers.length ? `<table class="data-table"><thead><tr><th>Name</th><th>Status</th><th>Effective</th><th>Provisions</th></tr></thead><tbody>
-            ${authContainers.map(c => `<tr><td><a href="../../container/${c.id}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${renderStatusBadge(c.status)}</td><td>${formatDate(c.effective)}</td><td>${c.provisions.length}</td></tr>`).join('\n')}
+            ${authContainers.map(c => `<tr><td><a href="../../container/${pathSegment(c.id, 'Container ID')}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${renderStatusBadge(c.status)}</td><td>${formatDate(c.effective)}</td><td>${c.provisions.length}</td></tr>`).join('\n')}
         </tbody></table>` : '<p style="color:var(--text-secondary);">None tracked.</p>'}
     `;
 
-    return renderBridgeShell(config, { title: auth.name || humanizeId(auth.id), depth: 2, content, canonicalPath: `authority/${auth.id}/`, configCSS });
+    return renderBridgeShell(config, { title: auth.name || humanizeId(auth.id), depth: 2, content, canonicalPath: `authority/${pathSegment(auth.id, 'Authority ID')}/`, configCSS });
 }
 
 // ---------------------------------------------------------------------------
@@ -915,7 +963,7 @@ function generateRequiresBridge(config, containerId, primaryId, data, configCSS)
     const provCards = container.provisions.filter(p => matching.some(m => m.source_heading === p.name));
 
     const content = `
-        ${renderBreadcrumb([{ label: container.name, href: `container/${containerId}/index.html` }, { label: pName }], '../../../')}
+        ${renderBreadcrumb([{ label: container.name, href: `container/${pathSegment(containerId, 'Container ID')}/index.html` }, { label: pName }], '../../../')}
         <div class="bridge-header">
             <h2>Does ${escapeHTML(container.name)} require ${escapeHTML(pName)}?</h2>
         </div>
@@ -924,13 +972,13 @@ function generateRequiresBridge(config, containerId, primaryId, data, configCSS)
         </div>
         ${provCards.map(p => renderProvisionCard(p, '../../../')).join('\n')}
         <div style="margin-top: 2rem; text-align: center;">
-            <a href="../../../container/${containerId}/index.html" onclick="passTheme(this)" class="bridge-cta">View ${escapeHTML(config.entities?.container?.name || 'container')}</a>
-            <a href="../../../primary/${primaryId}/index.html" onclick="passTheme(this)" class="bridge-cta">View ${escapeHTML(config.entities?.primary?.name || 'primary')}</a>
+            <a href="../../../container/${pathSegment(containerId, 'Container ID')}/index.html" onclick="passTheme(this)" class="bridge-cta">View ${escapeHTML(config.entities?.container?.name || 'container')}</a>
+            <a href="../../../primary/${pathSegment(primaryId, 'Primary ID')}/index.html" onclick="passTheme(this)" class="bridge-cta">View ${escapeHTML(config.entities?.primary?.name || 'primary')}</a>
             <a href="../../../matrix.html" onclick="passTheme(this)" class="bridge-cta">Coverage matrix</a>
         </div>
     `;
 
-    return renderBridgeShell(config, { title: `${container.name} — ${pName}`, depth: 3, content, canonicalPath: `requires/${containerId}/${primaryId}/`, description: `Does ${container.name} require ${pName}? ${covered ? 'Yes' : 'No'}.`, configCSS });
+    return renderBridgeShell(config, { title: `${container.name} — ${pName}`, depth: 3, content, canonicalPath: `requires/${pathSegment(containerId, 'Container ID')}/${pathSegment(primaryId, 'Primary ID')}/`, description: `Does ${container.name} require ${pName}? ${covered ? 'Yes' : 'No'}.`, configCSS });
 }
 
 function generateCompareBridge(config, cA, cB, comparison, data, configCSS) {
@@ -941,21 +989,21 @@ function generateCompareBridge(config, cA, cB, comparison, data, configCSS) {
         ${renderBreadcrumb([{ label: 'Compare', href: 'compare.html' }, { label: `${cA.name} vs ${cB.name}` }], '../../')}
         <div class="bridge-header"><h2>${escapeHTML(cA.name)} vs ${escapeHTML(cB.name)}</h2></div>
         <div class="compare-section"><h3>Shared (${comparison.shared_count})</h3>
-            ${comparison.shared_obligations.length ? `<ul class="compare-list">${comparison.shared_obligations.map(o => `<li><a href="../../primary/${o}/index.html" onclick="passTheme(this)">${escapeHTML(pName(o))}</a></li>`).join('')}</ul>` : '<p style="color:var(--text-secondary);">None shared.</p>'}
+            ${comparison.shared_obligations.length ? `<ul class="compare-list">${comparison.shared_obligations.map(o => `<li><a href="../../primary/${pathSegment(o, 'Primary ID')}/index.html" onclick="passTheme(this)">${escapeHTML(pName(o))}</a></li>`).join('')}</ul>` : '<p style="color:var(--text-secondary);">None shared.</p>'}
         </div>
         <div class="compare-section"><h3>Only in ${escapeHTML(cA.name)} (${comparison.only_a_count})</h3>
-            ${comparison.only_a.length ? `<ul class="compare-list">${comparison.only_a.map(o => `<li><a href="../../primary/${o}/index.html">${escapeHTML(pName(o))}</a></li>`).join('')}</ul>` : '<p style="color:var(--text-secondary);">None unique.</p>'}
+            ${comparison.only_a.length ? `<ul class="compare-list">${comparison.only_a.map(o => `<li><a href="../../primary/${pathSegment(o, 'Primary ID')}/index.html">${escapeHTML(pName(o))}</a></li>`).join('')}</ul>` : '<p style="color:var(--text-secondary);">None unique.</p>'}
         </div>
         <div class="compare-section"><h3>Only in ${escapeHTML(cB.name)} (${comparison.only_b_count})</h3>
-            ${comparison.only_b.length ? `<ul class="compare-list">${comparison.only_b.map(o => `<li><a href="../../primary/${o}/index.html">${escapeHTML(pName(o))}</a></li>`).join('')}</ul>` : '<p style="color:var(--text-secondary);">None unique.</p>'}
+            ${comparison.only_b.length ? `<ul class="compare-list">${comparison.only_b.map(o => `<li><a href="../../primary/${pathSegment(o, 'Primary ID')}/index.html">${escapeHTML(pName(o))}</a></li>`).join('')}</ul>` : '<p style="color:var(--text-secondary);">None unique.</p>'}
         </div>
         <div style="margin-top: 2rem; text-align: center;">
-            <a href="../../container/${cA.id}/index.html" onclick="passTheme(this)" class="bridge-cta">${escapeHTML(cA.name)}</a>
-            <a href="../../container/${cB.id}/index.html" onclick="passTheme(this)" class="bridge-cta">${escapeHTML(cB.name)}</a>
+            <a href="../../container/${pathSegment(cA.id, 'Container ID')}/index.html" onclick="passTheme(this)" class="bridge-cta">${escapeHTML(cA.name)}</a>
+            <a href="../../container/${pathSegment(cB.id, 'Container ID')}/index.html" onclick="passTheme(this)" class="bridge-cta">${escapeHTML(cB.name)}</a>
         </div>
     `;
 
-    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 2, content, canonicalPath: `compare/${cA.id}-vs-${cB.id}/`, configCSS, noindex: comparison.shared_count === 0 });
+    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 2, content, canonicalPath: `compare/${pathSegment(cA.id, 'Container ID')}-vs-${pathSegment(cB.id, 'Container ID')}/`, configCSS, noindex: comparison.shared_count === 0 });
 }
 
 function generateAppliesToBridge(config, scopeValue, data, configCSS) {
@@ -969,7 +1017,7 @@ function generateAppliesToBridge(config, scopeValue, data, configCSS) {
             <p class="bridge-subtitle">${scopeContainers.length} tracked</p>
         </div>
         <table class="data-table"><thead><tr><th>Name</th><th>Status</th><th>Effective</th><th>Provisions</th></tr></thead><tbody>
-            ${scopeContainers.map(c => `<tr><td><a href="../../container/${c.id}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${renderStatusBadge(c.status)}</td><td>${formatDate(c.effective)}</td><td>${c.provisions.length}</td></tr>`).join('\n')}
+            ${scopeContainers.map(c => `<tr><td><a href="../../container/${pathSegment(c.id, 'Container ID')}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td><td>${renderStatusBadge(c.status)}</td><td>${formatDate(c.effective)}</td><td>${c.provisions.length}</td></tr>`).join('\n')}
         </tbody></table>
         <div style="margin-top: 2rem; text-align: center;"><a href="../../containers.html" onclick="passTheme(this)" class="bridge-cta">All ${escapeHTML((config.entities?.container?.plural || 'containers').toLowerCase())}</a></div>
     `;
@@ -984,14 +1032,14 @@ function generateAppliesToBridge(config, scopeValue, data, configCSS) {
 function buildSearchIndex(config, data) {
     const items = [];
     for (const c of data.containers) {
-        items.push({ type: config.entities?.container?.name?.toLowerCase() || 'container', name: c.name, id: c.id, href: `container/${c.id}/index.html`, jurisdiction: c.jurisdiction || '', _search: [c.name, c.jurisdiction || '', c.id, c.status || ''].join(' ').toLowerCase() });
+        items.push({ type: config.entities?.container?.name?.toLowerCase() || 'container', name: c.name, id: c.id, href: `container/${pathSegment(c.id, 'Container ID')}/index.html`, jurisdiction: c.jurisdiction || '', _search: [c.name, c.jurisdiction || '', c.id, c.status || ''].join(' ').toLowerCase() });
     }
     for (const p of data.primaries) {
         const summary = p._body ? (p._body.match(/## Summary\n\n([^\n#]+)/) || [])[1]?.trim() || '' : '';
-        items.push({ type: config.entities?.primary?.name?.toLowerCase() || 'primary', name: p.name || humanizeId(p.id), id: p.id, href: `primary/${p.id}/index.html`, group: p.group || '', _search: [p.name || '', p.id, p.group || '', summary, ...(p.search_terms || [])].join(' ').toLowerCase() });
+        items.push({ type: config.entities?.primary?.name?.toLowerCase() || 'primary', name: p.name || humanizeId(p.id), id: p.id, href: `primary/${pathSegment(p.id, 'Primary ID')}/index.html`, group: p.group || '', _search: [p.name || '', p.id, p.group || '', summary, ...(p.search_terms || [])].join(' ').toLowerCase() });
     }
     for (const a of data.authorities) {
-        items.push({ type: config.entities?.authority?.name?.toLowerCase() || 'authority', name: a.name || humanizeId(a.id), id: a.id, href: `authority/${a.id}/index.html`, jurisdiction: a.jurisdiction || '', _search: [a.name || '', a.id, a.jurisdiction || ''].join(' ').toLowerCase() });
+        items.push({ type: config.entities?.authority?.name?.toLowerCase() || 'authority', name: a.name || humanizeId(a.id), id: a.id, href: `authority/${pathSegment(a.id, 'Authority ID')}/index.html`, jurisdiction: a.jurisdiction || '', _search: [a.name || '', a.id, a.jurisdiction || ''].join(' ').toLowerCase() });
     }
     return items;
 }
@@ -1159,6 +1207,7 @@ function build() {
     const containers = loadContainers(containerDir);
     const authorities = loadDir(authorityDir);
     const mappingIndex = loadMappingIndex(mappingPath);
+    validateDataIds({ primaries, containers, authorities, mappingIndex });
 
     setBuildStamp(containers);
 
@@ -1169,6 +1218,7 @@ function build() {
 
     const totalProvisions = containers.reduce((sum, c) => sum + c.provisions.length, 0);
 
+    cleanGeneratedOutput();
     ensureDir(API_DIR);
     ensureDir(ASSETS_DIR);
 
@@ -1249,13 +1299,13 @@ function build() {
 
     console.log('  Core pages: ' + (7 + patternPageCount));
 
-    for (const c of containers) { const dir = path.join(DOCS_DIR, 'container', c.id); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateContainerDetail(config, c, data, configCSS)); sitemapPages.push(`container/${c.id}/`); }
+    for (const c of containers) { const cSeg = pathSegment(c.id, 'Container ID'); const dir = path.join(DOCS_DIR, 'container', cSeg); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateContainerDetail(config, c, data, configCSS)); sitemapPages.push(`container/${cSeg}/`); }
     console.log(`  Container detail pages: ${containers.length}`);
 
-    for (const p of primaries) { const dir = path.join(DOCS_DIR, 'primary', p.id); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generatePrimaryDetail(config, p, data, configCSS)); sitemapPages.push(`primary/${p.id}/`); }
+    for (const p of primaries) { const pSeg = pathSegment(p.id, 'Primary ID'); const dir = path.join(DOCS_DIR, 'primary', pSeg); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generatePrimaryDetail(config, p, data, configCSS)); sitemapPages.push(`primary/${pSeg}/`); }
     console.log(`  Primary detail pages: ${primaries.length}`);
 
-    for (const a of authorities) { const dir = path.join(DOCS_DIR, 'authority', a.id); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateAuthorityDetail(config, a, data, configCSS)); sitemapPages.push(`authority/${a.id}/`); }
+    for (const a of authorities) { const aSeg = pathSegment(a.id, 'Authority ID'); const dir = path.join(DOCS_DIR, 'authority', aSeg); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateAuthorityDetail(config, a, data, configCSS)); sitemapPages.push(`authority/${aSeg}/`); }
     console.log(`  Authority detail pages: ${authorities.length}`);
 
     // Bridge pages
@@ -1263,9 +1313,11 @@ function build() {
     if (config.bridges?.requires !== false) {
         for (const m of mappingIndex) {
             for (const oblId of m.obligations) {
-                const dir = path.join(DOCS_DIR, 'requires', m.regulation, oblId); ensureDir(dir);
+                const cSeg = pathSegment(m.regulation, 'Container ID');
+                const pSeg = pathSegment(oblId, 'Primary ID');
+                const dir = path.join(DOCS_DIR, 'requires', cSeg, pSeg); ensureDir(dir);
                 const html = generateRequiresBridge(config, m.regulation, oblId, data, configCSS);
-                if (html) { fs.writeFileSync(path.join(dir, 'index.html'), html); sitemapPages.push(`requires/${m.regulation}/${oblId}/`); reqCount++; }
+                if (html) { fs.writeFileSync(path.join(dir, 'index.html'), html); sitemapPages.push(`requires/${cSeg}/${pSeg}/`); reqCount++; }
             }
         }
     }
@@ -1276,7 +1328,7 @@ function build() {
         for (const comp of comparisons) {
             const [aId, bId] = comp.regulations;
             const cA = containers.find(c => c.id === aId), cB = containers.find(c => c.id === bId);
-            if (cA && cB) { const dir = path.join(DOCS_DIR, 'compare', `${aId}-vs-${bId}`); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateCompareBridge(config, cA, cB, comp, data, configCSS)); if (comp.shared_count > 0) sitemapPages.push(`compare/${aId}-vs-${bId}/`); cmpCount++; }
+            if (cA && cB) { const aSeg = pathSegment(aId, 'Container ID'); const bSeg = pathSegment(bId, 'Container ID'); const dir = path.join(DOCS_DIR, 'compare', `${aSeg}-vs-${bSeg}`); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateCompareBridge(config, cA, cB, comp, data, configCSS)); if (comp.shared_count > 0) sitemapPages.push(`compare/${aSeg}-vs-${bSeg}/`); cmpCount++; }
         }
     }
     console.log(`  Compare bridge pages: ${cmpCount}`);
@@ -1328,13 +1380,13 @@ function build() {
         '',
         `## ${cPlural}`,
         '',
-        ...containers.map(c => `- [${c.name}](${siteUrl}container/${c.id}/): ${c.status || 'unknown'}`),
+        ...containers.map(c => `- [${c.name}](${siteUrl}container/${pathSegment(c.id, 'Container ID')}/): ${c.status || 'unknown'}`),
         '',
         `## ${pPlural}`,
         '',
         ...primaries.map(p => {
             const regCount = Object.keys(matrix[p.id] || {}).length;
-            return `- [${p.name || humanizeId(p.id)}](${siteUrl}primary/${p.id}/): ${regCount} ${cPlural.toLowerCase()} support this`;
+            return `- [${p.name || humanizeId(p.id)}](${siteUrl}primary/${pathSegment(p.id, 'Primary ID')}/): ${regCount} ${cPlural.toLowerCase()} support this`;
         }),
         '',
         '## Tools',
@@ -1391,9 +1443,9 @@ function build() {
             }
         ],
         content: {
-            containers: containers.map(c => ({ id: c.id, name: c.name, status: c.status, url: `${siteUrl}container/${c.id}/` })),
-            primaries: primaries.map(p => ({ id: p.id, name: p.name || humanizeId(p.id), group: p.group, url: `${siteUrl}primary/${p.id}/` })),
-            authorities: authorities.map(a => ({ id: a.id, name: a.name || humanizeId(a.id), url: `${siteUrl}authority/${a.id}/` }))
+            containers: containers.map(c => ({ id: c.id, name: c.name, status: c.status, url: `${siteUrl}container/${pathSegment(c.id, 'Container ID')}/` })),
+            primaries: primaries.map(p => ({ id: p.id, name: p.name || humanizeId(p.id), group: p.group, url: `${siteUrl}primary/${pathSegment(p.id, 'Primary ID')}/` })),
+            authorities: authorities.map(a => ({ id: a.id, name: a.name || humanizeId(a.id), url: `${siteUrl}authority/${pathSegment(a.id, 'Authority ID')}/` }))
         },
         discovery: {
             llms_txt: `${siteUrl}llms.txt`,
@@ -1423,8 +1475,8 @@ function build() {
         return [
             '    <item>',
             `      <title>${escapeHTML(c.name)}</title>`,
-            `      <link>${siteUrl}container/${c.id}/</link>`,
-            `      <guid>${siteUrl}container/${c.id}/</guid>`,
+            `      <link>${siteUrl}container/${pathSegment(c.id, 'Container ID')}/</link>`,
+            `      <guid>${siteUrl}container/${pathSegment(c.id, 'Container ID')}/</guid>`,
             `      <description>${escapeHTML(desc)}</description>`,
             pubDate ? `      <pubDate>${new Date(pubDate + 'T00:00:00Z').toUTCString()}</pubDate>` : '',
             '    </item>'

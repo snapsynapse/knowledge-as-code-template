@@ -1,11 +1,11 @@
 guide-path: /.well-known/assistant-guide.txt
-guide-version: 1.0.0
-guide-sha256: dd3912efc5225ba7439ab95c880102ab01789d56ef5a8d8b3882ae2e0c33675d
-guide-bytes: 7052
+guide-version: 1.0.1
+guide-sha256: 498a0038bccfcd242a318c59311d86c91da71f96e3e8e7003727f98bd569deb6
+guide-bytes: 7778
 immutable-release-url: https://github.com/snapsynapse/knowledge-as-code-template
 profile: human-verifiable-assistant-guide
 profile-version: 0.3.0
 canonical-url: https://knowledge-as-code.com/.well-known/assistant-guide.txt
 repository-url: https://github.com/snapsynapse/knowledge-as-code-template
-released-at: 2026-05-25T00:00:00Z
+released-at: 2026-06-12T00:00:00Z
 changelog-url: https://github.com/snapsynapse/knowledge-as-code-template/blob/main/CHANGELOG.md

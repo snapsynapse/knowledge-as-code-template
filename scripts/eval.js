@@ -410,6 +410,89 @@ function evalOutputSanitization() {
     });
 }
 
+function evalUnsafeOutputDirGuard() {
+    for (const outputDir of ['.', '..']) {
+        const result = runNode(['scripts/build.js'], {
+            env: {
+                KAC_OUTPUT_DIR: outputDir
+            }
+        });
+        assert.notStrictEqual(result.status, 0, `Expected build to refuse unsafe KAC_OUTPUT_DIR=${outputDir}`);
+        assertIncludes(result.stderr, 'Refusing to clean unsafe output directory');
+    }
+}
+
+function evalGeneratedOutputCleanup() {
+    withTempRoot(() => {
+        const outName = '.tmp-evals/cleanup';
+        const siteUrl = 'https://example.com/cleanup/';
+        buildTo(outName, siteUrl);
+
+        const outRoot = path.join(ROOT, outName);
+        const staleOwnedFile = path.join(outRoot, 'container', 'stale-container', 'index.html');
+        const customFile = path.join(outRoot, 'custom-note.txt');
+        fs.mkdirSync(path.dirname(staleOwnedFile), { recursive: true });
+        fs.writeFileSync(staleOwnedFile, '<!doctype html><title>stale</title>');
+        fs.writeFileSync(customFile, 'custom file outside generator-owned paths');
+
+        buildTo(outName, siteUrl);
+
+        assert.ok(!fs.existsSync(staleOwnedFile), 'Build should remove stale files under generator-owned output paths.');
+        assert.ok(fs.existsSync(customFile), 'Build should preserve unrelated files outside generator-owned output paths.');
+    });
+}
+
+function evalUnsafeIdNegative() {
+    const unsafeRepo = copyRepoToTemp('kac-unsafe-id-fixture-');
+    try {
+        const oldPath = path.join(unsafeRepo, 'data', 'examples', 'requirements', 'access-control.md');
+        const unsafePath = path.join(unsafeRepo, 'data', 'examples', 'requirements', 'bad"id.md');
+        fs.renameSync(oldPath, unsafePath);
+
+        const mappingPath = path.join(unsafeRepo, 'data', 'examples', 'mapping', 'index.yml');
+        replaceInFile(mappingPath, '- access-control', '- bad"id');
+
+        const validateResult = spawnSync(process.execPath, ['scripts/validate.js'], {
+            cwd: unsafeRepo,
+            encoding: 'utf8'
+        });
+        assert.strictEqual(validateResult.status, 1, `Expected unsafe ID fixture validation to fail:\n${validateResult.stdout}\n${validateResult.stderr}`);
+        assertIncludes(validateResult.stderr, 'unsafe ID');
+        assertIncludes(validateResult.stderr, 'unsafe primary reference');
+
+        const buildResult = spawnSync(process.execPath, ['scripts/build.js'], {
+            cwd: unsafeRepo,
+            encoding: 'utf8',
+            env: { ...process.env, KAC_OUTPUT_DIR: 'unsafe-out' }
+        });
+        assert.notStrictEqual(buildResult.status, 0, `Expected unsafe ID fixture build to fail:\n${buildResult.stdout}\n${buildResult.stderr}`);
+        assertIncludes(buildResult.stderr, 'must be lowercase alphanumeric with single hyphens');
+    } finally {
+        fs.rmSync(unsafeRepo, { recursive: true, force: true });
+    }
+}
+
+function evalStatusContrastCss() {
+    buildDefault();
+    const html = fs.readFileSync(path.join(ROOT, 'docs', 'index.html'), 'utf8');
+    assertIncludes(html, '.status-badge.draft { background: #ff9800; color: #000; }');
+    assertIncludes(html, ':is(html, body).light-mode .status-badge.draft { background: #e65100; color: #000; }');
+}
+
+function evalUrlPathStability() {
+    buildDefault();
+    const searchIndex = readJson(path.join(ROOT, 'docs', 'assets', 'data.json'));
+    const sitemap = fs.readFileSync(path.join(ROOT, 'docs', 'sitemap.xml'), 'utf8');
+    const agents = readJson(path.join(ROOT, 'docs', 'agents.json'));
+    const matrix = fs.readFileSync(path.join(ROOT, 'docs', 'matrix.html'), 'utf8');
+
+    assert.ok(searchIndex.some(item => item.href === 'container/iso-27001/index.html'), 'Search index should expose stable container hrefs.');
+    assert.ok(searchIndex.some(item => item.href === 'primary/access-control/index.html'), 'Search index should expose stable primary hrefs.');
+    assertIncludes(sitemap, '<loc>https://example.com/container/iso-27001/</loc>');
+    assert.ok(agents.content.containers.some(item => item.url === 'https://example.com/container/iso-27001/'), 'agents.json should expose stable container URLs.');
+    assertIncludes(matrix, 'href="requires/iso-27001/access-control/index.html"');
+}
+
 function evalManifestFreshness() {
     const result = runCommand('./scripts/validate-hashes.sh', []);
     assert.strictEqual(result.status, 0, `Manifest hash verification failed:\n${result.stdout}\n${result.stderr}`);
@@ -464,6 +547,17 @@ function evalMcpSmoke() {
     assertIncludes(interactive.stdout, 'iso-27001');
 }
 
+function evalMcpNotificationSilence() {
+    const notification = '{"jsonrpc":"2.0","method":"unknown","params":{}}\n';
+    const result = spawnSync(process.execPath, ['mcp-server.js'], {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: notification
+    });
+    assert.strictEqual(result.status, 0, `MCP notification check failed:\n${result.stdout}\n${result.stderr}`);
+    assert.strictEqual(result.stdout, '', 'JSON-RPC notifications without id should not receive responses.');
+}
+
 function evalDocsConsistency() {
     const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
     const buildWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/build.yml'), 'utf8');
@@ -488,10 +582,16 @@ const evals = [
     ['config override', evalConfigOverride],
     ['parser fixtures', evalParserFixtures],
     ['output sanitization', evalOutputSanitization],
+    ['unsafe output dir guard', evalUnsafeOutputDirGuard],
+    ['generated output cleanup', evalGeneratedOutputCleanup],
+    ['unsafe ID negative', evalUnsafeIdNegative],
+    ['status contrast CSS', evalStatusContrastCss],
+    ['URL path stability', evalUrlPathStability],
     ['manifest freshness', evalManifestFreshness],
     ['changelog release tags', evalChangelogReleaseTags],
     ['HTML snapshots', evalHtmlSnapshots],
     ['MCP smoke', evalMcpSmoke],
+    ['MCP notification silence', evalMcpNotificationSilence],
     ['docs consistency', evalDocsConsistency]
 ];
 

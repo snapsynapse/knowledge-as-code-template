@@ -31,7 +31,7 @@ Built examples using this template:
 1. **Use this template** -- on GitHub, click the green "Use this template" button (not "Clone"). This creates a new repo with no git history and no upstream connection. Cloning is fine for local exploration but won't give you a clean starting repo.
 2. **Edit `project.yml`** -- start with the entity names (`entities.primary.name`, `entities.container.name`, etc.) and groups. You can adjust colors and navigation later. Leave `url` until your GitHub repo is configured.
 3. **Replace example data** -- delete the files in `data/examples/requirements/`, `data/examples/frameworks/`, `data/examples/organizations/`, and `data/examples/mapping/index.yml`, then add your own. See [Replacing example data](#replacing-example-data) and [`data/_schema.md`](data/_schema.md) for the format.
-4. **Build** -- `node scripts/build.js`. A successful build prints `Build complete — N HTML pages, N JSON API files`. Check the `docs/` directory for the output, and open any HTML file in a browser to verify it looks right.
+4. **Build** -- `node scripts/build.js`. A successful build prints `Build complete — N HTML pages, N JSON API files`. Check the `docs/` directory for the output, and open any HTML file in a browser to verify it looks right. The build cleans generator-owned paths in the output directory before writing fresh files, so removed or renamed entities do not leave stale generated pages behind.
 5. **Deploy** -- choose your Pages strategy. This repo validates builds in CI, but it does not auto-deploy template forks by default. If you want automated deployment, add a Pages publish step for your repo.
 6. **(Optional) Publish your knowledge base as an MCP server** -- if you want anyone to install your knowledge base as an MCP-aware agent tool via `npx -y your-package`, follow [PUBLISH-MCP.md](PUBLISH-MCP.md). It walks through the package.json prep, npm publish, and Official MCP Registry submission, with the gotchas that bit us when we did this for three sibling projects.
 
@@ -42,6 +42,7 @@ This repository intentionally tracks generated output in both `docs/` and `demo/
 - `docs/` is the template-default generated site output.
 - `demo/` is the canonical reference build used for `https://knowledge-as-code.com/demo/`.
 - Neither directory should be edited by hand. Regenerate them with `node scripts/build.js` or the `KAC_OUTPUT_DIR=demo KAC_SITE_URL="https://knowledge-as-code.com/demo/" node scripts/build.js` variant.
+- During each build, the generator removes only paths it owns in the target output directory (`api/`, `assets/`, entity/bridge page directories, and generated root files). It refuses to clean the repository root or a parent directory.
 
 Template forks do not need to follow this policy. A fork can either:
 
@@ -151,6 +152,8 @@ All domain-specific settings live in `project.yml`:
 
 Generated pages normalize external URLs to `https` and bare domains. Avoid `http`, `javascript:`, and `www` in project data; unsafe protocols are dropped from generated links. Configured colors should be hex values such as `#4fc3f7`; invalid color values fall back to safe defaults.
 
+Entity filenames and mapping IDs must be lowercase slug IDs: `a-z`, `0-9`, and single hyphens only, such as `access-control` or `iso-27001`. The filename without `.md` is the entity ID. Mapping references must use those same IDs. `node scripts/validate.js` and `node scripts/build.js` both reject unsafe IDs before generated HTML, filesystem paths, JSON discovery files, or MCP responses are produced.
+
 ## Replacing example data
 
 The template ships with example data in `data/examples/` (ISO 27001, NIST CSF). To replace it with your own domain:
@@ -177,7 +180,7 @@ npm run eval
 
 That runs the broader smoke/eval suite covering builds, links, API shape, parser fixtures, MCP smoke, and documentation consistency.
 
-The build script looks for data in `data/examples/` first, then `data/`. You can rename `data/examples/` to `data/` if you prefer a flatter structure.
+The build script looks for data in `data/examples/` first, then `data/`. You can rename `data/examples/` to `data/` if you prefer a flatter structure. Keep filenames slug-safe because the generated site, JSON API, MCP tools, search index, sitemap, and agents.json all use the filename-derived IDs.
 
 **What to keep:** Only `data/` contents and `project.yml` values need replacing. Do not delete `scripts/`, `.github/workflows/`, `mcp-server.js`, `mcp.json`, or `package.json` — these are the template engine and deployment config.
 

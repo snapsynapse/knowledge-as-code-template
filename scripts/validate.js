@@ -15,6 +15,10 @@ const { parseYaml } = require('./lib/parsers');
 
 const ROOT = path.join(__dirname, '..');
 
+function isSafeId(id) {
+    return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(id || ''));
+}
+
 function validate() {
     const configPath = process.env.KAC_CONFIG_PATH
         ? path.resolve(process.cwd(), process.env.KAC_CONFIG_PATH)
@@ -43,14 +47,23 @@ function validate() {
     const authorityDir = path.join(dataDir, config.entities?.authority?.directory || 'authority');
 
     // Load IDs
-    const loadIds = dir => {
+    let errors = 0;
+
+    const loadIds = (dir, role) => {
         if (!fs.existsSync(dir)) return [];
-        return fs.readdirSync(dir).filter(f => f.endsWith('.md') && !f.startsWith('_')).map(f => f.replace('.md', ''));
+        return fs.readdirSync(dir).filter(f => f.endsWith('.md') && !f.startsWith('_')).map(f => {
+            const id = f.replace('.md', '');
+            if (!isSafeId(id)) {
+                console.error(`  ERROR: ${role} filename "${f}" produces unsafe ID "${id}"`);
+                errors++;
+            }
+            return id;
+        });
     };
 
-    const primaryIds = loadIds(primaryDir);
-    const containerIds = loadIds(containerDir);
-    const authorityIds = loadIds(authorityDir);
+    const primaryIds = loadIds(primaryDir, config.entities?.primary?.name || 'Primary');
+    const containerIds = loadIds(containerDir, config.entities?.container?.name || 'Container');
+    const authorityIds = loadIds(authorityDir, config.entities?.authority?.name || 'Authority');
 
     console.log(`  ${config.entities?.primary?.plural || 'Primaries'}: ${primaryIds.length}`);
     console.log(`  ${config.entities?.container?.plural || 'Containers'}: ${containerIds.length}`);
@@ -63,19 +76,33 @@ function validate() {
     const mappings = loadMappingIndex(mappingPath);
     console.log(`  Mappings: ${mappings.length}`);
 
-    let errors = 0;
-
     // Validate mapping references
     for (const m of mappings) {
+        if (!isSafeId(m.id)) {
+            console.error(`  ERROR: Mapping has unsafe ID "${m.id}"`);
+            errors++;
+        }
+        if (m.regulation && !isSafeId(m.regulation)) {
+            console.error(`  ERROR: Mapping "${m.id}" has unsafe container reference "${m.regulation}"`);
+            errors++;
+        }
         if (m.regulation && !containerIds.includes(m.regulation)) {
             console.error(`  ERROR: Mapping "${m.id}" references unknown container "${m.regulation}"`);
             errors++;
         }
         for (const obl of m.obligations) {
+            if (!isSafeId(obl)) {
+                console.error(`  ERROR: Mapping "${m.id}" has unsafe primary reference "${obl}"`);
+                errors++;
+            }
             if (!primaryIds.includes(obl)) {
                 console.error(`  ERROR: Mapping "${m.id}" references unknown primary "${obl}"`);
                 errors++;
             }
+        }
+        if (m.authority && !isSafeId(m.authority)) {
+            console.error(`  ERROR: Mapping "${m.id}" has unsafe authority reference "${m.authority}"`);
+            errors++;
         }
         if (m.authority && !authorityIds.includes(m.authority)) {
             console.error(`  ERROR: Mapping "${m.id}" references unknown authority "${m.authority}"`);

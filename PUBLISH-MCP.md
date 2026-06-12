@@ -10,9 +10,13 @@ This guide captures the exact prep work, in the order it has to happen.
 
 - Your fork has its own canonical `project.yml`, real data under `data/`, and a
   working build (`node scripts/build.js` succeeds).
+- Entity filenames, mapping IDs, and mapping references are lowercase slug IDs
+  using only `a-z`, `0-9`, and single hyphens. Run `node scripts/validate.js`
+  before publishing so unsafe IDs are rejected before they become MCP-visible
+  data.
 - `node mcp-server.js` works locally — pipe `{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}`
   into it and you should get back your tools.
-- An npm account ([npmjs.com](https://www.npmjs.com/signup)) with 2FA enabled.
+- An npm account ([npmjs.com](https://npmjs.com/signup)) with 2FA enabled.
 - A GitHub account that matches the org/user owning the repo.
 
 ## Step 1 — choose a package name
@@ -100,6 +104,10 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | node mcp-ser
 
 You should get back your tools.
 
+The server follows JSON-RPC notification semantics. Messages without an `id`
+are notifications and do not receive responses, including unknown-method
+notifications.
+
 ## Step 4 — publish to npm
 
 Authenticate (a one-time setup; uses your browser):
@@ -186,7 +194,7 @@ After any data update or server change:
 **npm:** if you use a "Publish" classic token, every publish requires a 2FA
 browser flow. If you use an "Automation" token, it bypasses 2FA — easier for
 recurring publishes. Create one at
-[npmjs.com/settings/~/tokens](https://www.npmjs.com/settings/~/tokens).
+[npmjs.com/settings/~/tokens](https://npmjs.com/settings/~/tokens).
 
 **mcp-publisher:** the registry uses short-lived JWTs. If your session has
 been idle for an hour or so, the next `mcp-publisher publish` will fail with

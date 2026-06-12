@@ -13,7 +13,23 @@ pattern.
 
 ## [Unreleased]
 
+## [1.0.2] — 2026-06-12
+
+### Added
+- Added eval coverage for unsafe output directories, stale generated-output cleanup, unsafe entity IDs, status badge contrast, generated URL path stability, and JSON-RPC notification silence.
+- Documented slug-safe entity IDs, generated-output cleanup behavior, and MCP notification semantics across human docs and agent-facing guides.
+
+### Changed
+- Bumped the GuideCheck assistant guide to `1.0.1` with repository-specific generated-output and slug-ID constraints.
+- Regenerated tracked `docs/` and `demo/` outputs after status badge contrast hardening.
+
 ### Fixed
+- Refused unsafe build output directories before cleanup and removed stale files only under generator-owned output paths.
+- Rejected unsafe filenames, mapping IDs, and mapping references during validation and build.
+- Encoded generated URL path segments after strict ID validation.
+- Computed status badge foreground colors from background luminance instead of hard-coding theme text colors.
+- Stopped returning JSON-RPC errors for notifications that omit `id`.
+- Refreshed content-provenance hashes after intentional README, guide, and tooling updates.
 - Made `scripts/build.js` output reproducible by sourcing generated-output timestamps (`meta.generated`, `agents.json` `last_updated`, sitemap `lastmod`, RSS `lastBuildDate`) from the freshest date in the data rather than wall-clock time. The "generated outputs are current" CI gate could never pass before, because each rebuild stamped a new `new Date()` into committed artifacts.
 
 ## [1.0.1] — 2026-05-30
@@ -136,7 +152,8 @@ canonical pattern definition at <https://knowledge-as-code.com/>.
   site generator, `scripts/validate.js` cross-reference linter, example data for ISO 27001 and
   NIST CSF, dark/light themed static site output, JSON API, bridge pages, `CNAME` fixture.
 
-[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.0.2
 [1.0.1]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.0.1
 [1.0.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.0.0
 [0.4.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v0.4.0

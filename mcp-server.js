@@ -374,8 +374,10 @@ function makeError(id, code, message) {
 
 function handleMessage(msg) {
     const { id, method, params } = msg;
+    const hasId = Object.prototype.hasOwnProperty.call(msg, 'id');
 
     if (method === 'initialize') {
+        if (!hasId) return null;
         return makeResponse(id, {
             protocolVersion: '2024-11-05',
             capabilities: { tools: {} },
@@ -391,16 +393,19 @@ function handleMessage(msg) {
     }
 
     if (method === 'tools/list') {
+        if (!hasId) return null;
         return makeResponse(id, { tools: getToolDefinitions() });
     }
 
     if (method === 'tools/call') {
+        if (!hasId) return null;
         const toolName = params?.name;
         const toolArgs = params?.arguments || {};
         const result = handleToolCall(toolName, toolArgs);
         return makeResponse(id, result);
     }
 
+    if (!hasId) return null;
     return makeError(id, -32601, `Method not found: ${method}`);
 }
 

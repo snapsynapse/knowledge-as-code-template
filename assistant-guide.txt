@@ -4,13 +4,13 @@ Assistant Guide: Knowledge-as-Code template local verification
 identifier: assistant-guide
 profile: human-verifiable-assistant-guide
 profile-version: 0.3.0
-guide-version: 1.0.0
+guide-version: 1.0.1
 applies-to: knowledge-as-code-template
 canonical-url: https://knowledge-as-code.com/.well-known/assistant-guide.txt
 repository-url: https://github.com/snapsynapse/knowledge-as-code-template
 source-path: /.well-known/assistant-guide.txt
 manifest-url: https://knowledge-as-code.com/.well-known/assistant-guide-manifest.txt
-last-reviewed: 2026-05-25
+last-reviewed: 2026-06-12
 reviewed-by: PAICE.work PBC
 status: active
 recommended-verifier: https://guidecheck.org/verify
@@ -63,6 +63,19 @@ Normal commands or action classes
 The task uses local Node.js and shell scripts already present in the repository.
 Build actions regenerate tracked static artifacts under docs/ and demo/.
 Validation actions inspect local files and do not require network access.
+
+Repository-specific constraints
+Entity filenames, mapping IDs, and mapping references must be lowercase slug
+IDs using only a-z, 0-9, and single hyphens. The filename without .md is the
+entity ID. Do not create data files with spaces, underscores, uppercase
+letters, punctuation, path separators, or unsafe URL characters in the ID.
+
+Generated-output handling
+docs/ and demo/ are generated outputs in this repository. Do not hand-edit
+generated HTML, JSON API files, sitemap, agents.json, llms.txt, RSS, or copied
+assets. Update source data, project.yml, or scripts first, then regenerate the
+outputs. The build script cleans only generator-owned paths in the selected
+output directory and refuses unsafe output directories.
 
 Actions
 

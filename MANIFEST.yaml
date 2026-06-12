@@ -27,8 +27,8 @@
 #   - This file itself
 
 bundle: knowledge-as-code-template
-bundle_version: 1.0.1
-bundle_date: 2026-05-30
+bundle_version: 1.0.2
+bundle_date: 2026-06-12
 description: >
   Knowledge as Code starter template — scaffolds a KaC site with
   Primary/Container/Authority/Secondary entities, gist ontology binding,
@@ -47,22 +47,22 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:61811994959fe4f8d52f1802593d79957527fa890f3573aeea1f3e96f0105c13
+    hash: sha256:d17355f0cb940e4d9423b5931c1035df36f675df08fe70b026aa8e82e46b5593
     note: Template overview
 
   - path: assistant-guide.txt
     role: guidecheck
-    hash: sha256:dd3912efc5225ba7439ab95c880102ab01789d56ef5a8d8b3882ae2e0c33675d
+    hash: sha256:498a0038bccfcd242a318c59311d86c91da71f96e3e8e7003727f98bd569deb6
     note: Repository-root GuideCheck assistant guide copy
 
   - path: .well-known/assistant-guide.txt
     role: guidecheck
-    hash: sha256:dd3912efc5225ba7439ab95c880102ab01789d56ef5a8d8b3882ae2e0c33675d
+    hash: sha256:498a0038bccfcd242a318c59311d86c91da71f96e3e8e7003727f98bd569deb6
     note: Canonical GuideCheck assistant guide
 
   - path: .well-known/assistant-guide-manifest.txt
     role: guidecheck
-    hash: sha256:6ab8b1b2b9f72be25be2de00c2081cc7d5250531adb859db410b92645f5c8d82
+    hash: sha256:f9294ffd17a69a09116d4dcb3638b1c7d652952960b624ba3d98eacb973218c8
     note: GuideCheck sidecar manifest
 
   - path: project.yml
@@ -72,12 +72,12 @@ files:
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:eaf0e8aed6fc03f43ac3ead2df3acfa7ac7b392bbd055a11e63540e9fe9cf017
+    hash: sha256:bcbdbb8d093fc9fe48e0b09f44c7097e333477e92d3c1193bd4606820cdfa83d
     note: Static site generator
 
   - path: scripts/validate.js
     role: tooling
-    hash: sha256:d1da14cd8659bbfeaa6b6402464597b200c40c656be72cb3b2c6ffe5edebf284
+    hash: sha256:f7fba6ac85c40a0a46516739128154f754e3f83d25a8e5b79ef6625ff43ae6fc
     note: Cross-reference validator
 
   - path: scripts/verify.js

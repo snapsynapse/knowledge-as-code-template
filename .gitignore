@@ -42,3 +42,7 @@ dist/
 build/
 .venv/
 venv/
+
+# --- portfolio baseline (2026-07-04): transient dirs ---
+handoffs/
+working/

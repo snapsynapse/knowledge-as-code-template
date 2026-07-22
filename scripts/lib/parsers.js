@@ -4,6 +4,17 @@ function unquoteScalar(value) {
     return String(value || '').trim().replace(/^["']|["']$/g, '');
 }
 
+function parseScalar(value) {
+    const raw = String(value || '').trim();
+    const quoted = (/^"[\s\S]*"$/).test(raw) || (/^'[\s\S]*'$/).test(raw);
+    if (quoted) return unquoteScalar(raw);
+    if (raw === 'true') return true;
+    if (raw === 'false') return false;
+    if (raw === '[]') return [];
+    if (raw === '{}') return {};
+    return raw;
+}
+
 function parseYaml(content) {
     const lines = content.split('\n');
     const result = {};
@@ -26,7 +37,7 @@ function parseYaml(content) {
                 const obj = {};
                 lineContent.slice(1, -1).split(',').forEach(pair => {
                     const ci = pair.indexOf(':');
-                    if (ci !== -1) obj[pair.slice(0, ci).trim()] = unquoteScalar(pair.slice(ci + 1));
+                    if (ci !== -1) obj[pair.slice(0, ci).trim()] = parseScalar(pair.slice(ci + 1));
                 });
                 const parent = stack[stack.length - 1].obj;
                 const lastKey = stack[stack.length - 1].lastListKey;
@@ -38,7 +49,7 @@ function parseYaml(content) {
             if (ci !== -1) {
                 const k = lineContent.slice(0, ci).trim();
                 const rawV = lineContent.slice(ci + 1).trim();
-                const v = unquoteScalar(rawV);
+                const v = parseScalar(rawV);
                 const nextI = i + 1;
                 const hasChildren = nextI < lines.length &&
                     lines[nextI].trim() !== '' && !lines[nextI].trim().startsWith('#') &&
@@ -62,7 +73,7 @@ function parseYaml(content) {
                 const parent = stack[stack.length - 1].obj;
                 const listKey = stack[stack.length - 1].lastListKey;
                 if (listKey && Array.isArray(parent[listKey])) {
-                    parent[listKey].push(unquoteScalar(lineContent));
+                    parent[listKey].push(parseScalar(lineContent));
                 }
             }
             continue;
@@ -73,7 +84,7 @@ function parseYaml(content) {
 
         const key = trimmed.slice(0, ci).trim();
         const rawVal = trimmed.slice(ci + 1).trim();
-        const val = unquoteScalar(rawVal);
+        const val = parseScalar(rawVal);
         const parent = stack[stack.length - 1].obj;
 
         if (rawVal === '') {

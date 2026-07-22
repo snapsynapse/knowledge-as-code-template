@@ -124,7 +124,7 @@ Check the generated `docs/` directory for the HTML site and `docs/api/v1/` for t
 2. Make your changes (add entities, update config, fix bugs)
 3. Run `npm run eval` — this is the preferred final verification pass before a PR
 4. Use `npm run validate`, `npm run verify`, or `npm run build` directly when you want a narrower check while iterating
-5. Commit the source files (`data/`, `project.yml`, `scripts/`). In this canonical repo, generated output in `docs/` and `demo/` is also tracked and should be regenerated rather than edited by hand. Template forks can choose whether `docs/` is committed or purely generated, depending on deployment strategy.
+5. Commit the source files (`data/`, `project.yml`, `scripts/`). In this canonical repo, `docs/` is ignored transient output and `demo/` is the only tracked generated build. Regenerate `demo/` rather than editing it by hand.
 6. Open a PR against `main` with a clear description of what changed and why
 
 ## Container File Format

@@ -163,6 +163,64 @@ function evalFreshCloneBuild() {
     });
 }
 
+function evalInitializerGoldenPath() {
+    withTempRoot(() => {
+        const target = path.join(TMP_ROOT, 'initialized-project');
+        const initResult = runNode([
+            'scripts/init.js', target, '--defaults',
+            '--name', 'Policy Evidence Map',
+            '--short-name', 'policy-evidence-map',
+            '--url', 'https://policy.example.com/',
+            '--repo', 'https://github.com/example/policy-evidence-map',
+            '--primary', 'Controls',
+            '--container', 'Policies',
+            '--authority', 'Publishers',
+            '--secondary', 'Claims'
+        ]);
+        assert.strictEqual(initResult.status, 0, `Initializer failed:\n${initResult.stdout}\n${initResult.stderr}`);
+
+        const expectedFiles = [
+            'README.md',
+            'project.yml',
+            'package.json',
+            'data/_schema.md',
+            'scripts/build.js',
+            'scripts/validate.js',
+            'scripts/verify.js',
+            'mcp-server.js',
+            '.github/workflows/ci.yml',
+            '.github/workflows/pages.yml',
+            '.github/workflows/verify.yml'
+        ];
+        expectedFiles.forEach(file => assertFile(path.join(target, file)));
+        assert.ok(!fs.existsSync(path.join(target, 'index.html')), 'Initialized project should not contain the canonical landing page.');
+        assert.ok(!fs.existsSync(path.join(target, 'demo')), 'Initialized project should not contain canonical demo output.');
+        assert.ok(!fs.existsSync(path.join(target, 'scripts', 'eval.js')), 'Initialized project should not copy canonical-repository evals.');
+        assert.ok(!fs.existsSync(path.join(target, 'scripts', '.DS_Store')), 'Initialized project should not copy OS metadata.');
+
+        const config = fs.readFileSync(path.join(target, 'project.yml'), 'utf8');
+        assertIncludes(config, 'name: "Policy Evidence Map"');
+        assertIncludes(config, 'name: Control\n    plural: Controls');
+        assertIncludes(config, 'name: Policy\n    plural: Policies');
+        assertIncludes(config, 'label: Policies');
+        assertIncludes(config, 'label: Controls');
+        assertIncludes(config, 'pattern:\n  enabled: false');
+        assertIncludes(config, 'ecosystem: []');
+
+        for (const command of [
+            ['scripts/validate.js'],
+            ['scripts/build.js'],
+            ['scripts/check-links.js']
+        ]) {
+            const result = spawnSync(process.execPath, command, { cwd: target, encoding: 'utf8' });
+            assert.strictEqual(result.status, 0, `Initialized project command failed (${command.join(' ')}):\n${result.stdout}\n${result.stderr}`);
+        }
+        assertFile(path.join(target, 'docs', 'index.html'));
+        assertFile(path.join(target, 'docs', 'api', 'v1', 'index.json'));
+        assert.ok(!fs.existsSync(path.join(target, 'docs', 'pattern.html')), 'Disabled pattern page should not be generated.');
+    });
+}
+
 function evalLinkIntegrity() {
     buildDefault();
     const result = runNode(['scripts/check-links.js']);
@@ -562,11 +620,14 @@ function evalMcpNotificationSilence() {
 function evalDocsConsistency() {
     const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
     const buildWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/build.yml'), 'utf8');
+    const pagesWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/pages.yml'), 'utf8');
     const verification = fs.readFileSync(path.join(ROOT, 'VERIFICATION.md'), 'utf8');
     const verifyWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/verify.yml'), 'utf8');
 
-    assertIncludes(readme, 'Check the `docs/` directory for the output');
+    assertIncludes(readme, 'node scripts/init.js ../my-knowledge-base');
+    assertIncludes(readme, '`docs/` is transient local output');
     assertIncludes(buildWorkflow, 'Build site (sanity check)');
+    assertIncludes(pagesWorkflow, 'actions/deploy-pages@v4');
     assert.ok(!readme.includes('deploys to GitHub Pages automatically'), 'README should not claim automatic deployment.');
     assert.ok(!verification.includes('continue-on-error: true'), 'Verification docs should reflect current workflow implementation.');
     assertIncludes(verifyWorkflow, 'echo "exit_code=$?" >> "$GITHUB_OUTPUT"');
@@ -575,6 +636,7 @@ function evalDocsConsistency() {
 const evals = [
     ['build smoke', evalBuildSmoke],
     ['fresh clone build', evalFreshCloneBuild],
+    ['initializer golden path', evalInitializerGoldenPath],
     ['link integrity', evalLinkIntegrity],
     ['link checker negative', evalLinkCheckerNegative],
     ['validator negative', evalValidatorNegative],

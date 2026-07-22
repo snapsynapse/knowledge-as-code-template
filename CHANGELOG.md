@@ -18,8 +18,10 @@ pattern.
 - Repositioned the project as an internal-first open reference generator for evidence-backed structured sites.
 - Replaced unqualified self-healing claims with the deterministic drift checks the repository actually ships.
 - Distinguished maintainer-operated implementations from independent external adoption.
-- Standardized onboarding on GitHub's "Use this template" flow and added a Pages deployment workflow for generated repositories.
+- Standardized onboarding on the clean-project initializer and added a Pages deployment workflow for generated repositories.
 - Corrected the canonical Snap Synapse writeup path and acknowledged established prior art.
+- Added a zero-dependency guided initializer that creates a clean project with only the engine, worked example, MCP runtime, and deployment workflows.
+- Made `docs/` transient local output in the canonical repository; `demo/` is now the only tracked generated build.
 
 ## [1.0.2] — 2026-06-12
 

@@ -4,13 +4,13 @@ Assistant Guide: Knowledge-as-Code template local verification
 identifier: assistant-guide
 profile: human-verifiable-assistant-guide
 profile-version: 0.3.0
-guide-version: 1.0.1
+guide-version: 1.1.0
 applies-to: knowledge-as-code-template
 canonical-url: https://knowledge-as-code.com/.well-known/assistant-guide.txt
 repository-url: https://github.com/snapsynapse/knowledge-as-code-template
 source-path: /.well-known/assistant-guide.txt
 manifest-url: https://knowledge-as-code.com/.well-known/assistant-guide-manifest.txt
-last-reviewed: 2026-06-12
+last-reviewed: 2026-07-21
 reviewed-by: PAICE.work PBC
 status: active
 recommended-verifier: https://guidecheck.org/verify
@@ -18,8 +18,8 @@ verifier-conformance: human-verifiable-assistant-guide-verifier >=0.3.0, <0.4.0
 [/assistant-guide-metadata]
 
 Task scope
-This guide verifies a local checkout of the Knowledge-as-Code template and
-regenerates the tracked static outputs. It does not publish, commit, push,
+This guide verifies a local checkout of the Knowledge-as-Code generator,
+regenerates transient docs output, and refreshes the tracked demo when needed. It does not publish, commit, push,
 delete files, install packages, change remote settings, or modify production
 infrastructure.
 
@@ -61,7 +61,7 @@ There are no networked, destructive, or privileged actions in this guide.
 
 Normal commands or action classes
 The task uses local Node.js and shell scripts already present in the repository.
-Build actions regenerate tracked static artifacts under docs/ and demo/.
+Build actions regenerate transient static artifacts under docs/ and the tracked canonical reference under demo/.
 Validation actions inspect local files and do not require network access.
 
 Repository-specific constraints
@@ -71,11 +71,13 @@ entity ID. Do not create data files with spaces, underscores, uppercase
 letters, punctuation, path separators, or unsafe URL characters in the ID.
 
 Generated-output handling
-docs/ and demo/ are generated outputs in this repository. Do not hand-edit
-generated HTML, JSON API files, sitemap, agents.json, llms.txt, RSS, or copied
-assets. Update source data, project.yml, or scripts first, then regenerate the
-outputs. The build script cleans only generator-owned paths in the selected
-output directory and refuses unsafe output directories.
+docs/ and demo/ are generated outputs in this repository. docs/ is ignored
+transient output used by local checks; demo/ is the tracked canonical reference
+build. Do not hand-edit generated HTML, JSON API files, sitemap, agents.json,
+llms.txt, RSS, or copied assets. Update source data, project.yml, or scripts
+first, then regenerate the relevant output. The build script cleans only
+generator-owned paths in the selected output directory and refuses unsafe
+output directories.
 
 Actions
 
@@ -96,7 +98,7 @@ approval: required
 command: npm run build
 runner: shell
 cwd: .
-notes: Regenerates the tracked docs output from local source files.
+notes: Regenerates ignored transient docs output from local source files.
 [/action]
 
 [action]
@@ -158,7 +160,7 @@ The task is complete when:
 - npm run eval exits zero
 - npm run verify exits zero
 - ./scripts/validate-hashes.sh exits zero
-- docs/ and demo/ are regenerated when source changes affect generated output
+- docs/ is regenerated for local checks and tracked demo/ is refreshed when source changes affect it
 - no unapproved commands were run
 
 The task is incomplete, and the assistant must stop, if:

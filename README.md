@@ -28,26 +28,23 @@ Maintainer-operated implementations of this architecture:
 
 ## Quick Start
 
-1. **Use this template** -- on GitHub, click the green "Use this template" button. This creates a new repository with no upstream history. Clone only when exploring this canonical repository locally.
-2. **Edit `project.yml`** -- start with the entity names (`entities.primary.name`, `entities.container.name`, etc.) and groups. You can adjust colors and navigation later. Leave `url` until your GitHub repo is configured.
-3. **Replace example data** -- delete the files in `data/examples/requirements/`, `data/examples/frameworks/`, `data/examples/organizations/`, and `data/examples/mapping/index.yml`, then add your own. See [Replacing example data](#replacing-example-data) and [`data/_schema.md`](data/_schema.md) for the format.
-4. **Build** -- `node scripts/build.js`. A successful build prints `Build complete — N HTML pages, N JSON API files`. Check the `docs/` directory for the output, and open any HTML file in a browser to verify it looks right. The build cleans generator-owned paths in the output directory before writing fresh files, so removed or renamed entities do not leave stale generated pages behind.
-5. **Deploy** -- enable GitHub Pages with GitHub Actions. The included deployment workflow publishes `docs/` on pushes to `main` once Pages is configured for GitHub Actions.
-6. **(Optional) Publish your knowledge base as an MCP server** -- if you want anyone to install your knowledge base as an MCP-aware agent tool via `npx -y your-package`, follow [PUBLISH-MCP.md](PUBLISH-MCP.md). It walks through the package.json prep, npm publish, and Official MCP Registry submission, with the gotchas that bit us when we did this for three sibling projects.
+1. **Clone this generator** -- `git clone https://github.com/snapsynapse/knowledge-as-code-template.git`.
+2. **Create a clean project** -- from the generator checkout, run `node scripts/init.js ../my-knowledge-base`. The guided initializer asks for the reference name, URL, repository, and plain-language names for the four entity roles.
+3. **Enter the generated project** -- `cd ../my-knowledge-base`. It contains the engine, one worked example, the MCP runtime, and deployment workflows without this canonical site's landing files or history.
+4. **Validate and build** -- run `node scripts/validate.js` and `node scripts/build.js`, then open `docs/index.html`.
+5. **Deploy** -- create a GitHub repository, set Pages to **GitHub Actions**, and push to `main`. The included workflow builds and publishes `docs/`.
+6. **Replace the example** -- use [`data/_schema.md`](data/_schema.md) and the worked records under `data/examples/` as the starting point for your domain.
+
+For a reproducible non-interactive project using the starter labels, run `node scripts/init.js ../my-knowledge-base --defaults`. The initializer refuses to overwrite an existing target directory.
 
 ## Output Policy
 
-This repository intentionally tracks generated output in both `docs/` and `demo/`.
+This canonical repository tracks only the generated `demo/` published at `https://knowledge-as-code.com/demo/`.
 
-- `docs/` is the template-default generated site output.
-- `demo/` is the canonical reference build used for `https://knowledge-as-code.com/demo/`.
-- Neither directory should be edited by hand. Regenerate them with `node scripts/build.js` or the `KAC_OUTPUT_DIR=demo KAC_SITE_URL="https://knowledge-as-code.com/demo/" node scripts/build.js` variant.
+- `docs/` is transient local output used by builds, tests, and initialized projects. It is ignored here.
+- `demo/` is the tracked canonical reference build.
+- Never edit either directory by hand. Build local output with `node scripts/build.js`; refresh the tracked demo with `KAC_OUTPUT_DIR=demo KAC_SITE_URL="https://knowledge-as-code.com/demo/" node scripts/build.js`.
 - During each build, the generator removes only paths it owns in the target output directory (`api/`, `assets/`, entity/bridge page directories, and generated root files). It refuses to clean the repository root or a parent directory.
-
-Template forks do not need to follow this policy. A fork can either:
-
-- ignore `docs/` and publish via its own CI/deploy workflow, or
-- commit `docs/` as a generated artifact if that matches its hosting model.
 
 ## What You Get
 
@@ -73,6 +70,7 @@ data/
     authority/       # Source entities (e.g., organizations, regulators)
     mapping/         # index.yml connecting containers to primaries
 scripts/
+  init.js            # Clean-project initializer (canonical repo only)
   build.js           # Config-driven site generator
   validate.js        # Cross-reference validator
 docs/                # Generated output (do not edit)
@@ -313,8 +311,7 @@ When you use this template, update the following:
 
 1. Edit `project.yml` with your domain entities, colors, and site identity
 2. Replace example data in `data/examples/` with your own
-3. Update `docs/CNAME` with your custom domain (or remove it)
-4. In GitHub, set Pages to **GitHub Actions**, then push to `main`; `.github/workflows/pages.yml` builds and publishes `docs/`
+3. In GitHub, set Pages to **GitHub Actions**, then push to `main`; `.github/workflows/pages.yml` builds and publishes `docs/`
 
 ## Sponsor
 

@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://example.com/sitemap.xml
-# Machine-readable site info: https://example.com/agents.json
-# LLM context: https://example.com/llms.txt

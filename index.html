@@ -759,17 +759,21 @@
 <section id="start">
   <h2>Get started</h2>
   <p style="color:var(--muted); max-width:62ch;">
-    On GitHub, choose <strong>Use this template</strong> to create a clean repository without this
-    project's history. Then run the build and replace the example data with your own reference.
+    Clone the generator once, then run its zero-dependency initializer to create a clean project
+    containing only the engine, worked example, MCP runtime, and deployment workflows.
   </p>
-  <pre><span class="c"># 1. After choosing "Use this template" on GitHub</span>
-git clone https://github.com/your-org/your-knowledge-base.git
-cd your-knowledge-base
+  <pre><span class="c"># 1. Clone the generator</span>
+git clone https://github.com/snapsynapse/knowledge-as-code-template.git
+cd knowledge-as-code-template
 
-<span class="c"># 2. Build the site + JSON API (no npm install required)</span>
+<span class="c"># 2. Create a clean, guided project</span>
+node scripts/init.js ../my-knowledge-base
+cd ../my-knowledge-base
+
+<span class="c"># 3. Build the site + JSON API (no npm install required)</span>
 node scripts/build.js
 
-<span class="c"># 3. Validate cross-references any time</span>
+<span class="c"># 4. Validate cross-references any time</span>
 node scripts/validate.js</pre>
 
   <ul class="plain">
@@ -781,7 +785,7 @@ node scripts/validate.js</pre>
   </ul>
 
   <div class="cta-row">
-    <a class="btn btn-primary" href="https://github.com/new?template_name=knowledge-as-code-template&amp;template_owner=snapsynapse" target="_blank" rel="noopener">Use this template</a>
+    <a class="btn btn-primary" href="https://github.com/snapsynapse/knowledge-as-code-template" target="_blank" rel="noopener">Get the generator</a>
     <a class="btn btn-ghost" href="https://snapsynapse.com/tools/knowledge-as-code/" target="_blank" rel="noopener">Read the full write-up →</a>
     <a class="btn btn-ghost" href="/.well-known/assistant-guide.txt">Assistant guide →</a>
   </div>

@@ -22,14 +22,9 @@ _private/
 *.log
 npm-debug.log*
 
-# Template forks: build.js writes to docs/ by default.
-# Option A: Uncomment docs/ below and treat it as a pure build artifact.
-#   Use your own Pages/deploy workflow and do not commit generated output.
-# Option B: Keep docs/ tracked and publish directly from committed output.
-# This canonical repo tracks generated output intentionally:
-#   - docs/ is the template-default generated artifact
-#   - demo/ is the published reference build for knowledge-as-code.com/demo/
-# docs/
+# Local build output. The canonical repo tracks only demo/ for the published
+# reference build; initialized projects deploy docs/ through GitHub Actions.
+docs/
 
 # Environment
 .env

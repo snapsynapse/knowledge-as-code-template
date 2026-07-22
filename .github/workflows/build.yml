@@ -51,9 +51,9 @@ jobs:
       - name: Verify generated outputs are current
         if: github.repository == 'snapsynapse/knowledge-as-code-template'
         run: |
-          if [ -n "$(git status --porcelain --untracked-files=all -- docs demo)" ]; then
-            echo "Generated outputs are not up to date. Rebuild docs/ and demo/ and commit the result."
-            git status --short --untracked-files=all -- docs demo
+          if [ -n "$(git status --porcelain --untracked-files=all -- demo)" ]; then
+            echo "Generated demo output is not up to date. Rebuild demo/ and commit the result."
+            git status --short --untracked-files=all -- demo
             exit 1
           fi
 

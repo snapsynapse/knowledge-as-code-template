@@ -47,22 +47,22 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:104e08eb77834507f11b40148b81d4bab7e914f73f1e1702378d4c29beb9d510
+    hash: sha256:28352470a45651ad12a3f0d96e376a36bba2fd228fa9c7804444000dff26e8bd
     note: Template overview
 
   - path: assistant-guide.txt
     role: guidecheck
-    hash: sha256:498a0038bccfcd242a318c59311d86c91da71f96e3e8e7003727f98bd569deb6
+    hash: sha256:fbbd7ef36427e736d5748f1976c56839ab7af85871e1e407c410b600cbfc3954
     note: Repository-root GuideCheck assistant guide copy
 
   - path: .well-known/assistant-guide.txt
     role: guidecheck
-    hash: sha256:498a0038bccfcd242a318c59311d86c91da71f96e3e8e7003727f98bd569deb6
+    hash: sha256:fbbd7ef36427e736d5748f1976c56839ab7af85871e1e407c410b600cbfc3954
     note: Canonical GuideCheck assistant guide
 
   - path: .well-known/assistant-guide-manifest.txt
     role: guidecheck
-    hash: sha256:f9294ffd17a69a09116d4dcb3638b1c7d652952960b624ba3d98eacb973218c8
+    hash: sha256:eec1d3c29731d14769faf0c3782e220178798f6ca2bc4663b2517602795ce15e
     note: GuideCheck sidecar manifest
 
   - path: project.yml
@@ -72,8 +72,13 @@ files:
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:7314c1113282f0fbc346537ad58d15845362f3a5d8c792f077ef0151ce50c4d8
+    hash: sha256:ca0b90369f33143d74a38e35f2a70e5febbba13b65b251af4d7e64eea3a19412
     note: Static site generator
+
+  - path: scripts/init.js
+    role: tooling
+    hash: sha256:fd643cf6081cc4aaebf1d3ce6d673a0582de1f74cbf7f6222cd8a811f39bc9da
+    note: Clean-project initializer
 
   - path: scripts/validate.js
     role: tooling

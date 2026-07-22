@@ -1163,9 +1163,10 @@ function generatePatternPage(config, data, configCSS) {
         </ul>` : ''}
 
         <h2>Get Started</h2>
-        <pre><code># Choose "Use this template" on GitHub, then clone your new repository
-git clone https://github.com/your-org/your-knowledge-base.git
-cd your-knowledge-base
+        <pre><code>git clone https://github.com/snapsynapse/knowledge-as-code-template.git
+cd knowledge-as-code-template
+node scripts/init.js ../my-knowledge-base
+cd ../my-knowledge-base
 node scripts/build.js
 open docs/index.html</code></pre>
         <p>Template: <a href="https://github.com/snapsynapse/knowledge-as-code-template">github.com/snapsynapse/knowledge-as-code-template</a></p>

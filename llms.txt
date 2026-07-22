@@ -1,12 +1,12 @@
 # Knowledge as Code
 
-> Knowledge as Code applies software engineering practices to knowledge
-> management: plain-text canonical files, automated verification, and
-> multi-output generation for humans and agents.
+> Knowledge-as-Code is a zero-dependency generator for evidence-backed
+> reference sites: Git-tracked Markdown and YAML, deterministic drift checks,
+> static HTML and JSON outputs, and an optional local MCP interface.
 
 ## Canonical
 
-- [Pattern home](https://knowledge-as-code.com/): canonical Knowledge as Code definition
+- [Project home](https://knowledge-as-code.com/): canonical explanation and maintained reference implementation
 - [Live demo](https://knowledge-as-code.com/demo/): generated reference site
 - [Repository](https://github.com/snapsynapse/knowledge-as-code-template): source repository
 - [PUBLISH-MCP.md](https://github.com/snapsynapse/knowledge-as-code-template/blob/main/PUBLISH-MCP.md): how to publish a fork as an MCP server (npm + Official MCP Registry)

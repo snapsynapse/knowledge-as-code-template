@@ -1,6 +1,6 @@
 # Attribution
 
-**Knowledge as Code** is a pattern created for [PAICE.work](https://paice.work/) PBC.
+This Knowledge-as-Code implementation is maintained by [PAICE.work](https://paice.work/) PBC. It builds on established docs-as-code, living-documentation, GitOps, and knowledge-as-code practices.
 
 - Pattern definition: [knowledge-as-code.com](https://knowledge-as-code.com)
 - Template repository: [github.com/snapsynapse/knowledge-as-code-template](https://github.com/snapsynapse/knowledge-as-code-template)
@@ -16,7 +16,7 @@ If you build a site using this template, the generated footer includes a small a
 
 If you write about or reference the Knowledge as Code pattern:
 
-> Knowledge as Code is a pattern created by PAICE.work PBC that applies software engineering practices to knowledge management. https://knowledge-as-code.com
+> Knowledge-as-Code is an open reference generator maintained by PAICE.work PBC. It turns Git-tracked Markdown and YAML into human- and machine-readable reference outputs. https://knowledge-as-code.com/
 
 ## Related projects
 

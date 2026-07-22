@@ -201,7 +201,8 @@ function evalVerifierNegative() {
     const result = runNode(['scripts/verify.js'], {
         env: {
             KAC_CONFIG_PATH: 'tests/fixtures/verify-negative/project.yml',
-            KAC_DATA_DIR: 'tests/fixtures/verify-negative'
+            KAC_DATA_DIR: 'tests/fixtures/verify-negative',
+            KAC_NOW: '2026-04-21T00:00:00Z'
         }
     });
     assert.strictEqual(result.status, 1, `Expected verifier to fail for stale fixture:\n${result.stdout}\n${result.stderr}`);

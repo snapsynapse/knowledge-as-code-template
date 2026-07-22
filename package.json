@@ -1,7 +1,7 @@
 {
   "name": "knowledge-as-code-template",
   "version": "1.0.2",
-  "description": "Template for building structured, version-controlled knowledge bases with an ontology-first approach.",
+  "description": "Zero-dependency generator for evidence-backed reference sites from Git-tracked Markdown and YAML.",
   "license": "MIT",
   "scripts": {
     "build": "node scripts/build.js",

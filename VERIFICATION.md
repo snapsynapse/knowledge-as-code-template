@@ -1,6 +1,6 @@
 # Verification
 
-The Knowledge-as-Code template includes a verification system that detects stale entities, validates cross-reference integrity, and provides a foundation for AI-assisted content review.
+The Knowledge-as-Code template includes deterministic verification that detects stale entities and validates cross-reference integrity. It tells maintainers what needs review; it does not independently prove that a claim is factually current.
 
 ## How It Works
 
@@ -47,52 +47,8 @@ The included workflow (`.github/workflows/verify.yml`) runs verification on a we
 
 The workflow captures the verifier exit code explicitly, stores it in a step output, and then opens or updates a drift issue when verification fails. That keeps the automation actionable without relying on `continue-on-error`.
 
-## AI-Assisted Verification
+## External verification
 
-The `scripts/verify.js` file includes a commented-out placeholder for model-based verification. This pattern sends entity content to an LLM API to check for:
+Factual review is deliberately separate from the deterministic core. Maintainer-operated implementations may use human research, local models, hosted models, browser automation, or multiple independent reviewers. Those systems are case-study integrations, not functionality included in this repository.
 
-- Outdated facts or references
-- Broken or changed URLs
-- Superseded standards or regulations
-- Factual inaccuracies
-
-To enable AI verification:
-
-1. Set environment variables for your AI provider:
-   ```bash
-   export AI_API_URL="https://api.example.com/v1/completions"
-   export AI_API_KEY="your-key"
-   ```
-
-2. Uncomment the `aiVerify` function in `scripts/verify.js`
-
-3. Uncomment the loop that calls `aiVerify` on stale entities
-
-4. Make the `verify` function `async` and add `await` to the AI calls
-
-The placeholder uses Node.js built-in `fetch` (available in Node 18+). No additional dependencies are required.
-
-### Example AI Verification Pattern
-
-```javascript
-async function aiVerify(entity) {
-    const prompt = `Review this entity for accuracy:
-      Title: ${entity.title}
-      Content: ${entity._body}
-
-      Check for outdated facts, broken URLs, and superseded standards.
-      Respond with JSON: { "status": "current"|"needs_review", "issues": [] }`;
-
-    const response = await fetch(process.env.AI_API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.AI_API_KEY}`
-        },
-        body: JSON.stringify({ prompt, max_tokens: 500 })
-    });
-    return response.json();
-}
-```
-
-This can be integrated into the weekly GitHub Actions workflow by adding the API credentials as repository secrets and updating the workflow step to pass them as environment variables.
+The planned extension boundary is a provider-independent command contract: entity JSON on standard input and a structured review result on standard output. Until that contract ships, use the deterministic report as a review queue and update `last_verified` only after checking the underlying evidence.

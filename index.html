@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Knowledge as Code — a pattern for durable, self-healing knowledge bases</title>
-<meta name="description" content="Knowledge as Code applies software engineering practices to knowledge management: plain-text canonical, self-healing, multi-output, zero-dependency, Git-native, ontology-driven. An open pattern by Sam Rogers, stewarded by PAICE.work PBC.">
-<meta name="keywords" content="knowledge as code, knowledge management, documentation, git-native, ontology, self-healing docs, JSON API, MCP server, static site, plain text, version control, open pattern">
+<title>Knowledge as Code — evidence-backed reference sites from plain text</title>
+<meta name="description" content="A zero-dependency generator for evidence-backed reference sites: Git-tracked Markdown and YAML, deterministic drift checks, static HTML and JSON, and an optional local MCP interface.">
+<meta name="keywords" content="knowledge as code, structured reference, knowledge management, documentation, git-native, ontology, drift detection, JSON API, MCP server, static site, plain text, version control">
 <meta name="author" content="Sam Rogers">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
 <meta name="theme-color" content="#059669">
@@ -15,8 +15,8 @@
 <!-- Open Graph -->
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Knowledge as Code">
-<meta property="og:title" content="Knowledge as Code — an open pattern for durable knowledge bases">
-<meta property="og:description" content="Plain-text canonical. Self-healing. Multi-output. Zero-dependency. Git-native. Ontology-driven. Six properties that turn documentation into a buildable artifact.">
+<meta property="og:title" content="Knowledge as Code — evidence-backed reference sites from plain text">
+<meta property="og:description" content="Keep one typed source in Git. Generate a searchable site, JSON API, discovery files, and an optional local MCP interface.">
 <meta property="og:url" content="https://knowledge-as-code.com/">
 <meta property="og:image" content="https://knowledge-as-code.com/imgs/og.png">
 <meta property="og:locale" content="en_US">
@@ -32,7 +32,7 @@
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Knowledge as Code">
-<meta name="twitter:description" content="An open pattern that treats knowledge like code: plain text, self-healing, multi-output, Git-native, zero-dependency, ontology-driven.">
+<meta name="twitter:description" content="A zero-dependency generator for evidence-backed reference sites from Git-tracked Markdown and YAML.">
 <meta name="twitter:image" content="https://knowledge-as-code.com/imgs/og.png">
 <meta name="twitter:creator" content="@snapsynapse">
 
@@ -42,8 +42,8 @@
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "headline": "Knowledge as Code",
-  "alternativeHeadline": "An open pattern for durable, self-healing knowledge bases",
-  "description": "Knowledge as Code applies software engineering practices to knowledge management: plain-text canonical, self-healing, multi-output, zero-dependency, Git-native, ontology-driven.",
+  "alternativeHeadline": "Evidence-backed reference sites from Git-tracked plain text",
+  "description": "A zero-dependency generator for structured reference sites with deterministic drift checks, static HTML and JSON outputs, and an optional local MCP interface.",
   "inLanguage": "en",
   "url": "https://knowledge-as-code.com/",
   "mainEntityOfPage": { "@type": "WebPage", "@id": "https://knowledge-as-code.com/" },
@@ -62,7 +62,7 @@
     "logo": { "@type": "ImageObject", "url": "https://paice.work/logo.png" }
   },
   "image": "https://knowledge-as-code.com/imgs/og.png",
-  "keywords": ["knowledge as code", "documentation", "ontology", "git-native", "self-healing docs", "JSON API", "MCP server"],
+  "keywords": ["knowledge as code", "structured reference", "documentation", "ontology", "git-native", "drift detection", "JSON API", "MCP server"],
   "isPartOf": { "@type": "CreativeWork", "name": "PAICE.work Open Patterns" },
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "copyrightHolder": { "@type": "Organization", "name": "PAICE.work PBC" },
@@ -71,7 +71,7 @@
     { "@type": "WebPage", "name": "AI Tool Watch — reference implementation", "url": "https://aitool.watch/" },
     { "@type": "WebPage", "name": "Graceful Boundaries", "url": "https://gracefulboundaries.dev/" },
     { "@type": "WebPage", "name": "Skill Provenance", "url": "https://skillprovenance.dev/" },
-    { "@type": "WebPage", "name": "Original long-form writeup", "url": "https://snapsynapse.com/insights/knowledge-as-code/" }
+    { "@type": "WebPage", "name": "Long-form project writeup", "url": "https://snapsynapse.com/tools/knowledge-as-code/" }
   ]
 }
 </script>
@@ -83,7 +83,7 @@
   "@type": "DefinedTerm",
   "name": "Knowledge as Code",
   "alternateName": ["KaC", "knowledge-as-code"],
-  "description": "An open pattern that applies software engineering practices to knowledge management. Characterized by six properties: plain-text canonical, self-healing, multi-output, zero-dependency, Git-native, and ontology-driven.",
+  "description": "An open reference implementation that turns typed plain-text knowledge into human- and machine-readable outputs with deterministic drift checks.",
   "url": "https://knowledge-as-code.com/",
   "inDefinedTermSet": {
     "@type": "DefinedTermSet",
@@ -91,7 +91,7 @@
     "url": "https://paice.work/"
   },
   "sameAs": [
-    "https://snapsynapse.com/insights/knowledge-as-code/",
+    "https://snapsynapse.com/tools/knowledge-as-code/",
     "https://github.com/snapsynapse/knowledge-as-code-template"
   ]
 }
@@ -574,9 +574,9 @@
     <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC&nbsp;BY&nbsp;4.0</a>
   </p>
   <p class="lede">
-    Knowledge as Code applies software engineering practices to knowledge management.
-    Plain-text canonical files, automated verification, and a single source that produces
-    HTML, JSON APIs, and MCP servers — with no database, no vendor, and no silent decay.
+    Build evidence-backed reference sites for people and agents from Git-tracked Markdown.
+    One typed source produces searchable HTML, a JSON API, discovery files, and an optional
+    local MCP interface, with deterministic checks that flag stale or incomplete knowledge.
   </p>
   <div class="cta-row">
     <a class="btn btn-primary" href="#start">Get started</a>
@@ -593,8 +593,7 @@
 <section id="what">
   <h2>What it is</h2>
   <p style="color:var(--muted); max-width:62ch;">
-    Six interrelated properties define the pattern. Adopt them together and your knowledge base
-    stops drifting, stops requiring babysitting, and starts behaving like the rest of your stack.
+    This implementation combines six established practices into a small, durable reference generator.
   </p>
   <div class="grid" style="margin-top: 28px;">
     <div class="card">
@@ -602,12 +601,12 @@
       <p>Human-readable, version-controlled files. No database. No vendor lock-in. What you commit is the source of truth.</p>
     </div>
     <div class="card">
-      <h3><span class="num">2</span> Self-healing</h3>
-      <p>Automated verification detects when knowledge has drifted from reality and flags discrepancies as issues for human review.</p>
+      <h3><span class="num">2</span> Drift-aware</h3>
+      <p>Deterministic checks flag old review dates and incomplete relationships so maintainers know what needs human review.</p>
     </div>
     <div class="card">
       <h3><span class="num">3</span> Multi-output</h3>
-      <p>One source compiles to HTML, JSON APIs, MCP servers, and SEO pages. Write once; serve anywhere an agent or human looks.</p>
+      <p>One source compiles to HTML, JSON APIs, discovery files, and SEO pages. A separate local MCP runtime reads the same source.</p>
     </div>
     <div class="card">
       <h3><span class="num">4</span> Zero-dependency</h3>
@@ -627,10 +626,9 @@
 <section id="why">
   <h2>Why it matters</h2>
   <p style="color:var(--muted); max-width:62ch;">
-    Traditional documentation decays silently. Wikis rot. Notion pages go stale. A landing page
-    you published eighteen months ago now quietly lies to your users. Knowledge as Code resists
-    this through verification cascades — multiple models cross-check data weekly and surface
-    discrepancies as reviewable changes rather than corrupted prose.
+    Structured references often repeat the same claims across a website, API, search index, and
+    agent interface. Knowledge-as-Code keeps those outputs connected to one typed source and
+    reports stale review dates or incomplete relationships before maintainers publish again.
   </p>
 
   <div style="margin-top: 32px;">
@@ -640,7 +638,7 @@
     </div>
     <div class="audience">
       <h3>For AI &amp; agent builders</h3>
-      <p>Agents need queryable, well-typed, citation-friendly knowledge. A KaC repo emits a JSON API and an MCP server alongside its HTML — your LLMs read the same source your users do, with provenance baked in.</p>
+      <p>Agents need queryable, well-typed, citation-friendly knowledge. A KaC project emits a JSON API alongside its HTML and includes a separate read-only MCP runtime over the same source.</p>
     </div>
     <div class="audience">
       <h3>For open-source maintainers</h3>
@@ -720,10 +718,10 @@
 </section>
 
 <section id="built-with">
-  <h2>Built with Knowledge as Code</h2>
+  <h2>Maintainer-operated implementations</h2>
   <p style="color:var(--muted); max-width:62ch;">
-    Three production reference sites running the pattern today. Each is a normal GitHub repo —
-    clone it, read the markdown, rebuild the site. Nothing is hidden behind a CMS.
+    Three production reference sites maintained by the same teams that maintain this generator.
+    They prove internal utility and provide worked examples; they are not presented as independent adoption.
   </p>
 
   <div class="used-by-grid">
@@ -761,12 +759,12 @@
 <section id="start">
   <h2>Get started</h2>
   <p style="color:var(--muted); max-width:62ch;">
-    The reference template has no installation step. Clone it, run the build, and open the
-    generated site. Everything else is editing markdown.
+    On GitHub, choose <strong>Use this template</strong> to create a clean repository without this
+    project's history. Then run the build and replace the example data with your own reference.
   </p>
-  <pre><span class="c"># 1. Clone the template</span>
-git clone https://github.com/snapsynapse/knowledge-as-code-template.git
-cd knowledge-as-code-template
+  <pre><span class="c"># 1. After choosing "Use this template" on GitHub</span>
+git clone https://github.com/your-org/your-knowledge-base.git
+cd your-knowledge-base
 
 <span class="c"># 2. Build the site + JSON API (no npm install required)</span>
 node scripts/build.js
@@ -777,22 +775,21 @@ node scripts/validate.js</pre>
   <ul class="plain">
     <li><span class="step">01</span><div><strong>Define your ontology.</strong> Edit <code>project.yml</code> to describe the entities your domain cares about — primary anchors, containers, authorities, and mappings.</div></li>
     <li><span class="step">02</span><div><strong>Add data as markdown.</strong> Drop one file per entity into <code>data/examples/</code> with YAML frontmatter. Cross-references resolve by id.</div></li>
-    <li><span class="step">03</span><div><strong>Build and publish.</strong> <code>node scripts/build.js</code> emits <code>docs/</code> — HTML, JSON API, and MCP server. Push to GitHub Pages or any static host.</div></li>
-    <li><span class="step">04</span><div><strong>Wire up verification.</strong> Schedule the verifier to re-check claims against their sources and open issues when drift appears.</div></li>
+    <li><span class="step">03</span><div><strong>Build and publish.</strong> <code>node scripts/build.js</code> emits static HTML, JSON, and discovery files under <code>docs/</code>. Enable GitHub Pages with GitHub Actions, then push to <code>main</code>.</div></li>
+    <li><span class="step">04</span><div><strong>Review reported drift.</strong> The included verifier flags old review dates and incomplete mappings. Maintainers still check the underlying evidence before updating verification dates.</div></li>
     <li><span class="step">05</span><div><strong>(Optional) Publish as an MCP server.</strong> Make your knowledge base installable as <code>npx -y your-package</code> for any MCP-aware agent client. <a href="https://github.com/snapsynapse/knowledge-as-code-template/blob/main/PUBLISH-MCP.md">PUBLISH-MCP.md</a> walks through the package.json prep, npm publish, and Official MCP Registry submission — with the gotchas captured from three real PAICE legal graph publishes.</div></li>
   </ul>
 
   <div class="cta-row">
-    <a class="btn btn-primary" href="https://github.com/snapsynapse/knowledge-as-code-template" target="_blank" rel="noopener">Clone the template</a>
-    <a class="btn btn-ghost" href="https://snapsynapse.com/insights/knowledge-as-code/" target="_blank" rel="noopener">Read the full write-up →</a>
+    <a class="btn btn-primary" href="https://github.com/new?template_name=knowledge-as-code-template&amp;template_owner=snapsynapse" target="_blank" rel="noopener">Use this template</a>
+    <a class="btn btn-ghost" href="https://snapsynapse.com/tools/knowledge-as-code/" target="_blank" rel="noopener">Read the full write-up →</a>
     <a class="btn btn-ghost" href="/.well-known/assistant-guide.txt">Assistant guide →</a>
   </div>
 
   <aside class="canonical-note">
-    <strong>Canonical reference.</strong> This page is the authoritative definition of the
-    Knowledge as Code pattern. The <a href="https://snapsynapse.com/insights/knowledge-as-code/">long-form
-    essay on snapsynapse.com</a> and any cross-posts on Dev.to, LinkedIn, or Medium are derived
-    from this source and should cite <a href="https://knowledge-as-code.com/">knowledge-as-code.com</a> as canonical.
+    <strong>Canonical project home.</strong> This page describes the maintained reference generator.
+    The <a href="https://snapsynapse.com/tools/knowledge-as-code/">long-form writeup on snapsynapse.com</a>
+    and any cross-posts should link here for the current implementation scope.
     Last substantive revision: <time datetime="2026-04-09">2026-04-09</time>.
     <a href="https://github.com/snapsynapse/knowledge-as-code-template/commits/main/index.html">Revision history →</a>
   </aside>
@@ -811,7 +808,7 @@ node scripts/validate.js</pre>
       </div>
       <div class="footer-links">
         <a href="https://github.com/snapsynapse/knowledge-as-code-template">GitHub</a>
-        <a href="https://snapsynapse.com/insights/knowledge-as-code/">Overview</a>
+        <a href="https://snapsynapse.com/tools/knowledge-as-code/">Overview</a>
         <a href="https://github.com/snapsynapse/knowledge-as-code-template/blob/main/README.md">README</a>
         <a href="https://github.com/snapsynapse/knowledge-as-code-template/blob/main/data/_schema.md">Schema</a>
         <a href="https://github.com/snapsynapse/knowledge-as-code-template/blob/main/PUBLISH-MCP.md">Publish as MCP</a>

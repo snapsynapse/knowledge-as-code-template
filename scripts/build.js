@@ -1102,20 +1102,20 @@ function generatePatternPage(config, data, configCSS) {
         ${canonicalUrl !== '#' ? `<link rel="canonical" href="${escapeHTML(canonicalUrl)}">` : ''}
         <div class="about-content">
         <h1>Knowledge as Code</h1>
-        <p><em>A pattern for building knowledge bases that verify themselves, resist decay, and serve both humans and machines from plain text files.</em></p>
-        ${canonicalUrl !== '#' ? `<p>Canonical pattern definition: <a href="${escapeHTML(canonicalUrl)}">${escapeHTML(canonicalUrl)}</a></p>` : ''}
+        <p><em>A small reference generator for serving evidence-backed, typed knowledge to people and agents from plain-text source files.</em></p>
+        ${canonicalUrl !== '#' ? `<p>Canonical project home: <a href="${escapeHTML(canonicalUrl)}">${escapeHTML(canonicalUrl)}</a></p>` : ''}
 
-        <h2>The Pattern</h2>
-        <p>Knowledge as Code applies software engineering practices to knowledge management. The knowledge lives in version-controlled plain text files. It is validated by automated processes. It produces multiple outputs from a single source. And it actively resists becoming outdated.</p>
+        <h2>The Implementation</h2>
+        <p>Knowledge-as-Code keeps typed reference data in version-controlled plain text, validates its relationships and review dates, and generates consistent human- and machine-readable outputs from one source.</p>
 
         <h2>Six Properties</h2>
         <table class="data-table">
             <thead><tr><th>Property</th><th>What It Means</th><th>In This Project</th></tr></thead>
             <tbody>
                 <tr><td><strong>Plain text canonical</strong></td><td>Knowledge in human-readable, version-controlled files. No database, no CMS, no vendor lock-in.</td><td>Markdown and YAML files in <code>data/</code></td></tr>
-                <tr><td><strong>Self-healing</strong></td><td>Automated verification detects when knowledge drifts from reality. Flags decay before humans notice.</td><td>Verification scripts and AI-assisted freshness checks</td></tr>
-                <tr><td><strong>Multi-output</strong></td><td>One source produces every format needed — human-readable, machine-readable, agent-queryable.</td><td>HTML site, JSON API, MCP server, SEO bridge pages, sitemap, <code>llms.txt</code></td></tr>
-                <tr><td><strong>Zero-dependency</strong></td><td>No external packages. Nothing breaks when you come back in a year.</td><td>One Node.js script, no <code>package.json</code>, no <code>node_modules</code></td></tr>
+                <tr><td><strong>Drift-aware</strong></td><td>Deterministic checks flag old review dates and incomplete relationships for human review.</td><td>Staleness, mapping, and completeness checks</td></tr>
+                <tr><td><strong>Multi-output</strong></td><td>One source produces consistent human- and machine-readable formats.</td><td>HTML site, JSON API, SEO pages, sitemap, <code>llms.txt</code>, and a separate local MCP runtime</td></tr>
+                <tr><td><strong>Zero-dependency</strong></td><td>Core tooling uses platform built-ins rather than a package dependency tree.</td><td>Node.js built-ins only</td></tr>
                 <tr><td><strong>Git-native</strong></td><td>Git is the collaboration layer, audit trail, and deployment trigger.</td><td>Issues, PRs, CI/CD, version history — all through Git</td></tr>
                 <tr><td><strong>Ontology-driven</strong></td><td>A vendor-neutral taxonomy maps to domain-specific implementations.</td><td>${escapeHTML(data.primaries.length)} ${escapeHTML(config.entities?.primary?.plural || 'primaries')} across ${escapeHTML(data.containers.length)} ${escapeHTML(config.entities?.container?.plural || 'containers')}</td></tr>
             </tbody>
@@ -1138,6 +1138,7 @@ function generatePatternPage(config, data, configCSS) {
         <p>Primaries are stable; containers are unstable. When a ${containerName.toLowerCase()} is amended, its ${secondaryName.toLowerCase()}s change, but the underlying ${primaryName.toLowerCase()}s persist.</p>
 
         <h2>Standing on Shoulders</h2>
+        <p>This repository is one practical implementation of established ideas, not a claim to have originated the broader category.</p>
         <ul>
             <li><strong>File over App</strong> — <a href="https://stephango.com/file-over-app">Steph Ango</a> on durable digital artifacts as files you control</li>
             <li><strong>Docs as Code</strong> — Managing documentation with version control, pull requests, CI, plain text formats. <a href="https://writethedocs.org/guide/docs-as-code/">Write the Docs</a> community</li>
@@ -1162,8 +1163,9 @@ function generatePatternPage(config, data, configCSS) {
         </ul>` : ''}
 
         <h2>Get Started</h2>
-        <pre><code>git clone https://github.com/snapsynapse/knowledge-as-code-template.git
-cd knowledge-as-code-template
+        <pre><code># Choose "Use this template" on GitHub, then clone your new repository
+git clone https://github.com/your-org/your-knowledge-base.git
+cd your-knowledge-base
 node scripts/build.js
 open docs/index.html</code></pre>
         <p>Template: <a href="https://github.com/snapsynapse/knowledge-as-code-template">github.com/snapsynapse/knowledge-as-code-template</a></p>
@@ -1173,7 +1175,7 @@ open docs/index.html</code></pre>
         </div>
     `;
 
-    return renderPageShell(config, { title: 'Knowledge as Code', activePage: 'pattern', content, description: 'A pattern for building knowledge bases that verify themselves.', canonicalPath: 'pattern.html', configCSS });
+    return renderPageShell(config, { title: 'Knowledge as Code', activePage: 'pattern', content, description: 'A zero-dependency generator for evidence-backed reference sites.', canonicalPath: 'pattern.html', configCSS });
 }
 
 // ---------------------------------------------------------------------------

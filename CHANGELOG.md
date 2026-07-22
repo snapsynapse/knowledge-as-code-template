@@ -7,11 +7,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The patte
 versioned alongside the reference template — `v1.0` of the template implements `v1.0` of the
 pattern.
 
-> **Concept inception: 2026-01-20.** Sam Rogers first published the Knowledge as Code concept on
-> [snapsynapse.com](https://snapsynapse.com/insights/knowledge-as-code/) after confirming prior-art
-> checks. Code followed two months later.
+> **Concept inception: 2026-01-20.** Sam Rogers first published this Knowledge-as-Code implementation
+> on [snapsynapse.com](https://snapsynapse.com/tools/knowledge-as-code/) after an initial prior-art
+> review. A later review found earlier uses of both the term and the underlying repository-based
+> practice. This project no longer claims to have originated the broader category.
 
 ## [Unreleased]
+
+### Changed
+- Repositioned the project as an internal-first open reference generator for evidence-backed structured sites.
+- Replaced unqualified self-healing claims with the deterministic drift checks the repository actually ships.
+- Distinguished maintainer-operated implementations from independent external adoption.
+- Standardized onboarding on GitHub's "Use this template" flow and added a Pages deployment workflow for generated repositories.
+- Corrected the canonical Snap Synapse writeup path and acknowledged established prior art.
 
 ## [1.0.2] — 2026-06-12
 

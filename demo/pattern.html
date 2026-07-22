@@ -29,9 +29,9 @@
 :root { --accent: #4fc3f7; }
 :is(html, body).light-mode { --accent: #0055aa; }
 </style>
-    <meta name="description" content="A pattern for building knowledge bases that verify themselves.">
+    <meta name="description" content="A zero-dependency generator for evidence-backed reference sites.">
     <meta property="og:title" content="Knowledge as Code">
-    <meta property="og:description" content="A pattern for building knowledge bases that verify themselves.">
+    <meta property="og:description" content="A zero-dependency generator for evidence-backed reference sites.">
     <meta property="og:type" content="website">
     
     <meta property="og:url" content="https://knowledge-as-code.com/demo/pattern.html">
@@ -77,20 +77,20 @@
         <link rel="canonical" href="https://knowledge-as-code.com/">
         <div class="about-content">
         <h1>Knowledge as Code</h1>
-        <p><em>A pattern for building knowledge bases that verify themselves, resist decay, and serve both humans and machines from plain text files.</em></p>
-        <p>Canonical pattern definition: <a href="https://knowledge-as-code.com/">https://knowledge-as-code.com/</a></p>
+        <p><em>A small reference generator for serving evidence-backed, typed knowledge to people and agents from plain-text source files.</em></p>
+        <p>Canonical project home: <a href="https://knowledge-as-code.com/">https://knowledge-as-code.com/</a></p>
 
-        <h2>The Pattern</h2>
-        <p>Knowledge as Code applies software engineering practices to knowledge management. The knowledge lives in version-controlled plain text files. It is validated by automated processes. It produces multiple outputs from a single source. And it actively resists becoming outdated.</p>
+        <h2>The Implementation</h2>
+        <p>Knowledge-as-Code keeps typed reference data in version-controlled plain text, validates its relationships and review dates, and generates consistent human- and machine-readable outputs from one source.</p>
 
         <h2>Six Properties</h2>
         <table class="data-table">
             <thead><tr><th>Property</th><th>What It Means</th><th>In This Project</th></tr></thead>
             <tbody>
                 <tr><td><strong>Plain text canonical</strong></td><td>Knowledge in human-readable, version-controlled files. No database, no CMS, no vendor lock-in.</td><td>Markdown and YAML files in <code>data/</code></td></tr>
-                <tr><td><strong>Self-healing</strong></td><td>Automated verification detects when knowledge drifts from reality. Flags decay before humans notice.</td><td>Verification scripts and AI-assisted freshness checks</td></tr>
-                <tr><td><strong>Multi-output</strong></td><td>One source produces every format needed — human-readable, machine-readable, agent-queryable.</td><td>HTML site, JSON API, MCP server, SEO bridge pages, sitemap, <code>llms.txt</code></td></tr>
-                <tr><td><strong>Zero-dependency</strong></td><td>No external packages. Nothing breaks when you come back in a year.</td><td>One Node.js script, no <code>package.json</code>, no <code>node_modules</code></td></tr>
+                <tr><td><strong>Drift-aware</strong></td><td>Deterministic checks flag old review dates and incomplete relationships for human review.</td><td>Staleness, mapping, and completeness checks</td></tr>
+                <tr><td><strong>Multi-output</strong></td><td>One source produces consistent human- and machine-readable formats.</td><td>HTML site, JSON API, SEO pages, sitemap, <code>llms.txt</code>, and a separate local MCP runtime</td></tr>
+                <tr><td><strong>Zero-dependency</strong></td><td>Core tooling uses platform built-ins rather than a package dependency tree.</td><td>Node.js built-ins only</td></tr>
                 <tr><td><strong>Git-native</strong></td><td>Git is the collaboration layer, audit trail, and deployment trigger.</td><td>Issues, PRs, CI/CD, version history — all through Git</td></tr>
                 <tr><td><strong>Ontology-driven</strong></td><td>A vendor-neutral taxonomy maps to domain-specific implementations.</td><td>3 Requirements across 2 Frameworks</td></tr>
             </tbody>
@@ -113,6 +113,7 @@
         <p>Primaries are stable; containers are unstable. When a framework is amended, its provisions change, but the underlying requirements persist.</p>
 
         <h2>Standing on Shoulders</h2>
+        <p>This repository is one practical implementation of established ideas, not a claim to have originated the broader category.</p>
         <ul>
             <li><strong>File over App</strong> — <a href="https://stephango.com/file-over-app">Steph Ango</a> on durable digital artifacts as files you control</li>
             <li><strong>Docs as Code</strong> — Managing documentation with version control, pull requests, CI, plain text formats. <a href="https://writethedocs.org/guide/docs-as-code/">Write the Docs</a> community</li>
@@ -141,14 +142,15 @@
         
         <h2>Ecosystem</h2>
         <ul>
-            <li><strong><a href="https://knowledge-as-code.com/">Knowledge as Code</a></strong> — The pattern definition and community hub</li>
+            <li><strong><a href="https://knowledge-as-code.com/">Knowledge as Code</a></strong> — The maintained reference generator and canonical project home</li>
             <li><strong><a href="https://github.com/snapsynapse/graceful-boundaries">Graceful Boundaries</a></strong> — How services communicate operational limits to humans and agents</li>
             <li><strong><a href="https://siteline.to/">Siteline</a></strong> — AI agent readiness scanner for websites</li>
         </ul>
 
         <h2>Get Started</h2>
-        <pre><code>git clone https://github.com/snapsynapse/knowledge-as-code-template.git
-cd knowledge-as-code-template
+        <pre><code># Choose "Use this template" on GitHub, then clone your new repository
+git clone https://github.com/your-org/your-knowledge-base.git
+cd your-knowledge-base
 node scripts/build.js
 open docs/index.html</code></pre>
         <p>Template: <a href="https://github.com/snapsynapse/knowledge-as-code-template">github.com/snapsynapse/knowledge-as-code-template</a></p>

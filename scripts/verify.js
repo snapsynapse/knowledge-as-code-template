@@ -34,7 +34,11 @@ function verify() {
 
     const config = parseYaml(fs.readFileSync(configPath, 'utf-8'));
     const stalenessDays = parseInt(config.verification?.staleness_days || '90', 10);
-    const now = new Date();
+    const now = process.env.KAC_NOW ? new Date(process.env.KAC_NOW) : new Date();
+    if (Number.isNaN(now.getTime())) {
+        console.error('Error: KAC_NOW must be a valid ISO-8601 date or timestamp.');
+        process.exit(1);
+    }
 
     console.log('Knowledge Base Verification Report');
     console.log('==================================\n');

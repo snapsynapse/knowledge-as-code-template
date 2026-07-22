@@ -1,16 +1,16 @@
 # Knowledge-as-Code Template
 
-A template for building structured, version-controlled knowledge bases with an ontology-first approach. Edit a config file, add markdown data, get a full HTML site + JSON API.
+A zero-dependency generator for evidence-backed reference sites. Keep structured knowledge in Git-tracked Markdown and YAML, then build a searchable HTML site, JSON API, discovery files, and an optional local MCP interface.
 
-**[Knowledge as Code](https://knowledge-as-code.com/)** is a pattern created for [PAICE.work](https://paice.work/) PBC. It applies software engineering practices to knowledge management: plain text, Git-native, zero-dependency, ontology-driven, multi-output from a single source.
+This repository is an internal-first open utility maintained by [PAICE.work](https://paice.work/) PBC. It supports active reference projects inside the PAICE and Snap Synapse portfolios. Public issues and contributions are welcome on a best-effort basis.
 
 ## Who this is for
 
-Teams that want a knowledge base treated like code — version-controlled, ontology-first, multi-output — without standing up a database or CMS.
+Maintainers of public registries, comparison databases, compliance maps, and other structured references where claims need sources, review dates, and machine-readable output.
 
 ## What problem it solves
 
-Knowledge bases usually live in databases or CMSs that aren't diffable, portable, or agent-readable. Knowledge-as-Code applies software engineering practice (plain text, Git-native, ontology-driven) to produce a searchable HTML site plus JSON API from one source.
+Structured references often duplicate the same claims across a website, API, search index, and agent interface. This template keeps one typed source in plain text, validates its relationships and review dates, and generates consistent human- and machine-readable outputs.
 
 ## Canonical URL
 
@@ -20,7 +20,7 @@ https://knowledge-as-code.com/
 
 **[Live demo →](https://knowledge-as-code.com/demo/)** — the output of this template's example data, deployed on GitHub Pages. Includes a searchable HTML site, coverage matrix, timeline, comparison tool, and JSON API.
 
-Built examples using this template:
+Maintainer-operated implementations of this architecture:
 
 - [AI Tool Watch](https://aitool.watch/) — AI model capabilities across 12 products
 - [Every AI Law](https://everyailaw.com/) — global AI regulatory landscape
@@ -28,11 +28,11 @@ Built examples using this template:
 
 ## Quick Start
 
-1. **Use this template** -- on GitHub, click the green "Use this template" button (not "Clone"). This creates a new repo with no git history and no upstream connection. Cloning is fine for local exploration but won't give you a clean starting repo.
+1. **Use this template** -- on GitHub, click the green "Use this template" button. This creates a new repository with no upstream history. Clone only when exploring this canonical repository locally.
 2. **Edit `project.yml`** -- start with the entity names (`entities.primary.name`, `entities.container.name`, etc.) and groups. You can adjust colors and navigation later. Leave `url` until your GitHub repo is configured.
 3. **Replace example data** -- delete the files in `data/examples/requirements/`, `data/examples/frameworks/`, `data/examples/organizations/`, and `data/examples/mapping/index.yml`, then add your own. See [Replacing example data](#replacing-example-data) and [`data/_schema.md`](data/_schema.md) for the format.
 4. **Build** -- `node scripts/build.js`. A successful build prints `Build complete — N HTML pages, N JSON API files`. Check the `docs/` directory for the output, and open any HTML file in a browser to verify it looks right. The build cleans generator-owned paths in the output directory before writing fresh files, so removed or renamed entities do not leave stale generated pages behind.
-5. **Deploy** -- choose your Pages strategy. This repo validates builds in CI, but it does not auto-deploy template forks by default. If you want automated deployment, add a Pages publish step for your repo.
+5. **Deploy** -- enable GitHub Pages with GitHub Actions. The included deployment workflow publishes `docs/` on pushes to `main` once Pages is configured for GitHub Actions.
 6. **(Optional) Publish your knowledge base as an MCP server** -- if you want anyone to install your knowledge base as an MCP-aware agent tool via `npx -y your-package`, follow [PUBLISH-MCP.md](PUBLISH-MCP.md). It walks through the package.json prep, npm publish, and Official MCP Registry submission, with the gotchas that bit us when we did this for three sibling projects.
 
 ## Output Policy
@@ -57,7 +57,7 @@ Template forks do not need to follow this policy. A fork can either:
 - **Dark/light theme** — with persistence
 - **Client-side search** — lazy-loaded, keyboard-navigable
 - **Sortable tables** — click any column header to sort
-- **MCP server** — AI agent access to your knowledge base
+- **Local MCP server** — optional read-only agent access through `mcp-server.js`; it runs separately from the static build
 - **Discovery files** — llms.txt, agents.json, RSS for machine consumption
 - **Safe generated output** — generated links, CSS tokens, and client-side comparison labels are normalized or escaped
 - **Zero dependencies** — Node.js built-ins only
@@ -275,9 +275,9 @@ Two fixed tools are always present regardless of config: `get_matrix` and `get_m
 
 ## Verification
 
-`node scripts/verify.js` detects stale entities and validates cross-reference completeness. A weekly GitHub Actions workflow runs it automatically and opens an issue on drift.
+`node scripts/verify.js` detects stale or never-reviewed entities and validates cross-reference completeness. A weekly GitHub Actions workflow runs it automatically and opens an issue when review is needed. It does not independently establish factual accuracy or query external AI providers.
 
-See [VERIFICATION.md](VERIFICATION.md) for the full guide: staleness thresholds, CI integration, and AI-assisted content review.
+See [VERIFICATION.md](VERIFICATION.md) for the deterministic checks, CI integration, and extension contract.
 
 ## Ecosystem
 
@@ -286,20 +286,20 @@ Knowledge as Code is part of a broader set of open standards:
 - **[Graceful Boundaries](https://github.com/snapsynapse/graceful-boundaries)** — How services communicate operational limits to humans and agents
 - **[Skill Provenance](https://github.com/snapsynapse/skill-provenance)** — Version identity that travels with agent skill bundles
 - **[Siteline](https://siteline.to/)** — AI agent readiness scanner for websites
-- **[Knowledge as Code](https://knowledge-as-code.com/)** — The pattern definition and community hub
+- **[Knowledge as Code](https://knowledge-as-code.com/)** — Canonical home and maintained reference implementation
 
-## The Pattern
+## Design properties
 
-Knowledge as Code has six defining properties:
+This implementation combines six established practices:
 
-1. **Plain text canonical** — knowledge in human-readable, version-controlled files
-2. **Self-healing** — automated verification detects when knowledge drifts from reality
-3. **Multi-output** — one source produces every format needed (HTML, JSON API, MCP, SEO pages)
-4. **Zero-dependency** — no external packages; nothing breaks when you come back in a year
-5. **Git-native** — Git is the collaboration layer, audit trail, and deployment trigger
-6. **Ontology-driven** — a vendor-neutral taxonomy maps to domain-specific implementations
+1. **Plain-text canonical** — knowledge lives in human-readable, version-controlled files
+2. **Drift-aware** — deterministic checks flag old review dates and incomplete relationships for human review
+3. **Multi-output** — one source produces HTML, JSON, discovery files, and a separately run MCP interface
+4. **Zero-dependency** — core scripts use Node.js built-ins only
+5. **Git-native** — Git provides collaboration, audit history, and deployment triggers
+6. **Ontology-driven** — configurable entity roles map stable concepts to changing sources and implementations
 
-Read the full pattern definition at [knowledge-as-code.com](https://knowledge-as-code.com/).
+These ideas build on docs as code, living documentation, GitOps, and earlier uses of the term “knowledge as code.” The contribution here is a small working generator and a specific Primary/Container/Authority/Secondary reference model, not a claim to have originated the broader category. See [knowledge-as-code.com](https://knowledge-as-code.com/) for the maintained public explanation.
 
 ## Attribution
 
@@ -314,7 +314,7 @@ When you use this template, update the following:
 1. Edit `project.yml` with your domain entities, colors, and site identity
 2. Replace example data in `data/examples/` with your own
 3. Update `docs/CNAME` with your custom domain (or remove it)
-4. Push to GitHub and publish using your chosen Pages workflow or artifact strategy
+4. In GitHub, set Pages to **GitHub Actions**, then push to `main`; `.github/workflows/pages.yml` builds and publishes `docs/`
 
 ## Sponsor
 

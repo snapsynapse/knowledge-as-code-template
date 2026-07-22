@@ -183,7 +183,7 @@ ontology:
 ecosystem:
   - name: "Knowledge as Code"
     url: "https://knowledge-as-code.com/"
-    description: "The pattern definition and community hub"
+    description: "The maintained reference generator and canonical project home"
   - name: "Graceful Boundaries"
     url: "https://github.com/snapsynapse/graceful-boundaries"
     description: "How services communicate operational limits to humans and agents"

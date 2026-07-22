@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-03-25T00:00:00.000Z",
+    "generated": "2026-07-21T00:00:00.000Z",
     "count": 3
   },
   "items": [
@@ -13,16 +13,16 @@
     },
     {
       "@type": "gist:KnowledgeConcept",
-      "id": "data-quality",
-      "name": "Data Quality",
-      "group": "technical",
+      "id": "incident-response",
+      "name": "Incident Response",
+      "group": "operational",
       "status": "active"
     },
     {
       "@type": "gist:KnowledgeConcept",
-      "id": "incident-response",
-      "name": "Incident Response",
-      "group": "operational",
+      "id": "information-integrity",
+      "name": "Information Integrity",
+      "group": "technical",
       "status": "active"
     }
   ]

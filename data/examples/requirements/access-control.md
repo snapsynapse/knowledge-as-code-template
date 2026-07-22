@@ -3,7 +3,7 @@ id: access-control
 name: Access Control
 group: governance
 status: active
-last_verified: 2026-03-25
+last_verified: 2026-07-21
 search_terms:
   - authorization
   - permissions

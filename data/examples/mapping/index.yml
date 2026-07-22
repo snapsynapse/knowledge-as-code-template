@@ -2,17 +2,17 @@
   regulation: iso-27001
   authority: iso
   source_file: data/examples/frameworks/iso-27001.md
-  source_heading: Information Security Controls (Annex A)
+  source_heading: Confidentiality and Access
   obligations:
     - access-control
 
-- id: iso-27001-data-quality
+- id: iso-27001-information-integrity
   regulation: iso-27001
   authority: iso
   source_file: data/examples/frameworks/iso-27001.md
-  source_heading: Data Quality Requirements (Clause 7.5)
+  source_heading: Information Integrity
   obligations:
-    - data-quality
+    - information-integrity
 
 - id: nist-csf-incident-response
   regulation: nist-csf

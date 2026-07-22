@@ -5,14 +5,14 @@
 
 ## Frameworks
 
-- [ISO 27001](https://knowledge-as-code.com/demo/container/iso-27001/): active
+- [ISO/IEC 27001:2022](https://knowledge-as-code.com/demo/container/iso-27001/): active
 - [NIST Cybersecurity Framework](https://knowledge-as-code.com/demo/container/nist-csf/): active
 
 ## Requirements
 
 - [Access Control](https://knowledge-as-code.com/demo/primary/access-control/): 2 frameworks support this
-- [Data Quality](https://knowledge-as-code.com/demo/primary/data-quality/): 1 frameworks support this
 - [Incident Response](https://knowledge-as-code.com/demo/primary/incident-response/): 1 frameworks support this
+- [Information Integrity](https://knowledge-as-code.com/demo/primary/information-integrity/): 1 frameworks support this
 
 ## Tools
 

@@ -33,7 +33,7 @@ last_verified: 2025-01-15
 **Container entities:**
 ```yaml
 ---
-name: ISO 27001
+name: ISO/IEC 27001:2022
 status: active
 authority: iso
 last_verified: 2025-01-15

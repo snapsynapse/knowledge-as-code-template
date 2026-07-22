@@ -5,19 +5,108 @@
  * Knowledge-as-Code — Verification Script
  * Zero dependencies — uses only Node.js built-ins.
  *
- * Checks entity staleness (based on last_verified dates) and
- * completeness (mapping coverage, cross-reference integrity).
+ * Checks entity staleness, evidence metadata, and mapping integrity.
+ * An optional external executable can add factual review through JSONL.
  *
  * Usage: node scripts/verify.js
- * Exit code 0 = all fresh, 1 = stale entities found
+ * Exit code 0 = all checks pass, 1 = review required, 2 = configuration error
  */
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const { loadMappingIndex, parseSimpleFrontmatter } = require('./lib/data-loaders');
 const { parseYaml } = require('./lib/parsers');
 
 const ROOT = path.join(__dirname, '..');
+
+function extractUrls(content) {
+    return [...new Set((String(content).match(/https?:\/\/[^\s)<>{}"']+/g) || [])
+        .map(url => url.replace(/[.,;:!?]+$/, '')))];
+}
+
+function runExternalVerifier(entities) {
+    const command = process.env.KAC_VERIFY_COMMAND;
+    if (!command) return { errors: 0, ran: false };
+
+    let args = [];
+    try {
+        args = JSON.parse(process.env.KAC_VERIFY_ARGS || '[]');
+        if (!Array.isArray(args) || args.some(arg => typeof arg !== 'string')) throw new Error('expected a JSON array of strings');
+    } catch (error) {
+        console.error(`Error: KAC_VERIFY_ARGS must be a JSON array of strings (${error.message}).`);
+        process.exit(2);
+    }
+
+    const input = entities.map(entity => JSON.stringify({
+        id: entity.id,
+        role: entity.roleKey,
+        title: entity.name || entity.title || entity.id,
+        last_verified: entity.last_verified || null,
+        urls: entity.urls,
+        content: entity.content
+    })).join('\n') + '\n';
+    const timeout = parseInt(process.env.KAC_VERIFY_TIMEOUT_MS || '60000', 10);
+    if (!Number.isFinite(timeout) || timeout < 1) {
+        console.error('Error: KAC_VERIFY_TIMEOUT_MS must be a positive integer.');
+        process.exit(2);
+    }
+    const result = spawnSync(command, args, {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        input,
+        maxBuffer: 10 * 1024 * 1024,
+        timeout
+    });
+
+    if (result.error || result.status !== 0) {
+        const detail = result.error?.message || result.stderr.trim() || `exit code ${result.status}`;
+        console.log(`  ERROR: external verifier failed: ${detail}`);
+        return { errors: 1, ran: true };
+    }
+
+    const lines = result.stdout.split('\n').map(line => line.trim()).filter(Boolean);
+    const seen = new Set();
+    const known = new Set(entities.map(entity => `${entity.roleKey}:${entity.id}`));
+    let errors = 0;
+    for (const line of lines) {
+        let review;
+        try { review = JSON.parse(line); } catch {
+            console.log(`  ERROR: external verifier emitted invalid JSONL: ${line.slice(0, 120)}`);
+            errors++;
+            continue;
+        }
+        if (!review.id || !review.role || typeof review.status !== 'string') {
+            console.log('  ERROR: external verifier result requires string fields "id", "role", and "status"');
+            errors++;
+            continue;
+        }
+        const key = `${review.role}:${review.id}`;
+        if (!known.has(key)) {
+            console.log(`  ERROR: external verifier returned an unknown entity: ${review.role}/${review.id}`);
+            errors++;
+            continue;
+        }
+        if (seen.has(key)) {
+            console.log(`  ERROR: external verifier returned a duplicate result for ${review.role}/${review.id}`);
+            errors++;
+            continue;
+        }
+        seen.add(key);
+        const issues = Array.isArray(review.issues) ? review.issues : [];
+        const passes = ['current', 'pass', 'ok'].includes(review.status.toLowerCase());
+        console.log(`  ${passes ? 'OK' : 'REVIEW'}: ${review.role}/${review.id} — ${review.status}`);
+        for (const issue of issues) console.log(`    - ${String(issue)}`);
+        if (!passes) errors++;
+    }
+    for (const entity of entities) {
+        if (!seen.has(`${entity.roleKey}:${entity.id}`)) {
+            console.log(`  ERROR: external verifier returned no result for ${entity.roleKey}/${entity.id}`);
+            errors++;
+        }
+    }
+    return { errors, ran: true };
+}
 
 // ---------------------------------------------------------------------------
 // Verification
@@ -33,7 +122,12 @@ function verify() {
     }
 
     const config = parseYaml(fs.readFileSync(configPath, 'utf-8'));
+    const projectRoot = path.dirname(configPath);
     const stalenessDays = parseInt(config.verification?.staleness_days || '90', 10);
+    if (!Number.isFinite(stalenessDays) || stalenessDays < 0) {
+        console.error('Error: verification.staleness_days must be a non-negative integer.');
+        process.exit(2);
+    }
     const now = process.env.KAC_NOW ? new Date(process.env.KAC_NOW) : new Date();
     if (Number.isNaN(now.getTime())) {
         console.error('Error: KAC_NOW must be a valid ISO-8601 date or timestamp.');
@@ -64,20 +158,19 @@ function verify() {
         if (!fs.existsSync(dir)) return [];
         return fs.readdirSync(dir)
             .filter(f => f.endsWith('.md') && !f.startsWith('_'))
-            .map(f => ({
-                id: f.replace('.md', ''),
-                file: f,
-                ...parseSimpleFrontmatter(fs.readFileSync(path.join(dir, f), 'utf-8'))
-            }));
+            .map(f => {
+                const content = fs.readFileSync(path.join(dir, f), 'utf-8');
+                return { id: f.replace('.md', ''), file: f, content, urls: extractUrls(content), ...parseSimpleFrontmatter(content) };
+            });
     };
 
     const primaries = loadEntities(primaryDir);
     const containers = loadEntities(containerDir);
     const authorities = loadEntities(authorityDir);
     const allEntities = [
-        ...primaries.map(e => ({ ...e, role: config.entities?.primary?.name || 'Primary' })),
-        ...containers.map(e => ({ ...e, role: config.entities?.container?.name || 'Container' })),
-        ...authorities.map(e => ({ ...e, role: config.entities?.authority?.name || 'Authority' }))
+        ...primaries.map(e => ({ ...e, roleKey: 'primary', role: config.entities?.primary?.name || 'Primary' })),
+        ...containers.map(e => ({ ...e, roleKey: 'container', role: config.entities?.container?.name || 'Container' })),
+        ...authorities.map(e => ({ ...e, roleKey: 'authority', role: config.entities?.authority?.name || 'Authority' }))
     ];
 
     // -----------------------------------------------------------------------
@@ -86,14 +179,27 @@ function verify() {
     console.log('--- Staleness Check ---\n');
     const staleEntities = [];
     const neverVerified = [];
+    const invalidDates = [];
 
     for (const entity of allEntities) {
         if (!entity.last_verified) {
             neverVerified.push(entity);
             continue;
         }
-        const verifiedDate = new Date(entity.last_verified + 'T00:00:00');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(entity.last_verified)) {
+            invalidDates.push({ ...entity, reason: 'must use YYYY-MM-DD' });
+            continue;
+        }
+        const verifiedDate = new Date(entity.last_verified + 'T00:00:00Z');
+        if (Number.isNaN(verifiedDate.getTime()) || verifiedDate.toISOString().slice(0, 10) !== entity.last_verified) {
+            invalidDates.push({ ...entity, reason: 'is not a valid calendar date' });
+            continue;
+        }
         const daysSince = Math.floor((now - verifiedDate) / (1000 * 60 * 60 * 24));
+        if (daysSince < 0) {
+            invalidDates.push({ ...entity, reason: 'is in the future' });
+            continue;
+        }
         if (daysSince > stalenessDays) {
             staleEntities.push({ ...entity, daysSince });
         }
@@ -115,8 +221,14 @@ function verify() {
         console.log();
     }
 
-    const freshCount = allEntities.length - staleEntities.length - neverVerified.length;
-    console.log(`Fresh: ${freshCount}  |  Stale: ${staleEntities.length}  |  Never verified: ${neverVerified.length}\n`);
+    if (invalidDates.length > 0) {
+        console.log(`INVALID DATES (${invalidDates.length}):`);
+        for (const e of invalidDates) console.log(`  [${e.role}] ${e.id} — ${e.last_verified} ${e.reason}`);
+        console.log();
+    }
+
+    const freshCount = allEntities.length - staleEntities.length - neverVerified.length - invalidDates.length;
+    console.log(`Fresh: ${freshCount}  |  Stale: ${staleEntities.length}  |  Never verified: ${neverVerified.length}  |  Invalid dates: ${invalidDates.length}\n`);
 
     // -----------------------------------------------------------------------
     // 2. Completeness check
@@ -130,6 +242,7 @@ function verify() {
 
     const primaryIds = new Set(primaries.map(p => p.id));
     const containerIds = new Set(containers.map(c => c.id));
+    const authorityIds = new Set(authorities.map(a => a.id));
 
     let completenessErrors = 0;
 
@@ -160,6 +273,28 @@ function verify() {
             console.log(`  ERROR: Mapping "${m.id}" references unknown ${(config.entities?.container?.name || 'container').toLowerCase()} "${cId}"`);
             completenessErrors++;
         }
+        if (m.authority && !authorityIds.has(m.authority)) {
+            console.log(`  ERROR: Mapping "${m.id}" references unknown ${(config.entities?.authority?.name || 'authority').toLowerCase()} "${m.authority}"`);
+            completenessErrors++;
+        }
+        if (m.source_file) {
+            const sourcePath = path.resolve(projectRoot, m.source_file);
+            const relative = path.relative(projectRoot, sourcePath);
+            if (relative.startsWith('..') || path.isAbsolute(relative)) {
+                console.log(`  ERROR: Mapping "${m.id}" source_file escapes the project root`);
+                completenessErrors++;
+            } else if (!fs.existsSync(sourcePath)) {
+                console.log(`  ERROR: Mapping "${m.id}" source_file does not exist: ${m.source_file}`);
+                completenessErrors++;
+            } else if (m.source_heading) {
+                const source = fs.readFileSync(sourcePath, 'utf8');
+                const escapedHeading = m.source_heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                if (!(new RegExp(`^#{1,6}\\s+${escapedHeading}\\s*$`, 'm')).test(source)) {
+                    console.log(`  ERROR: Mapping "${m.id}" source_heading not found in ${m.source_file}: ${m.source_heading}`);
+                    completenessErrors++;
+                }
+            }
+        }
     }
 
     if (completenessErrors === 0) {
@@ -169,7 +304,43 @@ function verify() {
     }
 
     // -----------------------------------------------------------------------
-    // 3. Summary
+    // 3. Evidence metadata check
+    // -----------------------------------------------------------------------
+    console.log('--- Evidence Check ---\n');
+    const requiredEvidenceRoles = Array.isArray(config.verification?.require_evidence_roles)
+        ? config.verification.require_evidence_roles
+        : [];
+    let evidenceErrors = 0;
+    for (const entity of allEntities) {
+        for (const url of entity.urls) {
+            if (!url.startsWith('https://')) {
+                console.log(`  ERROR: ${entity.id} uses a non-HTTPS evidence URL: ${url}`);
+                evidenceErrors++;
+                continue;
+            }
+            try { new URL(url); } catch {
+                console.log(`  ERROR: ${entity.id} has an invalid evidence URL: ${url}`);
+                evidenceErrors++;
+            }
+        }
+        if (requiredEvidenceRoles.includes(entity.roleKey) && entity.urls.length === 0) {
+            console.log(`  ERROR: ${entity.role} "${entity.id}" has no evidence URL`);
+            evidenceErrors++;
+        }
+    }
+    if (evidenceErrors === 0) console.log('  Evidence URL metadata is present and well-formed.\n');
+    else console.log(`\n  ${evidenceErrors} evidence issue(s) found.\n`);
+
+    // -----------------------------------------------------------------------
+    // 4. Optional external review
+    // -----------------------------------------------------------------------
+    console.log('--- External Review ---\n');
+    const external = runExternalVerifier(allEntities);
+    if (!external.ran) console.log('  Not configured. Deterministic checks only.\n');
+    else console.log(`\n  ${external.errors} external review issue(s) found.\n`);
+
+    // -----------------------------------------------------------------------
+    // 5. Summary
     // -----------------------------------------------------------------------
     console.log('--- Summary ---\n');
     console.log(`  ${config.entities?.primary?.plural || 'Primaries'}: ${primaries.length}`);
@@ -178,54 +349,12 @@ function verify() {
     console.log(`  Mappings: ${mappings.length}`);
     console.log();
 
-    // -----------------------------------------------------------------------
-    // AI-assisted verification (placeholder)
-    // -----------------------------------------------------------------------
-    //
-    // To add model-based verification, uncomment and adapt the section below.
-    // This demonstrates the pattern for sending entity content to an LLM API
-    // to check factual accuracy, detect outdated information, or suggest updates.
-    //
-    // async function aiVerify(entity) {
-    //     const prompt = `Review this ${entity.role} entity for accuracy:
-    //       Title: ${entity.title || entity.id}
-    //       Content: ${entity._body || '(no body)'}
-    //
-    //       Check for:
-    //       1. Outdated facts or references
-    //       2. Broken or changed URLs
-    //       3. Superseded standards or regulations
-    //       4. Factual inaccuracies
-    //
-    //       Respond with JSON: { "status": "current"|"needs_review", "issues": [] }`;
-    //
-    //     const response = await fetch(process.env.AI_API_URL, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'Authorization': `Bearer ${process.env.AI_API_KEY}`
-    //         },
-    //         body: JSON.stringify({ prompt, max_tokens: 500 })
-    //     });
-    //     return response.json();
-    // }
-    //
-    // To run AI verification on stale entities:
-    //
-    // for (const entity of staleEntities) {
-    //     const result = await aiVerify(entity);
-    //     console.log(`  AI review [${entity.id}]: ${result.status}`);
-    //     if (result.issues?.length) {
-    //         result.issues.forEach(issue => console.log(`    - ${issue}`));
-    //     }
-    // }
-
-    // Exit code
-    if (staleEntities.length > 0) {
-        console.log('Result: STALE — some entities need re-verification.');
+    const issueCount = staleEntities.length + neverVerified.length + invalidDates.length + completenessErrors + evidenceErrors + external.errors;
+    if (issueCount > 0) {
+        console.log(`Result: REVIEW REQUIRED — ${issueCount} issue(s) need attention.`);
         process.exit(1);
     }
-    console.log('Result: OK — no stale entities detected.');
+    console.log('Result: OK — deterministic checks and configured reviews passed.');
     process.exit(0);
 }
 

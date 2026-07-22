@@ -22,6 +22,9 @@ pattern.
 - Corrected the canonical Snap Synapse writeup path and acknowledged established prior art.
 - Added a zero-dependency guided initializer that creates a clean project with only the engine, worked example, MCP runtime, and deployment workflows.
 - Made `docs/` transient local output in the canonical repository; `demo/` is now the only tracked generated build.
+- Expanded deterministic verification to fail on missing reviews, invalid or future dates, mapping gaps, and required evidence metadata.
+- Added a provider-independent external verifier contract using an explicit executable and JSONL input/output, with no shell or source-file mutation.
+- Re-verified the worked example against current ISO and NIST primary sources, corrected unsupported claims, and replaced the ambiguous data-quality mapping with information integrity.
 
 ## [1.0.2] — 2026-06-12
 

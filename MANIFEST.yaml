@@ -47,7 +47,7 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:28352470a45651ad12a3f0d96e376a36bba2fd228fa9c7804444000dff26e8bd
+    hash: sha256:5058024954c44dc3ea425f43ee3957ef5f7264f9357cb10808a512979e54cca5
     note: Template overview
 
   - path: assistant-guide.txt
@@ -67,7 +67,7 @@ files:
 
   - path: project.yml
     role: config
-    hash: sha256:7a9006ef28ed2e3b66698504fe795e2fcd040224241febe4d784ce95c5df428f
+    hash: sha256:537e6bfbea95308d120445b56528f22f5f0f6671e59c62c510a58270690fab35
     note: KaC build config — entity model, navigation, theme, ontology binding
 
   - path: scripts/build.js
@@ -87,7 +87,7 @@ files:
 
   - path: scripts/verify.js
     role: tooling
-    hash: sha256:46f8bd11bb2db1d8d1706486baf20eae2c9a67917bba2f36eff632830199aba5
+    hash: sha256:a20986041e85bb735c968ad11cbf06a976c3eb6ece38fa694f584fc19e141507
     note: Staleness / freshness checker
 
   - path: scripts/check-links.js

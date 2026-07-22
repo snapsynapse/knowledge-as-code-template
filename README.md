@@ -154,7 +154,7 @@ Entity filenames and mapping IDs must be lowercase slug IDs: `a-z`, `0-9`, and s
 
 ## Replacing example data
 
-The template ships with example data in `data/examples/` (ISO 27001, NIST CSF). To replace it with your own domain:
+The template ships with example data in `data/examples/` (ISO/IEC 27001, NIST CSF). To replace it with your own domain:
 
 1. **Update `project.yml`** -- rename entity types, groups, statuses, and colors to match your domain. The directory names under `entities.*.directory` control where the build script looks for files.
 
@@ -273,7 +273,7 @@ Two fixed tools are always present regardless of config: `get_matrix` and `get_m
 
 ## Verification
 
-`node scripts/verify.js` detects stale or never-reviewed entities and validates cross-reference completeness. A weekly GitHub Actions workflow runs it automatically and opens an issue when review is needed. It does not independently establish factual accuracy or query external AI providers.
+`node scripts/verify.js` detects stale, never-reviewed, future-dated, and invalid entities; checks required evidence URLs; and validates cross-reference completeness. A weekly GitHub Actions workflow runs the deterministic checks and opens an issue when review is needed. It does not independently establish factual accuracy. An optional executable JSONL contract lets maintainers attach a local model, hosted service, browser workflow, or human-review adapter without changing the core.
 
 See [VERIFICATION.md](VERIFICATION.md) for the deterministic checks, CI integration, and extension contract.
 

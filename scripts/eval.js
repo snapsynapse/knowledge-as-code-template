@@ -268,9 +268,38 @@ function evalVerifierNegative() {
     assertIncludes(result.stdout, '[Requirement] stale-requirement');
     assertIncludes(result.stdout, 'NEVER VERIFIED (1):');
     assertIncludes(result.stdout, '[Framework] unverified-framework');
-    assertIncludes(result.stdout, 'Fresh: 2  |  Stale: 1  |  Never verified: 1');
+    assertIncludes(result.stdout, 'Fresh: 2  |  Stale: 1  |  Never verified: 1  |  Invalid dates: 0');
     assertIncludes(result.stdout, 'All mappings valid and complete.');
-    assertIncludes(result.stdout, 'Result: STALE — some entities need re-verification.');
+    assertIncludes(result.stdout, 'Result: REVIEW REQUIRED');
+}
+
+function evalExternalVerifierContract() {
+    withTempRoot(() => {
+        const adapter = path.join(TMP_ROOT, 'external-verifier.js');
+        fs.writeFileSync(adapter, [
+            "'use strict';",
+            "let input = '';",
+            "process.stdin.setEncoding('utf8');",
+            "process.stdin.on('data', chunk => { input += chunk; });",
+            "process.stdin.on('end', () => {",
+            "  for (const line of input.trim().split('\\n')) {",
+            "    const entity = JSON.parse(line);",
+            "    process.stdout.write(JSON.stringify({ id: entity.id, role: entity.role, status: 'current', issues: [] }) + '\\n');",
+            "  }",
+            "});"
+        ].join('\n'));
+
+        const result = runNode(['scripts/verify.js'], {
+            env: {
+                KAC_NOW: '2026-07-21T00:00:00Z',
+                KAC_VERIFY_COMMAND: process.execPath,
+                KAC_VERIFY_ARGS: JSON.stringify([adapter])
+            }
+        });
+        assert.strictEqual(result.status, 0, `Expected external verifier contract to pass:\n${result.stdout}\n${result.stderr}`);
+        assertIncludes(result.stdout, 'OK: container/iso-27001 — current');
+        assertIncludes(result.stdout, '0 external review issue(s) found.');
+    });
 }
 
 function evalJsonApiShape() {
@@ -314,7 +343,7 @@ function evalJsonApiShape() {
     const container = containers.items.find(item => item.id === 'iso-27001');
     assert.ok(container, 'Expected iso-27001 container item');
     assert.strictEqual(container['@type'], 'gist:Specification');
-    assert.strictEqual(container.name, 'ISO 27001');
+    assert.strictEqual(container.name, 'ISO/IEC 27001:2022');
     assert.strictEqual(container.status, 'active');
     assert.strictEqual(container.effective, '2022-10-25');
     assert.strictEqual(container.provision_count, 2);
@@ -330,13 +359,13 @@ function evalJsonApiShape() {
     assert.deepStrictEqual(mapping.obligations, ['access-control']);
     assert.strictEqual(mapping.regulation, 'iso-27001');
     assert.strictEqual(mapping.authority, 'iso');
-    assert.strictEqual(mapping.source_heading, 'Information Security Controls (Annex A)');
+    assert.strictEqual(mapping.source_heading, 'Confidentiality and Access');
 
     const comparison = comparisons.comparisons[0];
     assert.ok(comparison, 'Expected at least one comparison item');
     assert.deepStrictEqual(comparison.regulations, ['iso-27001', 'nist-csf']);
     assert.deepStrictEqual(comparison.shared_obligations, ['access-control']);
-    assert.deepStrictEqual(comparison.only_a, ['data-quality']);
+    assert.deepStrictEqual(comparison.only_a, ['information-integrity']);
     assert.deepStrictEqual(comparison.only_b, ['incident-response']);
     assert.strictEqual(comparison.shared_count, 1);
 
@@ -440,7 +469,7 @@ function evalOutputSanitization() {
             const maliciousContainerSource = path.join(maliciousRepo, 'data', 'examples', 'frameworks', 'iso-27001.md');
             replaceInFile(maliciousContainerSource, 'status: active', 'status: active" onmouseover="alert(1)');
             replaceInFile(maliciousContainerSource, 'official_url: https://iso.org/standard/27001', 'official_url: javascript:alert(1)');
-            replaceInFile(maliciousContainerSource, '[ISO 27001:2022](https://iso.org/standard/27001)', '[ISO 27001:2022](http://iso.org/standard/27001)');
+            replaceInFile(maliciousContainerSource, '[ISO/IEC 27001:2022](https://iso.org/standard/27001)', '[ISO/IEC 27001:2022](http://iso.org/standard/27001)');
 
             const maliciousProject = path.join(maliciousRepo, 'project.yml');
             replaceInFile(maliciousProject, 'label: Home', 'label: Home <script>alert(1)</script>');
@@ -578,9 +607,9 @@ function evalHtmlSnapshots() {
     buildDefault();
     const snapshots = [
         ['docs/index.html', ['Example Knowledge Base', 'Coverage Matrix', 'JSON API']],
-        ['docs/container/iso-27001/index.html', ['ISO 27001', 'Provisions (2)', 'Official source']],
+        ['docs/container/iso-27001/index.html', ['ISO/IEC 27001:2022', 'Provisions (2)', 'Official source']],
         ['docs/primary/access-control/index.html', ['Access Control', 'What Counts', 'Implementing Frameworks']],
-        ['docs/requires/iso-27001/access-control/index.html', ['Does ISO 27001 require Access Control?', 'View Framework', 'View Requirement']],
+        ['docs/requires/iso-27001/access-control/index.html', ['Does ISO/IEC 27001:2022 require Access Control?', 'View Framework', 'View Requirement']],
         ['docs/404.html', ['404', 'All frameworks', 'All requirements']]
     ];
 
@@ -641,6 +670,7 @@ const evals = [
     ['link checker negative', evalLinkCheckerNegative],
     ['validator negative', evalValidatorNegative],
     ['verifier negative', evalVerifierNegative],
+    ['external verifier contract', evalExternalVerifierContract],
     ['JSON API shape', evalJsonApiShape],
     ['config override', evalConfigOverride],
     ['parser fixtures', evalParserFixtures],

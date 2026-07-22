@@ -56,7 +56,7 @@
     "containers": [
       {
         "id": "iso-27001",
-        "name": "ISO 27001",
+        "name": "ISO/IEC 27001:2022",
         "status": "active",
         "url": "https://knowledge-as-code.com/demo/container/iso-27001/"
       },
@@ -75,16 +75,16 @@
         "url": "https://knowledge-as-code.com/demo/primary/access-control/"
       },
       {
-        "id": "data-quality",
-        "name": "Data Quality",
-        "group": "technical",
-        "url": "https://knowledge-as-code.com/demo/primary/data-quality/"
-      },
-      {
         "id": "incident-response",
         "name": "Incident Response",
         "group": "operational",
         "url": "https://knowledge-as-code.com/demo/primary/incident-response/"
+      },
+      {
+        "id": "information-integrity",
+        "name": "Information Integrity",
+        "group": "technical",
+        "url": "https://knowledge-as-code.com/demo/primary/information-integrity/"
       }
     ],
     "authorities": [
@@ -107,7 +107,7 @@
     "robots": "https://knowledge-as-code.com/demo/robots.txt"
   },
   "meta": {
-    "last_updated": "2026-03-25",
+    "last_updated": "2026-07-21",
     "built_with": "Knowledge as Code",
     "pattern_url": "https://knowledge-as-code.com/",
     "template_url": "https://github.com/snapsynapse/knowledge-as-code-template"

@@ -5,20 +5,20 @@
     <link>https://knowledge-as-code.com/demo/</link>
     <description>A structured reference tracking example entities across categories.</description>
     <atom:link href="https://knowledge-as-code.com/demo/index.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Wed, 25 Mar 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 21 Jul 2026 00:00:00 GMT</lastBuildDate>
     <item>
-      <title>ISO 27001</title>
+      <title>ISO/IEC 27001:2022</title>
       <link>https://knowledge-as-code.com/demo/container/iso-27001/</link>
       <guid>https://knowledge-as-code.com/demo/container/iso-27001/</guid>
-      <description>ISO 27001: active. 2 provisions.</description>
-      <pubDate>Wed, 25 Mar 2026 00:00:00 GMT</pubDate>
+      <description>ISO/IEC 27001:2022: active. 2 provisions.</description>
+      <pubDate>Tue, 21 Jul 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
       <title>NIST Cybersecurity Framework</title>
       <link>https://knowledge-as-code.com/demo/container/nist-csf/</link>
       <guid>https://knowledge-as-code.com/demo/container/nist-csf/</guid>
       <description>NIST Cybersecurity Framework: active. 2 provisions.</description>
-      <pubDate>Wed, 25 Mar 2026 00:00:00 GMT</pubDate>
+      <pubDate>Tue, 21 Jul 2026 00:00:00 GMT</pubDate>
     </item>
   </channel>
 </rss>

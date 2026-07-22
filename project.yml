@@ -153,6 +153,8 @@ social:
 # ---------------------------------------------------------------------------
 verification:
   staleness_days: 90
+  require_evidence_roles:
+    - container
 
 # ---------------------------------------------------------------------------
 # Ontology framework — optional semantic layer (opt-in, zero cost when off)

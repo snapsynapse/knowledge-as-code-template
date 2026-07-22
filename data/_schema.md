@@ -160,7 +160,7 @@ The mapping file connects containers to primaries through secondary (provision) 
 - id: iso-27001-access-control        # Required. Unique provision ID (kebab-case)
   regulation: iso-27001               # Required. Container file name (without .md)
   authority: iso                      # Required. Authority ID
-  source_heading: Information Security Controls (Annex A)  # Required. Must match an ## H2 in the container file
+  source_heading: Confidentiality and Access               # Required. Must match an ## H2 in the container file
   source_file: data/examples/frameworks/iso-27001.md       # Optional. Path to container file for tooling/traceability
   obligations:                        # Required. List of primary entity IDs this provision maps to
     - access-control

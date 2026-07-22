@@ -76,12 +76,12 @@
         
         <h2 style="margin-top: 0.5rem;">Compare Frameworks</h2>
         <p style="color: var(--text-secondary); margin-bottom: 1rem;">Select 2 or 3 to compare coverage.</p>
-        <div class="compare-selector" id="compareSelector"><label><input type="checkbox" name="cmp" value="iso-27001" onchange="updateComparison()"> <span>ISO 27001</span></label>
+        <div class="compare-selector" id="compareSelector"><label><input type="checkbox" name="cmp" value="iso-27001" onchange="updateComparison()"> <span>ISO/IEC 27001:2022</span></label>
 <label><input type="checkbox" name="cmp" value="nist-csf" onchange="updateComparison()"> <span>NIST Cybersecurity Framework</span></label></div>
         <div id="compareResult" class="compare-result"></div>
         <script>
-        var cmpData = [{"id":"iso-27001","name":"ISO 27001","primaries":["access-control","data-quality"]},{"id":"nist-csf","name":"NIST Cybersecurity Framework","primaries":["incident-response","access-control"]}];
-        var pNames = {"access-control":"Access Control","data-quality":"Data Quality","incident-response":"Incident Response"};
+        var cmpData = [{"id":"iso-27001","name":"ISO/IEC 27001:2022","primaries":["access-control","information-integrity"]},{"id":"nist-csf","name":"NIST Cybersecurity Framework","primaries":["incident-response","access-control"]}];
+        var pNames = {"access-control":"Access Control","incident-response":"Incident Response","information-integrity":"Information Integrity"};
         function esc(s) {
             return String(s || '').replace(/[&<>"']/g, function(ch) {
                 return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];

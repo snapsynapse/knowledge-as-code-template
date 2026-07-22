@@ -151,7 +151,7 @@ If your Primary changes when a source document is updated, you've picked the wro
 
 ### Skipping the Secondary Layer
 
-It's tempting to map containers directly to primaries. Don't. The Secondary layer carries the granularity: which specific article, which specific feature, what the effective date is, what the compliance status is. Without it, you lose the ability to say "Section 4.2 of ISO 27001 implements Access Control" — you can only say "ISO 27001 relates to Access Control," which is far less useful.
+It's tempting to map containers directly to primaries. Don't. The Secondary layer carries the granularity: which specific section, which specific feature, what the effective date is, what the compliance status is. Without it, you lose the ability to say "this identified section implements Access Control" and can only say "this framework relates to Access Control," which is far less useful.
 
 ### Over-Nesting Entities
 

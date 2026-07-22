@@ -163,6 +163,7 @@ ${values.url}
 node scripts/validate.js
 node scripts/build.js
 node scripts/verify.js
+node scripts/check-links.js
 \`\`\`
 
 Open \`docs/index.html\` after building. To publish, set GitHub Pages to **GitHub Actions** and push to \`main\`.

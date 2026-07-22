@@ -4,6 +4,13 @@ A zero-dependency generator for evidence-backed reference sites. Keep structured
 
 This repository is an internal-first open utility maintained by [PAICE.work](https://paice.work/) PBC. It supports active reference projects inside the PAICE and Snap Synapse portfolios. Public issues and contributions are welcome on a best-effort basis.
 
+## Project status
+
+- [Intent and viable end state](INTENT.md)
+- [Maintenance and compatibility](MAINTENANCE.md)
+- [Independent adoption pilot](ADOPTION.md)
+- [Security policy](SECURITY.md)
+
 ## Who this is for
 
 Maintainers of public registries, comparison databases, compliance maps, and other structured references where claims need sources, review dates, and machine-readable output.
@@ -194,7 +201,7 @@ node scripts/eval.js       # Run smoke, link, API, parser, MCP, and docs evals (
 ## Architecture
 
 - **File-over-App** — data in markdown files, not a database
-- **Zero dependencies** — no npm install, no supply chain risk
+- **Zero dependencies** — no npm install and no third-party runtime packages in the core
 - **Bespoke static generation** — the build script _is_ the specification
 - **GitOps** — Git is the single source of truth
 - **Defensive output encoding** — data is treated as untrusted when emitted into HTML, CSS, URLs, or inline scripts
@@ -276,6 +283,8 @@ Two fixed tools are always present regardless of config: `get_matrix` and `get_m
 `node scripts/verify.js` detects stale, never-reviewed, future-dated, and invalid entities; checks required evidence URLs; and validates cross-reference completeness. A weekly GitHub Actions workflow runs the deterministic checks and opens an issue when review is needed. It does not independently establish factual accuracy. An optional executable JSONL contract lets maintainers attach a local model, hosted service, browser workflow, or human-review adapter without changing the core.
 
 See [VERIFICATION.md](VERIFICATION.md) for the deterministic checks, CI integration, and extension contract.
+
+External transferability has a documented evidence gate. If you are evaluating the generator for a real new domain, follow [ADOPTION.md](ADOPTION.md) and submit the included pilot report instead of treating repository traffic or a maintainer-led demo as proof of adoption.
 
 ## Ecosystem
 

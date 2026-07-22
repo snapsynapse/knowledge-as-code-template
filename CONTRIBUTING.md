@@ -2,6 +2,8 @@
 
 This project follows a zero-dependency, config-driven approach. All domain-specific settings live in `project.yml`, and all scripts use only Node.js built-ins.
 
+Read [MAINTENANCE.md](MAINTENANCE.md) before proposing a feature. Reproducible defects in the supported golden path take priority over maintenance-surface expansion. New adopters can report a documentation-only trial through [ADOPTION.md](ADOPTION.md).
+
 ## Adding Entities
 
 ### 1. Create the Markdown File

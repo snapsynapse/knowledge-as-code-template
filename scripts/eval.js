@@ -606,6 +606,7 @@ function evalChangelogReleaseTags() {
 function evalHtmlSnapshots() {
     buildDefault();
     const snapshots = [
+        ['index.html', ['Updated <time datetime="2026-07-21">July 21, 2026</time>', 'Run a pilot', 'transitive runtime dependency tree']],
         ['docs/index.html', ['Example Knowledge Base', 'Coverage Matrix', 'JSON API']],
         ['docs/container/iso-27001/index.html', ['ISO/IEC 27001:2022', 'Provisions (2)', 'Official source']],
         ['docs/primary/access-control/index.html', ['Access Control', 'What Counts', 'Implementing Frameworks']],
@@ -652,6 +653,9 @@ function evalDocsConsistency() {
     const pagesWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/pages.yml'), 'utf8');
     const verification = fs.readFileSync(path.join(ROOT, 'VERIFICATION.md'), 'utf8');
     const verifyWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/verify.yml'), 'utf8');
+    const intent = fs.readFileSync(path.join(ROOT, 'INTENT.md'), 'utf8');
+    const maintenance = fs.readFileSync(path.join(ROOT, 'MAINTENANCE.md'), 'utf8');
+    const adoption = fs.readFileSync(path.join(ROOT, 'ADOPTION.md'), 'utf8');
 
     assertIncludes(readme, 'node scripts/init.js ../my-knowledge-base');
     assertIncludes(readme, '`docs/` is transient local output');
@@ -660,6 +664,9 @@ function evalDocsConsistency() {
     assert.ok(!readme.includes('deploys to GitHub Pages automatically'), 'README should not claim automatic deployment.');
     assert.ok(!verification.includes('continue-on-error: true'), 'Verification docs should reflect current workflow implementation.');
     assertIncludes(verifyWorkflow, 'echo "exit_code=$?" >> "$GITHUB_OUTPUT"');
+    assertIncludes(intent, 'internal-first open utility');
+    assertIncludes(maintenance, 'The maintained public path is:');
+    assertIncludes(adoption, 'One passing pilot establishes basic external transferability.');
 }
 
 const evals = [

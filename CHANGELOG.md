@@ -25,6 +25,8 @@ pattern.
 - Expanded deterministic verification to fail on missing reviews, invalid or future dates, mapping gaps, and required evidence metadata.
 - Added a provider-independent external verifier contract using an explicit executable and JSONL input/output, with no shell or source-file mutation.
 - Re-verified the worked example against current ISO and NIST primary sources, corrected unsupported claims, and replaced the ambiguous data-quality mapping with information integrity.
+- Documented the internal-first operating model, bounded maintenance policy, security scope, viable open-repository end state, and independent adoption pilot gate.
+- Added a structured GitHub issue form for independent pilot reports.
 
 ## [1.0.2] — 2026-06-12
 

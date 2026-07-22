@@ -9,6 +9,9 @@
 - [Project home](https://knowledge-as-code.com/): canonical explanation and maintained reference implementation
 - [Live demo](https://knowledge-as-code.com/demo/): generated reference site
 - [Repository](https://github.com/snapsynapse/knowledge-as-code-template): source repository
+- [Intent](https://github.com/snapsynapse/knowledge-as-code-template/blob/main/INTENT.md): internal-first operating model and viable open-repository end state
+- [Maintenance](https://github.com/snapsynapse/knowledge-as-code-template/blob/main/MAINTENANCE.md): supported path, compatibility, and contribution boundaries
+- [Independent adoption pilot](https://github.com/snapsynapse/knowledge-as-code-template/blob/main/ADOPTION.md): evidence gate for external transferability
 - [PUBLISH-MCP.md](https://github.com/snapsynapse/knowledge-as-code-template/blob/main/PUBLISH-MCP.md): how to publish a fork as an MCP server (npm + Official MCP Registry)
 
 ## Assistant-Facing Instructions

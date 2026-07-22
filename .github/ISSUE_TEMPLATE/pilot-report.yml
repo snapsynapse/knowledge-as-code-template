@@ -1,0 +1,66 @@
+name: Independent adoption pilot
+description: Report a documentation-only pilot in a new domain
+title: "Pilot: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing the public golden path. Do not include secrets or proprietary source material.
+  - type: input
+    id: domain
+    attributes:
+      label: Domain
+      description: What kind of reference did you build?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system and Node.js version
+    validations:
+      required: true
+  - type: input
+    id: elapsed
+    attributes:
+      label: Hands-on time
+      description: Exclude domain research and DNS work.
+    validations:
+      required: true
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Completed tasks
+      options:
+        - label: Initialized a clean project
+        - label: Replaced the example with a new domain
+        - label: Validation passed
+        - label: Build passed
+        - label: Verification passed
+        - label: Link checking passed
+        - label: Inspected the site and JSON API
+        - label: Deployed or documented why deployment was not applicable
+  - type: textarea
+    id: blockers
+    attributes:
+      label: Blockers and misleading instructions
+      description: Include the command, observed result, and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: understanding
+    attributes:
+      label: What does this project do?
+      description: Explain it in your own words, including what it does not do.
+    validations:
+      required: true
+  - type: dropdown
+    id: reuse
+    attributes:
+      label: Would you use the result again?
+      options:
+        - "Yes"
+        - "Maybe"
+        - "No"
+    validations:
+      required: true

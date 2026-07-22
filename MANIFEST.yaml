@@ -47,7 +47,7 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:5058024954c44dc3ea425f43ee3957ef5f7264f9357cb10808a512979e54cca5
+    hash: sha256:f47e4560f3e9f15a7d6d9f934040bb597d662caeace3324f78768a7717e2ffd8
     note: Template overview
 
   - path: assistant-guide.txt
@@ -77,7 +77,7 @@ files:
 
   - path: scripts/init.js
     role: tooling
-    hash: sha256:fd643cf6081cc4aaebf1d3ce6d673a0582de1f74cbf7f6222cd8a811f39bc9da
+    hash: sha256:ad1fa4e19c0b6bf480b3d6782265268f4a70a00c84a50108c99576d39d3e7a65
     note: Clean-project initializer
 
   - path: scripts/validate.js

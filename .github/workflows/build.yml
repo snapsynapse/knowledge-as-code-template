@@ -13,13 +13,16 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['18', '20']
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node }}
 
       - name: Verify content hashes
         run: |
@@ -39,6 +42,7 @@ jobs:
         env:
           KAC_OUTPUT_DIR: demo
           KAC_SITE_URL: https://knowledge-as-code.com/demo/
+          KAC_REPO_URL: https://github.com/snapsynapse/knowledge-as-code-template
         run: |
           node scripts/build.js
           test -f demo/index.html
@@ -83,6 +87,26 @@ jobs:
           serve-path: ./docs
           sitemap: http://localhost:8088/sitemap.xml
           sitemap-find: ${{ steps.site.outputs.base }}
+          sitemap-replace: http://localhost:8088
+          fail-on: errors
+
+      - name: Audit canonical root landing
+        if: github.repository == 'snapsynapse/knowledge-as-code-template'
+        uses: snapsynapse/skill-a11y-audit/.github/actions/scan@main
+        with:
+          serve-path: ./
+          sitemap: http://localhost:8088/tests/fixtures/a11y-root-sitemap.xml
+          sitemap-find: https://knowledge-as-code.com
+          sitemap-replace: http://localhost:8088
+          fail-on: errors
+
+      - name: Audit canonical demo deployment
+        if: github.repository == 'snapsynapse/knowledge-as-code-template'
+        uses: snapsynapse/skill-a11y-audit/.github/actions/scan@main
+        with:
+          serve-path: ./demo
+          sitemap: http://localhost:8088/sitemap.xml
+          sitemap-find: https://knowledge-as-code.com/demo
           sitemap-replace: http://localhost:8088
           fail-on: errors
 

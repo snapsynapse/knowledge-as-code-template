@@ -13,8 +13,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { loadMappingIndex, parseTable } = require('./scripts/lib/data-loaders');
-const { parseFrontmatter, parseYaml } = require('./scripts/lib/parsers');
+const { loadProjectData } = require('./scripts/lib/data-loaders');
+const { parseYaml } = require('./scripts/lib/parsers');
 
 const ROOT = __dirname;
 
@@ -34,59 +34,6 @@ function humanizeId(id) {
     return String(id || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function findDataDir() {
-    const dirs = ['data/examples', 'data'];
-    for (const base of dirs) {
-        const fullBase = path.join(ROOT, base);
-        if (fs.existsSync(fullBase)) return fullBase;
-    }
-    return path.join(ROOT, 'data');
-}
-
-function loadDir(dir) {
-    if (!fs.existsSync(dir)) return [];
-    return fs.readdirSync(dir)
-        .filter(f => f.endsWith('.md') && !f.startsWith('_'))
-        .map(f => {
-            const content = fs.readFileSync(path.join(dir, f), 'utf-8');
-            const { frontmatter, body } = parseFrontmatter(content);
-            return { id: f.replace('.md', ''), ...frontmatter, _body: body };
-        });
-}
-
-function parseProvisionSection(section) {
-    const trimmed = section.trim();
-    const lines = trimmed.split('\n');
-    const nameMatch = lines[0].match(/^## (.+)/);
-    if (!nameMatch) return null;
-    const provision = { name: nameMatch[1] };
-    const propTableMatch = trimmed.match(/\| Property \| Value \|[\s\S]*?\n\n/);
-    if (propTableMatch) {
-        parseTable(propTableMatch[0]).forEach(p => {
-            provision[p.property.toLowerCase().replace(/\s+/g, '_')] = p.value;
-        });
-    }
-    const reqMatch = trimmed.match(/### Requirements\n\n([\s\S]*?)(?=\n###|\n---|\n## |$)/);
-    if (reqMatch) provision.requirements = parseTable(reqMatch[1]);
-    return provision;
-}
-
-function loadContainers(dir) {
-    if (!fs.existsSync(dir)) return [];
-    return fs.readdirSync(dir)
-        .filter(f => f.endsWith('.md') && !f.startsWith('_'))
-        .map(f => {
-            const content = fs.readFileSync(path.join(dir, f), 'utf-8');
-            const { frontmatter, body } = parseFrontmatter(content);
-            const id = f.replace('.md', '');
-            const timelineMatch = body.match(/## Timeline\n\n([\s\S]*?)(?=\n---|\n## )/);
-            const timeline = timelineMatch ? parseTable(timelineMatch[1]) : [];
-            const provisionSections = body.split(/\n---\n/).slice(1);
-            const provisions = provisionSections.map(parseProvisionSection).filter(Boolean);
-            return { id, ...frontmatter, timeline, provisions, _body: body };
-        });
-}
-
 // ---------------------------------------------------------------------------
 // Load project data
 // ---------------------------------------------------------------------------
@@ -100,19 +47,14 @@ const config = (() => {
     return parseYaml(fs.readFileSync(configPath, 'utf-8'));
 })();
 
-const dataDir = findDataDir();
-const primaryDir = path.join(dataDir, config.entities?.primary?.directory || 'primary');
-const containerDir = path.join(dataDir, config.entities?.container?.directory || 'container');
-const authorityDir = path.join(dataDir, config.entities?.authority?.directory || 'authority');
-
-const primaries = loadDir(primaryDir);
-const containers = loadContainers(containerDir);
-const authorities = loadDir(authorityDir);
-
-const mappingFile = config.mapping?.file || 'provisions/index.yml';
-let mappingPath = path.join(dataDir, mappingFile);
-if (!fs.existsSync(mappingPath)) mappingPath = path.join(dataDir, 'mapping', 'index.yml');
-const mappings = loadMappingIndex(mappingPath);
+let loaded;
+try {
+    loaded = loadProjectData(ROOT, config, { requireMapping: true });
+} catch (error) {
+    process.stderr.write(`Error: ${error.message}\n`);
+    process.exit(1);
+}
+const { primaries, containers, authorities, mappings } = loaded;
 
 // ---------------------------------------------------------------------------
 // Tool name derivation
@@ -219,7 +161,7 @@ function getToolDefinitions() {
 function handleToolCall(name, args) {
     // --- list primaries ---
     if (name === `list_${primaryPlural}`) {
-        const items = primaries.map(p => ({ id: p.id, title: p.title || humanizeId(p.id), group: p.group || '' }));
+        const items = primaries.map(p => ({ id: p.id, title: p.name || p.title || humanizeId(p.id), group: p.group || '' }));
         return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
     }
 
@@ -239,13 +181,13 @@ function handleToolCall(name, args) {
                 isError: true
             };
         }
-        const { _body, ...rest } = entity;
+        const { _body, _file, content, file, ...rest } = entity;
         return { content: [{ type: 'text', text: JSON.stringify({ ...rest, body: _body }, null, 2) }] };
     }
 
     // --- list containers ---
     if (name === `list_${containerPlural}`) {
-        const items = containers.map(c => ({ id: c.id, title: c.title || humanizeId(c.id), status: c.status || '', authority: c.authority || '' }));
+        const items = containers.map(c => ({ id: c.id, title: c.name || c.title || humanizeId(c.id), status: c.status || '', authority: c.authority || '' }));
         return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
     }
 
@@ -265,13 +207,13 @@ function handleToolCall(name, args) {
                 isError: true
             };
         }
-        const { _body, ...rest } = entity;
+        const { _body, _file, content, file, ...rest } = entity;
         return { content: [{ type: 'text', text: JSON.stringify({ ...rest, body: _body }, null, 2) }] };
     }
 
     // --- list authorities ---
     if (name === `list_${authorityPlural}`) {
-        const items = authorities.map(a => ({ id: a.id, title: a.title || humanizeId(a.id), type: a.type || '' }));
+        const items = authorities.map(a => ({ id: a.id, title: a.name || a.title || humanizeId(a.id), type: a.type || '' }));
         return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
     }
 
@@ -291,7 +233,7 @@ function handleToolCall(name, args) {
                 isError: true
             };
         }
-        const { _body, ...rest } = entity;
+        const { _body, _file, content, file, ...rest } = entity;
         return { content: [{ type: 'text', text: JSON.stringify({ ...rest, body: _body }, null, 2) }] };
     }
 
@@ -310,9 +252,9 @@ function handleToolCall(name, args) {
 
         const results = [];
         const searchEntity = (entity, type) => {
-            const haystack = [entity.id, entity.title || '', entity._body || ''].join(' ').toLowerCase();
+            const haystack = [entity.id, entity.name || entity.title || '', entity._body || ''].join(' ').toLowerCase();
             if (haystack.includes(q)) {
-                results.push({ type, id: entity.id, title: entity.title || humanizeId(entity.id) });
+                results.push({ type, id: entity.id, title: entity.name || entity.title || humanizeId(entity.id) });
             }
         };
 

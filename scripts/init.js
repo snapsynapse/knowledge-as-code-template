@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline/promises');
+const { normalizeHttpsUrl, normalizeSiteUrl } = require('./lib/urls');
 
 const ROOT = path.join(__dirname, '..');
 
@@ -90,15 +91,9 @@ function validateSlug(value, label) {
 }
 
 function validateHttps(value, label, allowExample = false) {
-    let parsed;
-    try {
-        parsed = new URL(value);
-    } catch {
-        throw new Error(`${label} must be a valid URL.`);
-    }
-    if (parsed.protocol !== 'https:') throw new Error(`${label} must use https.`);
-    if (parsed.hostname.startsWith('www.')) throw new Error(`${label} must use the bare domain without www.`);
-    if (!allowExample && parsed.hostname === 'example.com') return;
+    return label === 'Published URL'
+        ? normalizeSiteUrl(value, label).url
+        : normalizeHttpsUrl(value, label);
 }
 
 function replaceLine(text, pattern, replacement, label) {
@@ -174,6 +169,8 @@ Open \`docs/index.html\` after building. To publish, set GitHub Pages to **GitHu
 - Replace the worked example under \`data/examples/\`.
 - Follow \`data/_schema.md\` for record formats.
 - Update \`last_verified\` only after reviewing the underlying evidence.
+
+The initializer changes the four display labels, project identity, and navigation labels. The worked ISO/NIST teaching fixture remains in place until you replace it, including the \`requirements/\`, \`frameworks/\`, and \`organizations/\` directories, its groups and statuses, the \`jurisdiction\` scope field, and the stable mapping keys \`regulation\` and \`obligations\`.
 
 ## Agent access
 
@@ -296,8 +293,8 @@ async function collectValues(options) {
 function validateValues(values) {
     values.shortName = slugify(values.shortName);
     validateSlug(values.shortName, 'Project slug');
-    validateHttps(values.url, 'Published URL', true);
-    validateHttps(values.repo, 'Repository URL', true);
+    values.url = validateHttps(values.url, 'Published URL', true);
+    values.repo = validateHttps(values.repo, 'Repository URL', true);
     for (const key of ['name', 'primary', 'container', 'authority', 'secondary']) {
         if (!String(values[key]).trim()) throw new Error(`${key} cannot be empty.`);
         values[key] = String(values[key]).trim();

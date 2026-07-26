@@ -93,11 +93,12 @@ function buildDefault() {
     return result;
 }
 
-function buildTo(outputDir, siteUrl) {
+function buildTo(outputDir, siteUrl, extraEnv = {}) {
     const result = runNode(['scripts/build.js'], {
         env: {
             KAC_OUTPUT_DIR: outputDir,
-            KAC_SITE_URL: siteUrl
+            KAC_SITE_URL: siteUrl,
+            ...extraEnv
         }
     });
     assert.strictEqual(result.status, 0, `Build for ${outputDir} failed:\n${result.stdout}\n${result.stderr}`);
@@ -158,8 +159,12 @@ function evalFreshCloneBuild() {
 
         const agents = readJson(path.join(freshRoot, 'agents.json'));
         const apiIndex = readJson(path.join(freshRoot, 'api/v1/index.json'));
+        const notFound = fs.readFileSync(path.join(freshRoot, '404.html'), 'utf8');
         assert.strictEqual(agents.site.url, 'https://example.com/fresh-clone/');
         assert.strictEqual(apiIndex.meta.project, 'example');
+        assert.ok(!fs.existsSync(path.join(freshRoot, 'CNAME')), 'Subpath builds should not emit CNAME without an explicit custom domain.');
+        assertIncludes(notFound, 'href="/fresh-clone/assets/styles.css"');
+        assertIncludes(notFound, 'href="/fresh-clone/containers.html"');
     });
 }
 
@@ -210,6 +215,7 @@ function evalInitializerGoldenPath() {
         for (const command of [
             ['scripts/validate.js'],
             ['scripts/build.js'],
+            ['scripts/verify.js'],
             ['scripts/check-links.js']
         ]) {
             const result = spawnSync(process.execPath, command, { cwd: target, encoding: 'utf8' });
@@ -378,17 +384,24 @@ function evalConfigOverride() {
     withTempRoot(() => {
         const outName = '.tmp-evals/demo-eval';
         const siteUrl = 'https://knowledge-as-code.com/demo/';
-        buildTo(outName, siteUrl);
+        buildTo(outName, siteUrl, {
+            KAC_REPO_URL: 'https://github.com/snapsynapse/knowledge-as-code-template'
+        });
 
         const demoRoot = path.join(ROOT, outName);
         assertFile(path.join(demoRoot, 'assets/styles.css'));
         const containerPage = fs.readFileSync(path.join(demoRoot, 'container/iso-27001/index.html'), 'utf8');
         const sitemap = fs.readFileSync(path.join(demoRoot, 'sitemap.xml'), 'utf8');
         const agents = readJson(path.join(demoRoot, 'agents.json'));
+        const notFound = fs.readFileSync(path.join(demoRoot, '404.html'), 'utf8');
 
         assertIncludes(containerPage, '<link rel="canonical" href="https://knowledge-as-code.com/demo/container/iso-27001/">');
         assertIncludes(sitemap, '<loc>https://knowledge-as-code.com/demo/container/iso-27001/</loc>');
         assert.strictEqual(agents.site.url, siteUrl);
+        assert.strictEqual(agents.site.repo, 'https://github.com/snapsynapse/knowledge-as-code-template');
+        assertIncludes(notFound, 'href="/demo/assets/styles.css"');
+        assertIncludes(notFound, 'href="/demo/containers.html"');
+        assert.ok(!fs.existsSync(path.join(demoRoot, 'CNAME')), 'Demo subpath build should not emit CNAME.');
     });
 }
 
@@ -467,13 +480,13 @@ function evalOutputSanitization() {
             replaceInFile(maliciousPrimary, 'Requirement to restrict system', '<img src=x onerror=alert(1)> Requirement to restrict system');
 
             const maliciousContainerSource = path.join(maliciousRepo, 'data', 'examples', 'frameworks', 'iso-27001.md');
-            replaceInFile(maliciousContainerSource, 'status: active', 'status: active" onmouseover="alert(1)');
             replaceInFile(maliciousContainerSource, 'official_url: https://iso.org/standard/27001', 'official_url: javascript:alert(1)');
             replaceInFile(maliciousContainerSource, '[ISO/IEC 27001:2022](https://iso.org/standard/27001)', '[ISO/IEC 27001:2022](http://iso.org/standard/27001)');
 
             const maliciousProject = path.join(maliciousRepo, 'project.yml');
             replaceInFile(maliciousProject, 'label: Home', 'label: Home <script>alert(1)</script>');
             replaceInFile(maliciousProject, 'href: index.html', 'href: index.html" onclick="alert(1)');
+            replaceInFile(maliciousProject, '- name: governance', '- name: governance" autofocus onfocus="alert(1)');
 
             const maliciousBuild = spawnSync(process.execPath, ['scripts/build.js'], {
                 cwd: maliciousRepo,
@@ -545,8 +558,7 @@ function evalUnsafeIdNegative() {
             encoding: 'utf8'
         });
         assert.strictEqual(validateResult.status, 1, `Expected unsafe ID fixture validation to fail:\n${validateResult.stdout}\n${validateResult.stderr}`);
-        assertIncludes(validateResult.stderr, 'unsafe ID');
-        assertIncludes(validateResult.stderr, 'unsafe primary reference');
+        assertIncludes(validateResult.stderr, 'must be lowercase alphanumeric with single hyphens');
 
         const buildResult = spawnSync(process.execPath, ['scripts/build.js'], {
             cwd: unsafeRepo,
@@ -581,6 +593,112 @@ function evalUrlPathStability() {
     assertIncludes(matrix, 'href="requires/iso-27001/access-control/index.html"');
 }
 
+function evalUrlValidationAndCustomDomain() {
+    for (const siteUrl of [
+        'http://example.com/',
+        'https://example.com/?query=1',
+        'https://user:pass@example.com/',
+        'https://example.com/#fragment'
+    ]) {
+        const result = runNode(['scripts/build.js'], {
+            env: { KAC_OUTPUT_DIR: '.tmp-evals/invalid-url', KAC_SITE_URL: siteUrl }
+        });
+        assert.notStrictEqual(result.status, 0, `Expected invalid site URL to fail: ${siteUrl}`);
+        assertIncludes(result.stderr, 'Published URL');
+    }
+
+    const repo = copyRepoToTemp('kac-custom-domain-fixture-');
+    try {
+        replaceInFile(
+            path.join(repo, 'project.yml'),
+            'custom_domain: ""',
+            'custom_domain: "reference.example.org"'
+        );
+        const result = spawnSync(process.execPath, ['scripts/build.js'], {
+            cwd: repo,
+            encoding: 'utf8',
+            env: { ...process.env, KAC_OUTPUT_DIR: 'custom-domain-out' }
+        });
+        assert.strictEqual(result.status, 0, `Custom-domain build failed:\n${result.stdout}\n${result.stderr}`);
+        assert.strictEqual(fs.readFileSync(path.join(repo, 'custom-domain-out', 'CNAME'), 'utf8'), 'reference.example.org\n');
+    } finally {
+        fs.rmSync(repo, { recursive: true, force: true });
+    }
+}
+
+function evalIdentityAndDuplicateValidation() {
+    const mismatchRepo = copyRepoToTemp('kac-id-mismatch-fixture-');
+    try {
+        const primary = path.join(mismatchRepo, 'data', 'examples', 'requirements', 'access-control.md');
+        replaceInFile(primary, 'id: access-control', 'id: different-id');
+        const result = spawnSync(process.execPath, ['scripts/validate.js'], {
+            cwd: mismatchRepo,
+            encoding: 'utf8'
+        });
+        assert.strictEqual(result.status, 1, `Expected ID mismatch to fail:\n${result.stdout}\n${result.stderr}`);
+        assertIncludes(result.stderr, 'must match filename id "access-control"');
+    } finally {
+        fs.rmSync(mismatchRepo, { recursive: true, force: true });
+    }
+
+    const duplicateRepo = copyRepoToTemp('kac-duplicate-mapping-fixture-');
+    try {
+        const mapping = path.join(duplicateRepo, 'data', 'examples', 'mapping', 'index.yml');
+        fs.appendFileSync(mapping, [
+            '',
+            '- id: iso-27001-access-control',
+            '  regulation: iso-27001',
+            '  authority: iso',
+            '  obligations:',
+            '    - access-control',
+            ''
+        ].join('\n'));
+        const result = spawnSync(process.execPath, ['scripts/validate.js'], {
+            cwd: duplicateRepo,
+            encoding: 'utf8'
+        });
+        assert.strictEqual(result.status, 1, `Expected duplicate mapping to fail:\n${result.stdout}\n${result.stderr}`);
+        assertIncludes(result.stderr, 'Duplicate mapping ID "iso-27001-access-control"');
+    } finally {
+        fs.rmSync(duplicateRepo, { recursive: true, force: true });
+    }
+}
+
+function evalPublicSurface() {
+    const landing = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    const robots = fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8');
+    const demoFiles = [];
+    const collect = dir => {
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, entry.name);
+            if (entry.isDirectory()) collect(full);
+            else if (!entry.name.startsWith('.')) demoFiles.push(full);
+        }
+    };
+    collect(path.join(ROOT, 'demo'));
+    const demoText = demoFiles.map(file => fs.readFileSync(file, 'utf8')).join('\n');
+
+    assertIncludes(landing, '<link rel="canonical" href="https://knowledge-as-code.com/">');
+    const jsonLdBlocks = [...landing.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+    assert.ok(jsonLdBlocks.length > 0, 'Landing should include JSON-LD.');
+    jsonLdBlocks.forEach(match => JSON.parse(match[1]));
+    assertIncludes(robots, 'Sitemap: https://knowledge-as-code.com/demo/sitemap.xml');
+    assert.ok(!/your-org|your-repo|https:\/\/example\.com/.test(demoText), 'Tracked demo should not contain placeholder identity URLs.');
+
+    const landingIds = new Set([...landing.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]));
+    for (const match of landing.matchAll(/href="([^"]+)"/g)) {
+        const href = match[1];
+        if (href.startsWith('#')) {
+            assert.ok(landingIds.has(href.slice(1)), `Landing anchor should exist: ${href}`);
+        } else if (href.startsWith('/')) {
+            const target = href.split(/[?#]/)[0];
+            const resolved = path.join(ROOT, target);
+            const exists = fs.existsSync(resolved) || fs.existsSync(path.join(resolved, 'index.html'));
+            assert.ok(exists, `Landing internal link should resolve: ${href}`);
+        }
+    }
+}
+
 function evalManifestFreshness() {
     const result = runCommand('./scripts/validate-hashes.sh', []);
     assert.strictEqual(result.status, 0, `Manifest hash verification failed:\n${result.stdout}\n${result.stderr}`);
@@ -606,7 +724,7 @@ function evalChangelogReleaseTags() {
 function evalHtmlSnapshots() {
     buildDefault();
     const snapshots = [
-        ['index.html', ['Updated <time datetime="2026-07-21">July 21, 2026</time>', 'Run a pilot', 'transitive runtime dependency tree']],
+        ['index.html', ['Updated <time datetime="2026-07-25">July 25, 2026</time>', 'Run a pilot', 'transitive runtime dependency tree']],
         ['docs/index.html', ['Example Knowledge Base', 'Coverage Matrix', 'JSON API']],
         ['docs/container/iso-27001/index.html', ['ISO/IEC 27001:2022', 'Provisions (2)', 'Official source']],
         ['docs/primary/access-control/index.html', ['Access Control', 'What Counts', 'Implementing Frameworks']],
@@ -634,6 +752,8 @@ function evalMcpSmoke() {
     assertIncludes(interactive.stdout, 'list_frameworks');
     assertIncludes(interactive.stdout, 'get_framework');
     assertIncludes(interactive.stdout, 'iso-27001');
+    assertIncludes(interactive.stdout, 'talking_point');
+    assertIncludes(interactive.stdout, 'sources');
 }
 
 function evalMcpNotificationSilence() {
@@ -656,6 +776,8 @@ function evalDocsConsistency() {
     const intent = fs.readFileSync(path.join(ROOT, 'INTENT.md'), 'utf8');
     const maintenance = fs.readFileSync(path.join(ROOT, 'MAINTENANCE.md'), 'utf8');
     const adoption = fs.readFileSync(path.join(ROOT, 'ADOPTION.md'), 'utf8');
+    const projectContext = fs.readFileSync(path.join(ROOT, 'PROJECT_CONTEXT.md'), 'utf8');
+    const schema = fs.readFileSync(path.join(ROOT, 'data/_schema.md'), 'utf8');
 
     assertIncludes(readme, 'node scripts/init.js ../my-knowledge-base');
     assertIncludes(readme, '`docs/` is transient local output');
@@ -667,6 +789,11 @@ function evalDocsConsistency() {
     assertIncludes(intent, 'internal-first open utility');
     assertIncludes(maintenance, 'The maintained public path is:');
     assertIncludes(adoption, 'One passing pilot establishes basic external transferability.');
+    assertIncludes(projectContext, '`INTENT.md` is authoritative for current project status');
+    assertIncludes(projectContext, 'That disposition is historical');
+    assertIncludes(schema, '`regulation` and `obligations` are stable 1.x wire keys');
+    assertIncludes(buildWorkflow, "node: ['18', '20']");
+    assertIncludes(buildWorkflow, 'KAC_REPO_URL: https://github.com/snapsynapse/knowledge-as-code-template');
 }
 
 const evals = [
@@ -687,6 +814,9 @@ const evals = [
     ['unsafe ID negative', evalUnsafeIdNegative],
     ['status contrast CSS', evalStatusContrastCss],
     ['URL path stability', evalUrlPathStability],
+    ['URL validation and custom domain', evalUrlValidationAndCustomDomain],
+    ['identity and duplicate validation', evalIdentityAndDuplicateValidation],
+    ['public surface', evalPublicSurface],
     ['manifest freshness', evalManifestFreshness],
     ['changelog release tags', evalChangelogReleaseTags],
     ['HTML snapshots', evalHtmlSnapshots],

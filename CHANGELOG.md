@@ -15,6 +15,13 @@ pattern.
 ## [Unreleased]
 
 ### Changed
+- Made generated URL metadata and 404 navigation path-aware for subpath deployments.
+- Made internal-link checking deployment-base-aware for subpath output.
+- Made custom-domain CNAME generation explicit instead of deriving it from the published URL.
+- Unified entity and provision loading across build, validation, verification, and MCP surfaces.
+- Made filename-derived entity IDs canonical and expanded validation for required fields, duplicates, and generated-route collisions.
+- Clarified initializer scope, stable mapping wire keys, current project status, and canonical demo identity.
+- Expanded CI and eval coverage for the advertised Node.js minimum, URL validation, subpath deployment, identity mismatches, duplicate mappings, and the canonical public surface.
 - Repositioned the project as an internal-first open reference generator for evidence-backed structured sites.
 - Replaced unqualified self-healing claims with the deterministic drift checks the repository actually ships.
 - Distinguished maintainer-operated implementations from independent external adoption.

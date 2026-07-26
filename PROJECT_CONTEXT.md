@@ -11,13 +11,11 @@ This repo is **two things at once**:
 
 The Knowledge-as-Code pattern itself was created by Sam Rogers ("Snap") for PAICE.work PBC, first published 2026-01-20 on snapsynapse.com, with the reference template following about two months later.
 
-## Current status — dormant
+## Current status
 
-As of a 2026-06-09 portfolio competitive review (recorded in a since-gitignored `handoffs/` note, commit `ff6c3ea`'s parent history), this project's disposition was decided:
+Knowledge-as-Code is an internal-first open utility actively used inside the PAICE and Snap Synapse portfolios. `INTENT.md` is authoritative for current project status, operating model, recalibration gates, and non-goals. `MAINTENANCE.md` defines the supported public path.
 
-- **Dormant. Maintenance only.** No content, promotion, or feature work on the docs-as-code template premise — the competitive finding was that docs-as-code (MkDocs/Material, Docusaurus, GitBook, git-backed wikis) is a saturated, solved pattern, and this template adds opinionation/term-staking but not novelty.
-- **Reserved future use:** the domain and repo are earmarked as the eventual public home of the *Canon Map* pattern (a separate, more novel drift-resistant knowledge-architecture scheme for multi-repo, multi-agent orgs), pending Canon Map's promotion to portfolio-wide practice via further pilots and a Sam/Snap go-ahead. Do not start that promotion write-up without Snap's explicit decision.
-- CI (build validation + weekly staleness/drift check) still runs and the repo is otherwise healthy — "dormant" means no active feature investment, not neglect.
+An earlier 2026-06-09 portfolio review proposed maintenance-only status and reserving this surface for a possible future Canon Map pattern. That disposition is historical and was superseded by the 2026-07-21 recalibration recorded in `INTENT.md`. Do not use it as current guidance.
 
 ## Audience
 

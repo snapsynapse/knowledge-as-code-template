@@ -39,7 +39,7 @@ demo/                 # Generated reference site (this repo only — forks use d
 node scripts/build.js
 
 # This repo's build (writes to ./demo/ with the real site URL)
-KAC_OUTPUT_DIR=demo KAC_SITE_URL="https://knowledge-as-code.com/demo/" node scripts/build.js
+KAC_OUTPUT_DIR=demo KAC_SITE_URL="https://knowledge-as-code.com/demo/" KAC_REPO_URL="https://github.com/snapsynapse/knowledge-as-code-template" node scripts/build.js
 
 # Validate cross-references
 node scripts/validate.js
@@ -48,7 +48,7 @@ node scripts/validate.js
 node scripts/verify.js
 ```
 
-`KAC_OUTPUT_DIR` and `KAC_SITE_URL` are env-var overrides added for this repo's split landing-plus-demo layout. Template forks don't need them.
+`KAC_OUTPUT_DIR`, `KAC_SITE_URL`, and `KAC_REPO_URL` are env-var overrides added for this repo's split landing-plus-demo layout. Template forks don't need them.
 
 ## Entity Model
 

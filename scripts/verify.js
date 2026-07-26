@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { loadMappingIndex, parseSimpleFrontmatter } = require('./lib/data-loaders');
+const { loadProjectData } = require('./lib/data-loaders');
 const { parseYaml } = require('./lib/parsers');
 
 const ROOT = path.join(__dirname, '..');
@@ -138,35 +138,19 @@ function verify() {
     console.log('==================================\n');
     console.log(`Staleness threshold: ${stalenessDays} days\n`);
 
-    // Find data directory
-    const dataDirs = process.env.KAC_DATA_DIR
-        ? [process.env.KAC_DATA_DIR]
-        : ['data/examples', 'data'];
-    let dataDir;
-    for (const d of dataDirs) {
-        const candidate = path.resolve(process.cwd(), d);
-        if (fs.existsSync(candidate)) { dataDir = candidate; break; }
+    let loaded;
+    try {
+        loaded = loadProjectData(projectRoot, config, {
+            dataDir: process.env.KAC_DATA_DIR ? path.resolve(process.cwd(), process.env.KAC_DATA_DIR) : undefined,
+            requireMapping: true
+        });
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
+        process.exit(1);
     }
-    if (!dataDir) { console.error('No data directory found.'); process.exit(1); }
-
-    const primaryDir = path.join(dataDir, config.entities?.primary?.directory || 'primary');
-    const containerDir = path.join(dataDir, config.entities?.container?.directory || 'container');
-    const authorityDir = path.join(dataDir, config.entities?.authority?.directory || 'authority');
-
-    // Load all entity files with frontmatter
-    const loadEntities = dir => {
-        if (!fs.existsSync(dir)) return [];
-        return fs.readdirSync(dir)
-            .filter(f => f.endsWith('.md') && !f.startsWith('_'))
-            .map(f => {
-                const content = fs.readFileSync(path.join(dir, f), 'utf-8');
-                return { id: f.replace('.md', ''), file: f, content, urls: extractUrls(content), ...parseSimpleFrontmatter(content) };
-            });
-    };
-
-    const primaries = loadEntities(primaryDir);
-    const containers = loadEntities(containerDir);
-    const authorities = loadEntities(authorityDir);
+    const primaries = loaded.primaries.map(entity => ({ ...entity, urls: extractUrls(entity.content) }));
+    const containers = loaded.containers.map(entity => ({ ...entity, urls: extractUrls(entity.content) }));
+    const authorities = loaded.authorities.map(entity => ({ ...entity, urls: extractUrls(entity.content) }));
     const allEntities = [
         ...primaries.map(e => ({ ...e, roleKey: 'primary', role: config.entities?.primary?.name || 'Primary' })),
         ...containers.map(e => ({ ...e, roleKey: 'container', role: config.entities?.container?.name || 'Container' })),
@@ -235,10 +219,7 @@ function verify() {
     // -----------------------------------------------------------------------
     console.log('--- Completeness Check ---\n');
 
-    const mappingFile = config.mapping?.file || 'provisions/index.yml';
-    let mappingPath = path.join(dataDir, mappingFile);
-    if (!fs.existsSync(mappingPath)) mappingPath = path.join(dataDir, 'mapping', 'index.yml');
-    const mappings = loadMappingIndex(mappingPath);
+    const mappings = loaded.mappings;
 
     const primaryIds = new Set(primaries.map(p => p.id));
     const containerIds = new Set(containers.map(c => c.id));

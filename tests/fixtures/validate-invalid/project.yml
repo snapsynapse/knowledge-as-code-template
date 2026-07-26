@@ -1,4 +1,6 @@
 name: "Invalid Fixture"
+url: "https://invalid-fixture.example.com/"
+repo: "https://github.com/example/invalid-fixture"
 entities:
   primary:
     name: Requirement

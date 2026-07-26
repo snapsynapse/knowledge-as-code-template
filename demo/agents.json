@@ -4,7 +4,7 @@
     "name": "Example Knowledge Base",
     "url": "https://knowledge-as-code.com/demo/",
     "description": "A structured reference tracking example entities across categories.",
-    "repo": "https://github.com/your-org/your-repo"
+    "repo": "https://github.com/snapsynapse/knowledge-as-code-template"
   },
   "capabilities": [
     {

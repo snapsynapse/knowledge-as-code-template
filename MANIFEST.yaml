@@ -47,7 +47,7 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:f47e4560f3e9f15a7d6d9f934040bb597d662caeace3324f78768a7717e2ffd8
+    hash: sha256:e68fadd2abf5c5e404db827a39bd7c2f2f292d1f2eb6ddf9875c68f1c90ec941
     note: Template overview
 
   - path: assistant-guide.txt
@@ -67,32 +67,57 @@ files:
 
   - path: project.yml
     role: config
-    hash: sha256:537e6bfbea95308d120445b56528f22f5f0f6671e59c62c510a58270690fab35
+    hash: sha256:26c8dd4210b05850fc0017dff563c3cf2a4d7c1f7a52ab8888e9ff3e073a3fdc
     note: KaC build config — entity model, navigation, theme, ontology binding
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:ca0b90369f33143d74a38e35f2a70e5febbba13b65b251af4d7e64eea3a19412
+    hash: sha256:e60fd5397c275b5cf4f485488c031e3f7a32fb9e502e7f75d795621e00ae3637
     note: Static site generator
 
   - path: scripts/init.js
     role: tooling
-    hash: sha256:ad1fa4e19c0b6bf480b3d6782265268f4a70a00c84a50108c99576d39d3e7a65
+    hash: sha256:4c8846a88e5cbd1126ce9e0ef88d9d376ca9d80cac5d57b72ade8c42cfd2ef01
     note: Clean-project initializer
 
   - path: scripts/validate.js
     role: tooling
-    hash: sha256:f7fba6ac85c40a0a46516739128154f754e3f83d25a8e5b79ef6625ff43ae6fc
+    hash: sha256:498bf63d90d24066189388ad28e147bbaf25716031e40f8973040e67abf48af1
     note: Cross-reference validator
 
   - path: scripts/verify.js
     role: tooling
-    hash: sha256:a20986041e85bb735c968ad11cbf06a976c3eb6ece38fa694f584fc19e141507
+    hash: sha256:a4abb00b5a0304e27ccd2dd9ea79741fa9e70c18c545cfcb86d15fd3bb5b1bdb
     note: Staleness / freshness checker
+
+  - path: scripts/lib/urls.js
+    role: tooling
+    hash: sha256:3dcb445a2054478e4249682ce5a1294ecce2d380484e1195cf088196b0e79937
+    note: Shared published-URL and custom-domain normalization
+
+  - path: scripts/lib/data-loaders.js
+    role: tooling
+    hash: sha256:5c230390fce07ff5109d3842d6778ac3b87ca2c785843776e0eaecf4d4d95e14
+    note: Canonical entity, mapping, timeline, and provision loading
+
+  - path: scripts/lib/parsers.js
+    role: tooling
+    hash: sha256:0e458681cb9c40f5868a11dcde3c3dc554368862c6a8a5cbb625c65a8c257aee
+    note: Supported YAML and frontmatter parser subset
+
+  - path: scripts/eval.js
+    role: tooling
+    hash: sha256:195e1394d3fe193db7cc712088e989b15000342188fc33573db44c61c7989c04
+    note: Behavioral and security regression suite
+
+  - path: mcp-server.js
+    role: tooling
+    hash: sha256:4d0581cda1be5b0e7aea639e3db8fc15a2a2607a85ac447d5c25a40d0458372b
+    note: Read-only MCP interface over canonical project data
 
   - path: scripts/check-links.js
     role: tooling
-    hash: sha256:5ed0a6b58f8315e581c5d4636b4829e5243d95636b5fe8a09343517680b6a105
+    hash: sha256:304845985e34fab6aba2606213940e9beb44f109073e671860d7031a2df26d72
     note: Internal link checker
 
   - path: scripts/validate-hashes.sh

@@ -23,6 +23,30 @@ const DOCS_DIR = process.env.KAC_LINK_CHECK_DIR
     ? path.resolve(process.cwd(), process.env.KAC_LINK_CHECK_DIR)
     : path.join(__dirname, '..', 'docs');
 
+function detectBasePath() {
+    if (process.env.KAC_LINK_BASE_PATH) {
+        const value = `/${process.env.KAC_LINK_BASE_PATH.split('/').filter(Boolean).join('/')}/`;
+        return value === '//' ? '/' : value;
+    }
+    const sitemapPath = path.join(DOCS_DIR, 'sitemap.xml');
+    if (!fs.existsSync(sitemapPath)) return '/';
+    const sitemap = fs.readFileSync(sitemapPath, 'utf8');
+    const firstLocation = sitemap.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    if (!firstLocation) return '/';
+    try {
+        const pathname = new URL(firstLocation).pathname;
+        const segments = pathname.split('/').filter(Boolean);
+        if (!segments.length) return '/';
+        const last = segments[segments.length - 1];
+        if (last.includes('.')) segments.pop();
+        return segments.length ? `/${segments.join('/')}/` : '/';
+    } catch {
+        return '/';
+    }
+}
+
+const BASE_PATH = detectBasePath();
+
 // ---------------------------------------------------------------------------
 // Collect all HTML files
 // ---------------------------------------------------------------------------
@@ -85,9 +109,15 @@ function resolveLink(href, sourceFile) {
     if (!cleanHref) return null;
 
     const sourceDir = path.dirname(sourceFile);
-    const resolved = cleanHref.startsWith('/')
-        ? path.join(DOCS_DIR, cleanHref.slice(1))
-        : path.resolve(sourceDir, cleanHref);
+    let resolved;
+    if (cleanHref.startsWith('/')) {
+        const siteRelative = BASE_PATH !== '/' && cleanHref.startsWith(BASE_PATH)
+            ? cleanHref.slice(BASE_PATH.length)
+            : cleanHref.slice(1);
+        resolved = path.join(DOCS_DIR, siteRelative);
+    } else {
+        resolved = path.resolve(sourceDir, cleanHref);
+    }
 
     // Check if it resolves to a file
     if (fs.existsSync(resolved)) return null; // OK
@@ -109,6 +139,7 @@ function resolveLink(href, sourceFile) {
 function main() {
     const label = path.relative(path.join(__dirname, '..'), DOCS_DIR) || 'docs';
     console.log(`Checking internal links in ${label}/...\n`);
+    console.log(`  Deployment base: ${BASE_PATH}`);
 
     if (!fs.existsSync(DOCS_DIR)) {
         console.error(`Error: ${label}/ directory not found. Run "node scripts/build.js" first.`);

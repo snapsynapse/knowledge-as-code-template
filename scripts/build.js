@@ -13,8 +13,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { loadMappingIndex, parseTable } = require('./lib/data-loaders');
-const { parseFrontmatter, parseYaml } = require('./lib/parsers');
+const { assertSafeId, loadProjectData } = require('./lib/data-loaders');
+const { parseYaml } = require('./lib/parsers');
+const { normalizeCustomDomain, normalizeHttpsUrl, normalizeSiteUrl, normalizeSocialConfig } = require('./lib/urls');
 
 const ROOT = path.join(__dirname, '..');
 
@@ -131,12 +132,6 @@ function safeInternalHref(href, fallback = 'index.html') {
     return raw;
 }
 
-function assertSafeId(id, label) {
-    const value = String(id || '');
-    if (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)) return value;
-    throw new Error(`${label || 'ID'} must be lowercase alphanumeric with single hyphens: ${value || '(empty)'}`);
-}
-
 function pathSegment(id, label) {
     return encodeURIComponent(assertSafeId(id, label));
 }
@@ -202,95 +197,66 @@ function parseBulletList(text) {
     return text.split('\n').map(l => l.trim()).filter(l => l.startsWith('- ')).map(l => l.slice(2).trim());
 }
 
-function parseProvisionSection(section) {
-    const trimmed = section.trim();
-    const lines = trimmed.split('\n');
-    const nameMatch = lines[0].match(/^## (.+)/);
-    if (!nameMatch) return null;
-
-    const provision = { name: nameMatch[1] };
-
-    const propTableMatch = trimmed.match(/\| Property \| Value \|[\s\S]*?\n\n/);
-    if (propTableMatch) {
-        parseTable(propTableMatch[0]).forEach(p => {
-            provision[p.property.toLowerCase().replace(/\s+/g, '_')] = p.value;
-        });
-    }
-
-    const reqMatch = trimmed.match(/### Requirements\n\n([\s\S]*?)(?=\n###|\n---|\n## |$)/);
-    if (reqMatch) provision.requirements = parseTable(reqMatch[1]);
-
-    const penMatch = trimmed.match(/### Penalties\n\n([\s\S]*?)(?=\n###|\n---|\n## |$)/);
-    if (penMatch) provision.penalties = parseTable(penMatch[1]);
-
-    const srcMatch = trimmed.match(/### Sources\n\n([\s\S]*?)(?=\n###|\n---|\n## |$)/);
-    if (srcMatch) {
-        provision.sources = (srcMatch[1].match(/\[([^\]]+)\]\(([^)]+)\)/g) || []).map(s => {
-            const m = s.match(/\[([^\]]+)\]\(([^)]+)\)/);
-            return m ? { title: m[1], url: m[2] } : null;
-        }).filter(Boolean);
-    }
-
-    const talkMatch = trimmed.match(/### Talking Point\n\n> "([^"]+)"/);
-    if (talkMatch) provision.talking_point = talkMatch[1];
-
-    return provision;
-}
-
-// ---------------------------------------------------------------------------
-// Data loading (config-driven)
-// ---------------------------------------------------------------------------
-
-function findDataDir(config) {
-    // Look for data in data/examples/ first, then data/ with config-specified directory names
-    const dirs = ['data/examples', 'data'];
-    for (const base of dirs) {
-        const fullBase = path.join(ROOT, base);
-        if (fs.existsSync(fullBase)) return fullBase;
-    }
-    return path.join(ROOT, 'data');
-}
-
-function loadDir(dir) {
-    if (!fs.existsSync(dir)) return [];
-    return fs.readdirSync(dir)
-        .filter(f => f.endsWith('.md') && !f.startsWith('_'))
-        .map(f => {
-            const content = fs.readFileSync(path.join(dir, f), 'utf-8');
-            const { frontmatter, body } = parseFrontmatter(content);
-            const id = assertSafeId(f.replace('.md', ''), `Entity filename ${f}`);
-            return { id, ...frontmatter, _body: body, _file: f };
-        });
-}
-
-function loadContainers(dir) {
-    if (!fs.existsSync(dir)) return [];
-    return fs.readdirSync(dir)
-        .filter(f => f.endsWith('.md') && !f.startsWith('_'))
-        .map(f => {
-            const content = fs.readFileSync(path.join(dir, f), 'utf-8');
-            const { frontmatter, body } = parseFrontmatter(content);
-            const id = assertSafeId(f.replace('.md', ''), `Container filename ${f}`);
-            const timelineMatch = body.match(/## Timeline\n\n([\s\S]*?)(?=\n---|\n## )/);
-            const timeline = timelineMatch ? parseTable(timelineMatch[1]) : [];
-            const provisionSections = body.split(/\n---\n/).slice(1);
-            const provisions = provisionSections.map(parseProvisionSection).filter(Boolean);
-            return { id, ...frontmatter, timeline, provisions, _body: body, _file: f };
-        });
-}
-
-function validateDataIds({ primaries, containers, authorities, mappingIndex }) {
+function validateDataIds({ config, primaries, containers, authorities, mappingIndex }) {
     primaries.forEach(p => assertSafeId(p.id, 'Primary ID'));
     containers.forEach(c => assertSafeId(c.id, 'Container ID'));
     authorities.forEach(a => assertSafeId(a.id, 'Authority ID'));
+    const primaryIds = new Set(primaries.map(p => p.id));
+    const containerIds = new Set(containers.map(c => c.id));
+    const authorityIds = new Set(authorities.map(a => a.id));
+    const mappingIds = new Set();
+    const groups = new Set((config.entities?.primary?.groups || []).map(group => group.name || group));
+    const statuses = new Set((config.entities?.container?.statuses || []).map(status => status.name || status));
+    const scopeField = config.entities?.container?.scope_field;
+
+    for (const primary of primaries) {
+        if (!primary.name) throw new Error(`${primary.file} requires frontmatter "name".`);
+        if (!primary.group) throw new Error(`${primary.file} requires frontmatter "group".`);
+        if (groups.size && !groups.has(primary.group)) throw new Error(`${primary.file} uses unknown group "${primary.group}".`);
+    }
+    for (const container of containers) {
+        if (!container.name) throw new Error(`${container.file} requires frontmatter "name".`);
+        if (!container.authority) throw new Error(`${container.file} requires frontmatter "authority".`);
+        if (!authorityIds.has(container.authority)) throw new Error(`Container "${container.id}" references unknown authority "${container.authority}".`);
+        if (!container.status) throw new Error(`${container.file} requires frontmatter "status".`);
+        if (statuses.size && !statuses.has(container.status)) throw new Error(`${container.file} uses unknown status "${container.status}".`);
+        if (scopeField && !container[scopeField]) throw new Error(`${container.file} requires configured scope field "${scopeField}".`);
+    }
+    authorities.forEach(authority => {
+        if (!authority.name) throw new Error(`${authority.file} requires frontmatter "name".`);
+    });
+
     mappingIndex.forEach(m => {
         assertSafeId(m.id, 'Mapping ID');
+        if (mappingIds.has(m.id)) throw new Error(`Duplicate mapping ID "${m.id}".`);
+        mappingIds.add(m.id);
+        if (!m.regulation) throw new Error(`Mapping "${m.id}" requires "regulation".`);
         if (m.regulation) assertSafeId(m.regulation, `Mapping ${m.id} container reference`);
         if (m.container) assertSafeId(m.container, `Mapping ${m.id} container reference`);
         if (m.framework) assertSafeId(m.framework, `Mapping ${m.id} container reference`);
+        if (!containerIds.has(m.regulation)) throw new Error(`Mapping "${m.id}" references unknown container "${m.regulation}".`);
+        if (!m.authority) throw new Error(`Mapping "${m.id}" requires "authority".`);
         if (m.authority) assertSafeId(m.authority, `Mapping ${m.id} authority reference`);
+        if (!authorityIds.has(m.authority)) throw new Error(`Mapping "${m.id}" references unknown authority "${m.authority}".`);
+        if (!(m.obligations || []).length) throw new Error(`Mapping "${m.id}" requires at least one "obligations" entry.`);
         (m.obligations || []).forEach(obl => assertSafeId(obl, `Mapping ${m.id} primary reference`));
+        for (const obligation of m.obligations || []) {
+            if (!primaryIds.has(obligation)) throw new Error(`Mapping "${m.id}" references unknown primary "${obligation}".`);
+        }
     });
+
+    if (scopeField && config.bridges?.applies_to) {
+        const routes = new Map();
+        for (const container of containers) {
+            const scope = container[scopeField];
+            const route = slugify(scope);
+            if (!route) throw new Error(`Container "${container.id}" has a scope value that cannot produce a route.`);
+            if (routes.has(route) && routes.get(route) !== scope) {
+                throw new Error(`Scope values "${routes.get(route)}" and "${scope}" both produce route "${route}".`);
+            }
+            routes.set(route, scope);
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -429,7 +395,7 @@ function renderFooter(config) {
 function renderPageShell(config, { title, activePage, prefix, content, description, canonicalPath, configCSS }) {
     prefix = prefix || '';
     const siteName = config.name || 'Knowledge Base';
-    const siteUrl = config.url || '';
+    const siteUrl = config.url;
     const desc = description || config.description || '';
     const canonical = canonicalPath ? `<link rel="canonical" href="${siteUrl}${canonicalPath}">` : '';
 
@@ -449,7 +415,7 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
     <meta property="og:type" content="website">
     ${config.social?.og_image ? `<meta property="og:image" content="${escapeHTML(safeURL(siteUrl + config.social.og_image))}">` : ''}
     ${canonicalPath !== undefined ? `<meta property="og:url" content="${siteUrl}${canonicalPath || ''}">` : ''}
-    <meta name="twitter:card" content="${config.social?.twitter_card || 'summary'}">
+    <meta name="twitter:card" content="${escapeHTML(config.social?.twitter_card || 'summary')}">
     ${config.social?.twitter_site ? `<meta name="twitter:site" content="${escapeHTML(config.social.twitter_site)}">` : ''}
     ${renderThemeInit()}
 </head>
@@ -468,7 +434,7 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
 
 function renderBridgeShell(config, { title, depth, content, description, canonicalPath, structuredData, configCSS, noindex }) {
     const prefix = depth > 0 ? '../'.repeat(depth) : '';
-    const siteUrl = config.url || '';
+    const siteUrl = config.url;
     const jsonLd = structuredData ? `\n    <script type="application/ld+json">${JSON.stringify(structuredData)}</script>` : '';
 
     return `<!DOCTYPE html>
@@ -488,7 +454,7 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
     <meta property="og:type" content="website">
     ${config.social?.og_image ? `<meta property="og:image" content="${escapeHTML(safeURL(siteUrl + config.social.og_image))}">` : ''}
     ${canonicalPath !== undefined ? `<meta property="og:url" content="${siteUrl}${canonicalPath || ''}">` : ''}
-    <meta name="twitter:card" content="${config.social?.twitter_card || 'summary'}">
+    <meta name="twitter:card" content="${escapeHTML(config.social?.twitter_card || 'summary')}">
     ${config.social?.twitter_site ? `<meta name="twitter:site" content="${escapeHTML(config.social.twitter_site)}">` : ''}${jsonLd}
     ${renderThemeInit()}
 </head>
@@ -1057,6 +1023,7 @@ function generateSitemap(config, pages) {
 function generate404Page(config, configCSS) {
     const containerPlural = (config.entities?.container?.plural || 'Containers').toLowerCase();
     const primaryPlural = (config.entities?.primary?.plural || 'Primaries').toLowerCase();
+    const basePath = config._site.basePath;
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1064,19 +1031,19 @@ function generate404Page(config, configCSS) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page Not Found - ${escapeHTML(config.name || '')}</title>
     <meta name="robots" content="noindex">
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="${escapeHTML(basePath)}assets/styles.css">
     <style>${escapeStyle(configCSS || '')}</style>
     ${renderThemeInit()}
 </head>
 <body>
-    ${renderSiteNav(config, 'none', '/')}
+    ${renderSiteNav(config, 'none', basePath)}
     <main class="container" id="main-content" style="text-align:center;">
         <h1 style="margin-top:2rem;">404 — Page Not Found</h1>
         <p style="color:var(--text-secondary); margin: 1rem 0 2rem;">The page you're looking for doesn't exist or has moved.</p>
         <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
-            <a href="/" class="bridge-cta">Home</a>
-            <a href="/containers.html" class="bridge-cta">All ${escapeHTML(containerPlural)}</a>
-            <a href="/primaries.html" class="bridge-cta">All ${escapeHTML(primaryPlural)}</a>
+            <a href="${escapeHTML(basePath)}" class="bridge-cta">Home</a>
+            <a href="${escapeHTML(basePath)}containers.html" class="bridge-cta">All ${escapeHTML(containerPlural)}</a>
+            <a href="${escapeHTML(basePath)}primaries.html" class="bridge-cta">All ${escapeHTML(primaryPlural)}</a>
         </div>
     </main>
     ${renderFooter(config)}
@@ -1190,27 +1157,23 @@ function build() {
     // Env-var overrides for the rare case where you need to build the same
     // project.yml at a different URL (e.g. a subpath deployment).
     if (process.env.KAC_SITE_URL) config.url = process.env.KAC_SITE_URL;
+    if (process.env.KAC_REPO_URL) config.repo = process.env.KAC_REPO_URL;
+
+    config._site = normalizeSiteUrl(config.url);
+    config.url = config._site.url;
+    config.repo = normalizeHttpsUrl(config.repo, 'Repository URL');
+    config.social = normalizeSocialConfig(config.social);
+    config.deployment = {
+        ...(config.deployment || {}),
+        custom_domain: normalizeCustomDomain(config.deployment?.custom_domain)
+    };
 
     console.log(`Building ${config.name || 'project'}...\n`);
 
-    const dataDir = findDataDir(config);
-    const primaryDir = path.join(dataDir, config.entities?.primary?.directory || 'primary');
-    const containerDir = path.join(dataDir, config.entities?.container?.directory || 'container');
-    const authorityDir = path.join(dataDir, config.entities?.authority?.directory || 'authority');
-
-    // Determine mapping file path
-    const mappingFile = config.mapping?.file || 'provisions/index.yml';
-    let mappingPath = path.join(dataDir, mappingFile);
-    // Also check under mapping/ subdirectory for examples
-    if (!fs.existsSync(mappingPath)) {
-        mappingPath = path.join(dataDir, 'mapping', 'index.yml');
-    }
-
-    const primaries = loadDir(primaryDir);
-    const containers = loadContainers(containerDir);
-    const authorities = loadDir(authorityDir);
-    const mappingIndex = loadMappingIndex(mappingPath);
-    validateDataIds({ primaries, containers, authorities, mappingIndex });
+    const loaded = loadProjectData(ROOT, config, { requireMapping: true });
+    const { primaries, containers, authorities } = loaded;
+    const mappingIndex = loaded.mappings;
+    validateDataIds({ config, primaries, containers, authorities, mappingIndex });
 
     setBuildStamp(containers);
 
@@ -1356,7 +1319,7 @@ function build() {
     console.log(`  Search index: ${searchIndex.length} entries`);
 
     // Sitemap + robots
-    const siteUrl = (config.url || '').replace(/\/?$/, '/');
+    const siteUrl = config.url;
     fs.writeFileSync(path.join(DOCS_DIR, 'sitemap.xml'), generateSitemap(config, sitemapPages));
     fs.writeFileSync(path.join(DOCS_DIR, 'robots.txt'), [
         'User-agent: *',
@@ -1504,8 +1467,9 @@ function build() {
     console.log('  Discovery files: llms.txt, agents.json, index.xml');
 
     // CNAME — for GitHub Pages custom domains
-    const hostname = siteUrl.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-    if (hostname) fs.writeFileSync(path.join(DOCS_DIR, 'CNAME'), hostname + '\n');
+    if (config.deployment.custom_domain) {
+        fs.writeFileSync(path.join(DOCS_DIR, 'CNAME'), config.deployment.custom_domain + '\n');
+    }
 
     // .nojekyll — prevent GitHub Pages from running Jekyll on output
     fs.writeFileSync(path.join(DOCS_DIR, '.nojekyll'), '');

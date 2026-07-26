@@ -36,7 +36,7 @@ Maintainer-operated implementations of this architecture:
 ## Quick Start
 
 1. **Clone this generator** -- `git clone https://github.com/snapsynapse/knowledge-as-code-template.git`.
-2. **Create a clean project** -- from the generator checkout, run `node scripts/init.js ../my-knowledge-base`. The guided initializer asks for the reference name, URL, repository, and plain-language names for the four entity roles.
+2. **Create a clean project** -- from the generator checkout, run `node scripts/init.js ../my-knowledge-base`. The guided initializer asks for the reference name, URL, repository, and plain-language names for the four entity roles. It changes project identity and display labels; the worked ISO/NIST teaching fixture remains until you replace it.
 3. **Enter the generated project** -- `cd ../my-knowledge-base`. It contains the engine, one worked example, the MCP runtime, and deployment workflows without this canonical site's landing files or history.
 4. **Validate and build** -- run `node scripts/validate.js` and `node scripts/build.js`, then open `docs/index.html`.
 5. **Deploy** -- create a GitHub repository, set Pages to **GitHub Actions**, and push to `main`. The included workflow builds and publishes `docs/`.
@@ -50,7 +50,7 @@ This canonical repository tracks only the generated `demo/` published at `https:
 
 - `docs/` is transient local output used by builds, tests, and initialized projects. It is ignored here.
 - `demo/` is the tracked canonical reference build.
-- Never edit either directory by hand. Build local output with `node scripts/build.js`; refresh the tracked demo with `KAC_OUTPUT_DIR=demo KAC_SITE_URL="https://knowledge-as-code.com/demo/" node scripts/build.js`.
+- Never edit either directory by hand. Build local output with `node scripts/build.js`; refresh the tracked demo with `KAC_OUTPUT_DIR=demo KAC_SITE_URL="https://knowledge-as-code.com/demo/" KAC_REPO_URL="https://github.com/snapsynapse/knowledge-as-code-template" node scripts/build.js`.
 - During each build, the generator removes only paths it owns in the target output directory (`api/`, `assets/`, entity/bridge page directories, and generated root files). It refuses to clean the repository root or a parent directory.
 
 ## What You Get
@@ -64,6 +64,7 @@ This canonical repository tracks only the generated `demo/` published at `https:
 - **Local MCP server** — optional read-only agent access through `mcp-server.js`; it runs separately from the static build
 - **Discovery files** — llms.txt, agents.json, RSS for machine consumption
 - **Safe generated output** — generated links, CSS tokens, and client-side comparison labels are normalized or escaped
+- **Subpath-safe deployment** — canonical, discovery, 404, and asset URLs preserve a configured path such as `/demo/`
 - **Zero dependencies** — Node.js built-ins only
 
 ## Project Structure
@@ -157,6 +158,8 @@ All domain-specific settings live in `project.yml`:
 
 Generated pages normalize external URLs to `https` and bare domains. Avoid `http`, `javascript:`, and `www` in project data; unsafe protocols are dropped from generated links. Configured colors should be hex values such as `#4fc3f7`; invalid color values fall back to safe defaults.
 
+Set `deployment.custom_domain` only when the generated artifact itself is published at that hostname. Leave it empty for GitHub Pages project paths and other shared-host subpaths. `CNAME` is generated only from this explicit hostname.
+
 Entity filenames and mapping IDs must be lowercase slug IDs: `a-z`, `0-9`, and single hyphens only, such as `access-control` or `iso-27001`. The filename without `.md` is the entity ID. Mapping references must use those same IDs. `node scripts/validate.js` and `node scripts/build.js` both reject unsafe IDs before generated HTML, filesystem paths, JSON discovery files, or MCP responses are produced.
 
 ## Replacing example data
@@ -187,6 +190,8 @@ That runs the broader smoke/eval suite covering builds, links, API shape, parser
 
 The build script looks for data in `data/examples/` first, then `data/`. You can rename `data/examples/` to `data/` if you prefer a flatter structure. Keep filenames slug-safe because the generated site, JSON API, MCP tools, search index, sitemap, and agents.json all use the filename-derived IDs.
 
+The mapping keys `regulation` and `obligations` are stable 1.x wire keys even when the displayed entity labels are changed. `regulation` contains a container ID and `obligations` contains primary IDs.
+
 **What to keep:** Only `data/` contents and `project.yml` values need replacing. Do not delete `scripts/`, `.github/workflows/`, `mcp-server.js`, `mcp.json`, or `package.json` — these are the template engine and deployment config.
 
 ## Commands
@@ -195,6 +200,7 @@ The build script looks for data in `data/examples/` first, then `data/`. You can
 node scripts/build.js      # Build the site (or: npm run build)
 node scripts/validate.js   # Validate cross-references (or: npm run validate)
 node scripts/verify.js     # Check entity freshness (or: npm run verify)
+node scripts/check-links.js # Check generated internal links, including subpath builds
 node scripts/eval.js       # Run smoke, link, API, parser, MCP, and docs evals (or: npm run eval)
 ```
 

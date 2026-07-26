@@ -10,6 +10,11 @@ url: "https://example.com/"
 repo: "https://github.com/your-org/your-repo"
 description: "A structured reference tracking example entities across categories."
 
+# Deployment. Set custom_domain only when the generated artifact itself is
+# published at that hostname. Leave it empty for shared hosts and subpaths.
+deployment:
+  custom_domain: ""
+
 # ---------------------------------------------------------------------------
 # Entity model — the ontology
 #

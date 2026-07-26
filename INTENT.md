@@ -43,13 +43,38 @@ A mature end state has:
 - reproducible tests for the public golden path
 - a small release surface driven by internal needs, security findings, and independently reproduced user problems
 - documented extension contracts instead of bundled vendor integrations
-- no implied service-level agreement, community roadmap, or obligation to accept features
+- no implied service-level agreement, fixed roadmap dates, or obligation to accept features
 
 ## Adoption evidence
 
 Repository traffic, stars, social engagement, and maintainer-assisted demos are weak signals. The meaningful gate is an external pilot completed without live maintainer help. See `ADOPTION.md`.
 
 Until that gate is passed, claims should say the project is used internally and available for external reuse. They should not imply independent adoption.
+
+## Roadmap
+
+Roadmap items are directional and evidence-gated. They do not imply delivery dates or a support commitment.
+
+### GuideCheck implementation
+
+Make GuideCheck a first-class generated implementation, not only a conformance profile adopted by this canonical repository.
+
+- Generate the canonical assistant guide, root compatibility copy, and integrity sidecar for initialized Knowledge-as-Code projects.
+- Derive project-specific guide content from validated configuration instead of copying canonical-repository instructions.
+- Validate guide discovery, byte identity, integrity metadata, action boundaries, and the highest truthfully supported GuideCheck level.
+- Include GuideCheck output in the build, initializer, documentation, eval suite, and compatibility policy.
+- Keep Level 5 reserved for deployments that provide and verify the required runtime behavior.
+
+### Voluntary implementation registry
+
+Provide an opt-in way for independent maintainers to report how they use Knowledge-as-Code and, with explicit permission, appear in a public library of implementations.
+
+- Add a structured submission path for project name, public URL, repository when public, domain, short use-case description, maintainer identity or organization, and Knowledge-as-Code version.
+- Require explicit consent before displaying a submission and provide a clear update or removal path.
+- Verify that a submitted public implementation exposes a recognizable Knowledge-as-Code source or generated surface before listing it.
+- Distinguish maintainer-operated examples, independent implementations, experiments, and completed adoption pilots.
+- Publish the library from reviewable repository data so additions, corrections, provenance, and removal history remain auditable.
+- Do not add telemetry, phone-home behavior, or automatic usage reporting to the generator.
 
 ## Recalibration gates
 
@@ -73,4 +98,5 @@ None currently recorded.
 
 ## Changelog
 
+- 2026-07-25: Added GuideCheck generation and a voluntary, consent-based implementation registry to the roadmap.
 - 2026-07-21: Recalibrated the project from adoption-seeking template to internal-first open utility; made independent transfer the public adoption gate.

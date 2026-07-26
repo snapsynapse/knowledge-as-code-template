@@ -14,6 +14,12 @@ pattern.
 
 ## [Unreleased]
 
+### Added
+- Added roadmap commitments for first-class GuideCheck generation and a voluntary, consent-based public library of independent Knowledge-as-Code implementations.
+
+### Fixed
+- Added an SVG favicon to the canonical landing and 404 pages and to every generated and initialized site.
+
 ## [1.1.2] - 2026-07-25
 
 ### Fixed

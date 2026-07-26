@@ -131,6 +131,7 @@ function withTempRoot(fn) {
 function evalBuildSmoke() {
     buildDefault();
     const expectedFiles = [
+        'docs/assets/favicon.svg',
         'docs/assets/styles.css',
         'docs/assets/search.js',
         'docs/assets/tables.js',
@@ -160,6 +161,7 @@ function evalFreshCloneBuild() {
             'agents.json',
             'index.xml',
             'assets/styles.css',
+            'assets/favicon.svg',
             'assets/search.js',
             'assets/tables.js',
             'assets/data.json',
@@ -205,6 +207,7 @@ function evalInitializerGoldenPath() {
             'package.json',
             'data/_schema.md',
             'scripts/build.js',
+            'scripts/assets/favicon.svg',
             'scripts/validate.js',
             'scripts/verify.js',
             'mcp-server.js',
@@ -237,6 +240,7 @@ function evalInitializerGoldenPath() {
             assert.strictEqual(result.status, 0, `Initialized project command failed (${command.join(' ')}):\n${result.stdout}\n${result.stderr}`);
         }
         assertFile(path.join(target, 'docs', 'index.html'));
+        assertFile(path.join(target, 'docs', 'assets', 'favicon.svg'));
         assertFile(path.join(target, 'docs', 'api', 'v1', 'index.json'));
         assert.ok(!fs.existsSync(path.join(target, 'docs', 'pattern.html')), 'Disabled pattern page should not be generated.');
     });
@@ -405,12 +409,14 @@ function evalConfigOverride() {
 
         const demoRoot = path.join(ROOT, outName);
         assertFile(path.join(demoRoot, 'assets/styles.css'));
+        assertFile(path.join(demoRoot, 'assets/favicon.svg'));
         const containerPage = fs.readFileSync(path.join(demoRoot, 'container/iso-27001/index.html'), 'utf8');
         const sitemap = fs.readFileSync(path.join(demoRoot, 'sitemap.xml'), 'utf8');
         const agents = readJson(path.join(demoRoot, 'agents.json'));
         const notFound = fs.readFileSync(path.join(demoRoot, '404.html'), 'utf8');
 
         assertIncludes(containerPage, '<link rel="canonical" href="https://knowledge-as-code.com/demo/container/iso-27001/">');
+        assertIncludes(containerPage, 'href="../../assets/favicon.svg" type="image/svg+xml"');
         assertIncludes(sitemap, '<loc>https://knowledge-as-code.com/demo/container/iso-27001/</loc>');
         assert.strictEqual(agents.site.url, siteUrl);
         assert.strictEqual(agents.site.repo, 'https://github.com/snapsynapse/knowledge-as-code-template');
@@ -763,6 +769,13 @@ function evalPublicSurface() {
     const demoText = demoFiles.map(file => fs.readFileSync(file, 'utf8')).join('\n');
 
     assertIncludes(landing, '<link rel="canonical" href="https://knowledge-as-code.com/">');
+    assertIncludes(landing, '<link rel="icon" href="/favicon.svg" type="image/svg+xml">');
+    assertFile(path.join(ROOT, 'favicon.svg'));
+    assert.strictEqual(
+        fs.readFileSync(path.join(ROOT, 'favicon.svg'), 'utf8'),
+        fs.readFileSync(path.join(ROOT, 'scripts', 'assets', 'favicon.svg'), 'utf8'),
+        'Canonical and generated favicon sources should remain byte-identical.'
+    );
     assertIncludes(landing, '--accent: #047857;');
     assertIncludes(landing, 'p a, aside a { text-decoration: underline;');
     assertIncludes(landing, '.btn-primary { background: var(--accent); color: var(--bg); }');
@@ -949,6 +962,9 @@ function evalDocsConsistency() {
     assert.ok(!verification.includes('continue-on-error: true'), 'Verification docs should reflect current workflow implementation.');
     assertIncludes(verifyWorkflow, 'echo "exit_code=$?" >> "$GITHUB_OUTPUT"');
     assertIncludes(intent, 'internal-first open utility');
+    assertIncludes(intent, '### GuideCheck implementation');
+    assertIncludes(intent, '### Voluntary implementation registry');
+    assertIncludes(intent, 'Do not add telemetry, phone-home behavior, or automatic usage reporting');
     assertIncludes(maintenance, 'The maintained public path is:');
     assertIncludes(adoption, 'One passing pilot establishes basic external transferability.');
     assertIncludes(projectContext, '`INTENT.md` is authoritative for current project status');

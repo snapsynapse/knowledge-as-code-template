@@ -169,7 +169,7 @@ function cleanGeneratedOutput() {
 
 function copyStaticAssets() {
     const assetSourceDir = path.join(__dirname, 'assets');
-    const assetFiles = ['styles.css', 'search.js', 'tables.js'];
+    const assetFiles = ['styles.css', 'search.js', 'tables.js', 'favicon.svg'];
 
     assetFiles.forEach(file => {
         const source = path.join(assetSourceDir, file);
@@ -407,6 +407,7 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
     <title>${escapeHTML(title)} - ${escapeHTML(siteName)}</title>
     <meta name="theme-color" content="#1a1a2e">
     ${canonical}
+    <link rel="icon" href="${prefix}assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="${prefix}assets/styles.css">
     <style>${escapeStyle(configCSS || '')}</style>
     <meta name="description" content="${escapeHTML(desc)}">
@@ -445,6 +446,7 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
     <title>${escapeHTML(title)} - ${escapeHTML(config.name || '')}</title>
     <meta name="theme-color" content="#1a1a2e">
     <link rel="canonical" href="${siteUrl}${canonicalPath || ''}">
+    <link rel="icon" href="${prefix}assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="${prefix}assets/styles.css">
     <style>${escapeStyle(configCSS || '')}</style>
     ${noindex ? '<meta name="robots" content="noindex">' : ''}
@@ -1031,6 +1033,7 @@ function generate404Page(config, configCSS) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page Not Found - ${escapeHTML(config.name || '')}</title>
     <meta name="robots" content="noindex">
+    <link rel="icon" href="${escapeHTML(basePath)}assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="${escapeHTML(basePath)}assets/styles.css">
     <style>${escapeStyle(configCSS || '')}</style>
     ${renderThemeInit()}

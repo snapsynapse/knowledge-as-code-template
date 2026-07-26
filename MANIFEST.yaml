@@ -47,8 +47,13 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:050155c1eed7241f8d916c647a0f13a9ce57681d48cbe266f0ff49c4d35ede2c
+    hash: sha256:c2e411e2234d7cdec0b89f42af402919f62633e7fd600399abf47e27307362e9
     note: Template overview
+
+  - path: favicon.svg
+    role: branding
+    hash: sha256:cfef3d8bcd5e0ad9c8354c5c1b599137764836694e7e3f41235215c10023567c
+    note: Canonical site favicon
 
   - path: DEPLOYMENT.md
     role: protocol
@@ -77,8 +82,13 @@ files:
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:e60fd5397c275b5cf4f485488c031e3f7a32fb9e502e7f75d795621e00ae3637
+    hash: sha256:da80cae7d6e661072543189f5ed841b9ea73f3f283508b4b992aaa0118bb18a2
     note: Static site generator
+
+  - path: scripts/assets/favicon.svg
+    role: branding
+    hash: sha256:cfef3d8bcd5e0ad9c8354c5c1b599137764836694e7e3f41235215c10023567c
+    note: Favicon copied into generated sites
 
   - path: scripts/init.js
     role: tooling
@@ -112,7 +122,7 @@ files:
 
   - path: scripts/eval.js
     role: tooling
-    hash: sha256:f19fddbecc278a7346207d7ecbd2b697a1548abbb26895efea0493f711d4dab2
+    hash: sha256:1f441afee32a8f0ad72986cba5acd227a67400c0bbff53655ce3c0a5fa8db4a7
     note: Behavioral and security regression suite
 
   - path: mcp-server.js

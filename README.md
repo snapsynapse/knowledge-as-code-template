@@ -7,6 +7,7 @@ This repository is an internal-first open utility maintained by [PAICE.work](htt
 ## Project status
 
 - [Intent and viable end state](INTENT.md)
+- [Roadmap](INTENT.md#roadmap)
 - [Maintenance and compatibility](MAINTENANCE.md)
 - [Deployment profiles and environment overrides](DEPLOYMENT.md)
 - [Independent adoption pilot](ADOPTION.md)

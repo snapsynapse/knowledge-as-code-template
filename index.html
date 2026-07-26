@@ -8,7 +8,7 @@
 <meta name="keywords" content="knowledge as code, structured reference, knowledge management, documentation, git-native, ontology, drift detection, JSON API, MCP server, static site, plain text, version control">
 <meta name="author" content="Sam Rogers">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
-<meta name="theme-color" content="#059669">
+<meta name="theme-color" content="#047857">
 <link rel="canonical" href="https://knowledge-as-code.com/">
 <link rel="assistant-guide" href="https://knowledge-as-code.com/.well-known/assistant-guide.txt" type="text/plain">
 
@@ -103,7 +103,7 @@
     --text: #141613;
     --muted: #5a6258;
     --border: #e6e5dc;
-    --accent: #059669;        /* emerald */
+    --accent: #047857;        /* emerald */
     --accent-ink: #064e3b;
     --accent-soft: #d1fae5;
     --highlight: #eab308;     /* amber */
@@ -142,6 +142,7 @@
   code, pre, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
+  p a, aside a { text-decoration: underline; text-underline-offset: 0.12em; }
 
   nav {
     position: sticky; top: 0; z-index: 10;
@@ -279,8 +280,8 @@
     transition: transform 0.05s ease;
   }
   .btn:hover { text-decoration: none; transform: translateY(-1px); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-ink); color: #fff; }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent-ink); color: var(--bg); }
   .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 

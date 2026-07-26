@@ -14,6 +14,11 @@ pattern.
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-07-25
+
+### Fixed
+- Increased the light-theme emerald contrast, made primary-button text theme-aware, and underlined inline prose links so the canonical landing page passes automated WCAG 2.1 AA checks.
+
 ## [1.1.1] - 2026-07-25
 
 ### Fixed
@@ -185,7 +190,8 @@ canonical pattern definition at <https://knowledge-as-code.com/>.
   site generator, `scripts/validate.js` cross-reference linter, example data for ISO 27001 and
   NIST CSF, dark/light themed static site output, JSON API, bridge pages, `CNAME` fixture.
 
-[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.1.2
 [1.1.1]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.1.1
 [1.1.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.1.0
 [1.0.2]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.0.2

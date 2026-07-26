@@ -763,6 +763,9 @@ function evalPublicSurface() {
     const demoText = demoFiles.map(file => fs.readFileSync(file, 'utf8')).join('\n');
 
     assertIncludes(landing, '<link rel="canonical" href="https://knowledge-as-code.com/">');
+    assertIncludes(landing, '--accent: #047857;');
+    assertIncludes(landing, 'p a, aside a { text-decoration: underline;');
+    assertIncludes(landing, '.btn-primary { background: var(--accent); color: var(--bg); }');
     const jsonLdBlocks = [...landing.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
     assert.ok(jsonLdBlocks.length > 0, 'Landing should include JSON-LD.');
     jsonLdBlocks.forEach(match => JSON.parse(match[1]));

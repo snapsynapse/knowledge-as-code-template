@@ -891,6 +891,25 @@ function evalWorkflowContract() {
     ]) assertIncludes(workflow, required);
 }
 
+function evalReleaseMetadata() {
+    const packageMetadata = readJson(path.join(ROOT, 'package.json'));
+    const version = packageMetadata.version;
+    assert.match(version, /^\d+\.\d+\.\d+$/, 'package.json must contain a stable semantic version.');
+
+    const changelog = fs.readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8');
+    const manifest = fs.readFileSync(path.join(ROOT, 'MANIFEST.yaml'), 'utf8');
+    const landing = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    assertIncludes(changelog, `## [${version}]`);
+    assertIncludes(manifest, `bundle_version: ${version}`);
+    assertIncludes(landing, `<span class="version">v${version.split('.').slice(0, 2).join('.')}</span>`);
+
+    const request = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }) + '\n';
+    const mcp = spawnSync(process.execPath, ['mcp-server.js'], { cwd: ROOT, encoding: 'utf8', input: request });
+    assert.strictEqual(mcp.status, 0, `MCP release metadata check failed:\n${mcp.stdout}\n${mcp.stderr}`);
+    const response = JSON.parse(mcp.stdout.trim());
+    assert.strictEqual(response.result.serverInfo.version, version);
+}
+
 function evalMcpNotificationSilence() {
     const notification = '{"jsonrpc":"2.0","method":"unknown","params":{}}\n';
     const result = spawnSync(process.execPath, ['mcp-server.js'], {
@@ -966,6 +985,7 @@ const evals = [
     ['MCP notification silence', evalMcpNotificationSilence],
     ['generated artifact cleanliness', evalGeneratedArtifactCleanliness],
     ['workflow contract', evalWorkflowContract],
+    ['release metadata', evalReleaseMetadata],
     ['docs consistency', evalDocsConsistency]
 ];
 

@@ -13,6 +13,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const packageMetadata = require('./package.json');
 const { loadProjectData } = require('./scripts/lib/data-loaders');
 const { parseYaml } = require('./scripts/lib/parsers');
 
@@ -325,7 +326,7 @@ function handleMessage(msg) {
             capabilities: { tools: {} },
             serverInfo: {
                 name: config.name || 'Knowledge Base MCP',
-                version: '1.0.0'
+                version: packageMetadata.version
             }
         });
     }

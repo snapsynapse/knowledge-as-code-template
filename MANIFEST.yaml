@@ -27,8 +27,8 @@
 #   - This file itself
 
 bundle: knowledge-as-code-template
-bundle_version: 1.0.2
-bundle_date: 2026-06-12
+bundle_version: 1.1.0
+bundle_date: 2026-07-25
 description: >
   Knowledge as Code starter template — scaffolds a KaC site with
   Primary/Container/Authority/Secondary entities, gist ontology binding,
@@ -112,12 +112,12 @@ files:
 
   - path: scripts/eval.js
     role: tooling
-    hash: sha256:6b9bcb6254884340cb0186c6cac73c34fdae57b07f44aea5a696cf44220e672e
+    hash: sha256:7e54c1463d232c5bd547efcd9176705e4e988439dd9536c07f308a43cb9ea8ff
     note: Behavioral and security regression suite
 
   - path: mcp-server.js
     role: tooling
-    hash: sha256:4d0581cda1be5b0e7aea639e3db8fc15a2a2607a85ac447d5c25a40d0458372b
+    hash: sha256:7a6e590449baa4eaff376e8a23d5bedbcf8a546d1a75d149287bc0c13517840f
     note: Read-only MCP interface over canonical project data
 
   - path: scripts/check-links.js

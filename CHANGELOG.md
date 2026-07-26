@@ -14,13 +14,22 @@ pattern.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-25
+
+### Added
+- Added deployment profiles, environment override guidance, and troubleshooting documentation to the canonical repository and newly initialized projects.
+- Added output-preservation, CNAME-transition, URL-edge, mapping-shape, MCP response-shape, generated-artifact cleanliness, public-surface, and CI workflow regression coverage.
+- Added a zero-dependency guided initializer that creates a clean project with the engine, worked example, MCP runtime, and deployment workflows.
+- Added a provider-independent external verifier contract using explicit executable and JSONL input/output boundaries.
+- Added an independent adoption pilot gate, bounded maintenance policy, security scope, and structured pilot-report issue form.
+
 ### Changed
-- Added deployment profiles and troubleshooting guidance, strict mapping-shape parsing, and regression coverage for output preservation, custom-domain transitions, URL edge cases, MCP response shape, generated-artifact cleanliness, and CI workflow contracts.
 - Made generated URL metadata and 404 navigation path-aware for subpath deployments.
 - Made internal-link checking deployment-base-aware for subpath output.
 - Made custom-domain CNAME generation explicit instead of deriving it from the published URL.
 - Unified entity and provision loading across build, validation, verification, and MCP surfaces.
 - Made filename-derived entity IDs canonical and expanded validation for required fields, duplicates, and generated-route collisions.
+- Made malformed mapping structure, unknown or duplicate keys, scalar obligation values, and duplicate obligation IDs fail loudly.
 - Clarified initializer scope, stable mapping wire keys, current project status, and canonical demo identity.
 - Expanded CI and eval coverage for the advertised Node.js minimum, URL validation, subpath deployment, identity mismatches, duplicate mappings, and the canonical public surface.
 - Repositioned the project as an internal-first open reference generator for evidence-backed structured sites.
@@ -28,13 +37,9 @@ pattern.
 - Distinguished maintainer-operated implementations from independent external adoption.
 - Standardized onboarding on the clean-project initializer and added a Pages deployment workflow for generated repositories.
 - Corrected the canonical Snap Synapse writeup path and acknowledged established prior art.
-- Added a zero-dependency guided initializer that creates a clean project with only the engine, worked example, MCP runtime, and deployment workflows.
 - Made `docs/` transient local output in the canonical repository; `demo/` is now the only tracked generated build.
 - Expanded deterministic verification to fail on missing reviews, invalid or future dates, mapping gaps, and required evidence metadata.
-- Added a provider-independent external verifier contract using an explicit executable and JSONL input/output, with no shell or source-file mutation.
 - Re-verified the worked example against current ISO and NIST primary sources, corrected unsupported claims, and replaced the ambiguous data-quality mapping with information integrity.
-- Documented the internal-first operating model, bounded maintenance policy, security scope, viable open-repository end state, and independent adoption pilot gate.
-- Added a structured GitHub issue form for independent pilot reports.
 
 ## [1.0.2] — 2026-06-12
 
@@ -175,7 +180,8 @@ canonical pattern definition at <https://knowledge-as-code.com/>.
   site generator, `scripts/validate.js` cross-reference linter, example data for ISO 27001 and
   NIST CSF, dark/light themed static site output, JSON API, bridge pages, `CNAME` fixture.
 
-[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.1.0
 [1.0.2]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.0.2
 [1.0.1]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.0.1
 [1.0.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.0.0

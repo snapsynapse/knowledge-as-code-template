@@ -41,17 +41,58 @@ function loadMappingIndex(filePath) {
     const content = fs.readFileSync(filePath, 'utf-8');
     const entries = [];
     let current = null;
+    let listKey = null;
+    let seenKeys = new Set();
+    const allowedKeys = new Set(['regulation', 'authority', 'source_file', 'source_heading', 'obligations']);
 
-    for (const line of content.split('\n')) {
-        if (line.startsWith('- id:')) {
+    const fail = (lineNumber, message) => {
+        throw new Error(`${path.basename(filePath)}:${lineNumber}: ${message}`);
+    };
+
+    for (const [index, line] of content.split('\n').entries()) {
+        const lineNumber = index + 1;
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+
+        const entryMatch = line.match(/^- id:\s*(.*)$/);
+        if (entryMatch) {
             if (current) entries.push(current);
-            current = { id: line.replace('- id:', '').trim(), obligations: [] };
-        } else if (current) {
-            const match = line.match(/^\s+(\w[\w_]*):\s*(.+)/);
-            if (match && match[1] !== 'obligations') current[match[1]] = match[2].trim();
-            const listMatch = line.match(/^\s+-\s+(.+)/);
-            if (listMatch) current.obligations.push(listMatch[1].trim());
+            const id = entryMatch[1].trim();
+            if (!id) fail(lineNumber, 'mapping entry requires a non-empty id.');
+            current = { id, obligations: [] };
+            listKey = null;
+            seenKeys = new Set();
+            continue;
         }
+
+        if (!current) fail(lineNumber, 'expected a mapping entry beginning with "- id:".');
+
+        const listMatch = line.match(/^\s+-\s+(.+)$/);
+        if (listMatch) {
+            if (listKey !== 'obligations') fail(lineNumber, 'list items are only supported under "obligations".');
+            const obligation = listMatch[1].trim();
+            if (current.obligations.includes(obligation)) {
+                fail(lineNumber, `duplicate obligation "${obligation}" in mapping "${current.id}".`);
+            }
+            current.obligations.push(obligation);
+            continue;
+        }
+
+        const propertyMatch = line.match(/^\s+([a-z][a-z0-9_]*):\s*(.*)$/);
+        if (!propertyMatch) fail(lineNumber, 'unsupported mapping syntax.');
+        const [, key, rawValue] = propertyMatch;
+        if (!allowedKeys.has(key)) fail(lineNumber, `unsupported mapping key "${key}".`);
+        if (seenKeys.has(key)) fail(lineNumber, `duplicate key "${key}" in mapping "${current.id}".`);
+        seenKeys.add(key);
+        if (key === 'obligations') {
+            if (rawValue.trim()) fail(lineNumber, '"obligations" must be a YAML list, not a scalar value.');
+            listKey = 'obligations';
+            continue;
+        }
+        const value = rawValue.trim();
+        if (!value) fail(lineNumber, `"${key}" requires a value.`);
+        current[key] = value;
+        listKey = null;
     }
     if (current) entries.push(current);
     return entries;

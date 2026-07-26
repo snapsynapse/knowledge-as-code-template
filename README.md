@@ -8,6 +8,7 @@ This repository is an internal-first open utility maintained by [PAICE.work](htt
 
 - [Intent and viable end state](INTENT.md)
 - [Maintenance and compatibility](MAINTENANCE.md)
+- [Deployment profiles and environment overrides](DEPLOYMENT.md)
 - [Independent adoption pilot](ADOPTION.md)
 - [Security policy](SECURITY.md)
 
@@ -39,7 +40,7 @@ Maintainer-operated implementations of this architecture:
 2. **Create a clean project** -- from the generator checkout, run `node scripts/init.js ../my-knowledge-base`. The guided initializer asks for the reference name, URL, repository, and plain-language names for the four entity roles. It changes project identity and display labels; the worked ISO/NIST teaching fixture remains until you replace it.
 3. **Enter the generated project** -- `cd ../my-knowledge-base`. It contains the engine, one worked example, the MCP runtime, and deployment workflows without this canonical site's landing files or history.
 4. **Validate and build** -- run `node scripts/validate.js` and `node scripts/build.js`, then open `docs/index.html`.
-5. **Deploy** -- create a GitHub repository, set Pages to **GitHub Actions**, and push to `main`. The included workflow builds and publishes `docs/`.
+5. **Deploy** -- create a GitHub repository, set Pages to **GitHub Actions**, and push to `main`. The included workflow builds and publishes `docs/`. See [Deployment](DEPLOYMENT.md) for custom domains and subpaths.
 6. **Replace the example** -- use [`data/_schema.md`](data/_schema.md) and the worked records under `data/examples/` as the starting point for your domain.
 
 For a reproducible non-interactive project using the starter labels, run `node scripts/init.js ../my-knowledge-base --defaults`. The initializer refuses to overwrite an existing target directory.

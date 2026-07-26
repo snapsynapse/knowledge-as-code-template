@@ -32,7 +32,7 @@ Work is prioritized in this order:
 
 Patch releases may fix correctness, security, documentation, and generated output. Minor releases may add backward-compatible configuration or output. Breaking configuration, API, route, or MCP changes require a major version or a documented migration path.
 
-Generated HTML appearance is not a stable API. JSON API fields, entity IDs, routes, configuration keys, and MCP tool contracts are compatibility surfaces.
+Generated HTML appearance is not a stable API. JSON API fields, entity IDs, routes, configuration keys, MCP tool contracts, and the mapping keys `regulation` and `obligations` are compatibility surfaces.
 
 ## Contributions
 

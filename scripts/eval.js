@@ -2,11 +2,12 @@
 'use strict';
 
 const assert = require('assert');
+const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { parseTable } = require('./lib/data-loaders');
+const { loadMappingIndex, parseTable } = require('./lib/data-loaders');
 const { parseFrontmatter, parseYaml } = require('./lib/parsers');
 
 const ROOT = path.join(__dirname, '..');
@@ -38,6 +39,19 @@ function resetDir(dir) {
 
 function readJson(filePath) {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function snapshotTree(dir) {
+    const snapshot = {};
+    const visit = current => {
+        for (const entry of fs.readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+            const full = path.join(current, entry.name);
+            if (entry.isDirectory()) visit(full);
+            else snapshot[path.relative(dir, full)] = crypto.createHash('sha256').update(fs.readFileSync(full)).digest('hex');
+        }
+    };
+    visit(dir);
+    return snapshot;
 }
 
 function assertFile(filePath) {
@@ -186,6 +200,7 @@ function evalInitializerGoldenPath() {
 
         const expectedFiles = [
             'README.md',
+            'DEPLOYMENT.md',
             'project.yml',
             'package.json',
             'data/_schema.md',
@@ -543,6 +558,32 @@ function evalGeneratedOutputCleanup() {
     });
 }
 
+function evalFailedBuildPreservesOutput() {
+    const repo = copyRepoToTemp('kac-output-preservation-');
+    try {
+        const output = path.join(repo, 'preserved-out');
+        const initial = spawnSync(process.execPath, ['scripts/build.js'], {
+            cwd: repo,
+            encoding: 'utf8',
+            env: { ...process.env, KAC_OUTPUT_DIR: 'preserved-out' }
+        });
+        assert.strictEqual(initial.status, 0, `Initial preservation build failed:\n${initial.stdout}\n${initial.stderr}`);
+        const before = snapshotTree(output);
+
+        const primary = path.join(repo, 'data', 'examples', 'requirements', 'access-control.md');
+        replaceInFile(primary, 'group: governance', 'group: missing-group');
+        const failed = spawnSync(process.execPath, ['scripts/build.js'], {
+            cwd: repo,
+            encoding: 'utf8',
+            env: { ...process.env, KAC_OUTPUT_DIR: 'preserved-out' }
+        });
+        assert.notStrictEqual(failed.status, 0, 'Expected invalid data to fail before output cleanup.');
+        assert.deepStrictEqual(snapshotTree(output), before, 'A failed build must leave the previously generated artifact byte-identical.');
+    } finally {
+        fs.rmSync(repo, { recursive: true, force: true });
+    }
+}
+
 function evalUnsafeIdNegative() {
     const unsafeRepo = copyRepoToTemp('kac-unsafe-id-fixture-');
     try {
@@ -621,9 +662,52 @@ function evalUrlValidationAndCustomDomain() {
         });
         assert.strictEqual(result.status, 0, `Custom-domain build failed:\n${result.stdout}\n${result.stderr}`);
         assert.strictEqual(fs.readFileSync(path.join(repo, 'custom-domain-out', 'CNAME'), 'utf8'), 'reference.example.org\n');
+
+        replaceInFile(path.join(repo, 'project.yml'), 'custom_domain: "reference.example.org"', 'custom_domain: ""');
+        const transition = spawnSync(process.execPath, ['scripts/build.js'], {
+            cwd: repo,
+            encoding: 'utf8',
+            env: { ...process.env, KAC_OUTPUT_DIR: 'custom-domain-out' }
+        });
+        assert.strictEqual(transition.status, 0, `Custom-domain transition build failed:\n${transition.stdout}\n${transition.stderr}`);
+        assert.ok(!fs.existsSync(path.join(repo, 'custom-domain-out', 'CNAME')), 'Disabling a custom domain should remove the stale CNAME.');
     } finally {
         fs.rmSync(repo, { recursive: true, force: true });
     }
+
+    withTempRoot(() => {
+        const outName = '.tmp-evals/url-edge';
+        buildTo(outName, 'https://WWW.Example.COM//Catalog/%7Eteam');
+        const outRoot = path.join(ROOT, outName);
+        const sitemap = fs.readFileSync(path.join(outRoot, 'sitemap.xml'), 'utf8');
+        const robots = fs.readFileSync(path.join(outRoot, 'robots.txt'), 'utf8');
+        const feed = fs.readFileSync(path.join(outRoot, 'index.xml'), 'utf8');
+        const notFound = fs.readFileSync(path.join(outRoot, '404.html'), 'utf8');
+        const agents = readJson(path.join(outRoot, 'agents.json'));
+        const expected = 'https://example.com/Catalog/%7Eteam/';
+        assert.strictEqual(agents.site.url, expected);
+        assertIncludes(sitemap, `${expected}container/iso-27001/`);
+        assertIncludes(robots, `Sitemap: ${expected}sitemap.xml`);
+        assertIncludes(feed, expected);
+        assertIncludes(notFound, 'href="/Catalog/%7Eteam/assets/styles.css"');
+    });
+}
+
+function evalMappingParserContract() {
+    withTempRoot(() => {
+        const cases = [
+            ['missing-entry.yml', 'regulation: iso-27001\n', 'expected a mapping entry'],
+            ['missing-id.yml', '- id:\n  regulation: iso-27001\n', 'requires a non-empty id'],
+            ['unknown-key.yml', '- id: sample\n  regulaton: iso-27001\n', 'unsupported mapping key "regulaton"'],
+            ['scalar-list.yml', '- id: sample\n  obligations: access-control\n', 'must be a YAML list'],
+            ['duplicate-obligation.yml', '- id: sample\n  obligations:\n    - access-control\n    - access-control\n', 'duplicate obligation "access-control"']
+        ];
+        for (const [name, source, expected] of cases) {
+            const fixture = path.join(TMP_ROOT, name);
+            fs.writeFileSync(fixture, source);
+            assert.throws(() => loadMappingIndex(fixture), error => error.message.includes(expected), `${name} should fail with "${expected}".`);
+        }
+    });
 }
 
 function evalIdentityAndDuplicateValidation() {
@@ -756,6 +840,57 @@ function evalMcpSmoke() {
     assertIncludes(interactive.stdout, 'sources');
 }
 
+function evalMcpResponseShape() {
+    const input = [
+        { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} },
+        { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'get_framework', arguments: { id: 'iso-27001' } } },
+        { jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'get_requirement', arguments: { id: 'missing-id' } } }
+    ].map(message => JSON.stringify(message)).join('\n') + '\n';
+    const result = spawnSync(process.execPath, ['mcp-server.js'], { cwd: ROOT, encoding: 'utf8', input });
+    assert.strictEqual(result.status, 0, `MCP response-shape check failed:\n${result.stdout}\n${result.stderr}`);
+    const responses = result.stdout.trim().split('\n').map(line => JSON.parse(line));
+    assert.deepStrictEqual(responses[0].result.tools.map(tool => tool.name), [
+        'list_requirements', 'get_requirement', 'list_frameworks', 'get_framework',
+        'list_organizations', 'get_organization', 'search', 'get_matrix', 'get_mappings'
+    ]);
+    const framework = JSON.parse(responses[1].result.content[0].text);
+    for (const internal of ['_file', '_body', 'file', 'content']) {
+        assert.ok(!Object.prototype.hasOwnProperty.call(framework, internal), `MCP entity response should not expose ${internal}.`);
+    }
+    assert.ok(framework.provisions.some(provision => provision.sources?.length && provision.talking_point));
+    assert.strictEqual(responses[2].result.isError, true);
+    const missing = JSON.parse(responses[2].result.content[0].text);
+    assertIncludes(missing.error, 'not found: missing-id');
+}
+
+function evalGeneratedArtifactCleanliness() {
+    const forbiddenNames = new Set(['.DS_Store', 'Thumbs.db', 'CNAME']);
+    const tracked = runCommand('git', ['ls-files', '-z', 'demo']);
+    assert.strictEqual(tracked.status, 0, `Could not enumerate tracked demo files:\n${tracked.stdout}\n${tracked.stderr}`);
+    const files = tracked.stdout.split('\0').filter(Boolean).map(file => path.join(ROOT, file));
+    for (const file of files) {
+        assert.ok(!forbiddenNames.has(path.basename(file)), `Tracked demo contains forbidden artifact: ${path.relative(ROOT, file)}`);
+        assert.ok(!/\.(tmp|bak|orig)$/.test(file), `Tracked demo contains a temporary artifact: ${path.relative(ROOT, file)}`);
+        if (/\.(html|json|xml|txt)$/.test(file)) {
+            const content = fs.readFileSync(file, 'utf8');
+            assert.ok(!/your-org|your-repo|https:\/\/example\.com/.test(content), `Tracked demo contains placeholder identity: ${path.relative(ROOT, file)}`);
+        }
+    }
+}
+
+function evalWorkflowContract() {
+    const workflow = fs.readFileSync(path.join(ROOT, '.github/workflows/build.yml'), 'utf8');
+    for (const required of [
+        "node: ['18', '20']",
+        'KAC_OUTPUT_DIR: demo',
+        'KAC_SITE_URL: https://knowledge-as-code.com/demo/',
+        'KAC_REPO_URL: https://github.com/snapsynapse/knowledge-as-code-template',
+        'Verify generated outputs are current',
+        'Audit canonical root landing',
+        'Audit canonical demo deployment'
+    ]) assertIncludes(workflow, required);
+}
+
 function evalMcpNotificationSilence() {
     const notification = '{"jsonrpc":"2.0","method":"unknown","params":{}}\n';
     const result = spawnSync(process.execPath, ['mcp-server.js'], {
@@ -778,6 +913,7 @@ function evalDocsConsistency() {
     const adoption = fs.readFileSync(path.join(ROOT, 'ADOPTION.md'), 'utf8');
     const projectContext = fs.readFileSync(path.join(ROOT, 'PROJECT_CONTEXT.md'), 'utf8');
     const schema = fs.readFileSync(path.join(ROOT, 'data/_schema.md'), 'utf8');
+    const deployment = fs.readFileSync(path.join(ROOT, 'DEPLOYMENT.md'), 'utf8');
 
     assertIncludes(readme, 'node scripts/init.js ../my-knowledge-base');
     assertIncludes(readme, '`docs/` is transient local output');
@@ -794,6 +930,9 @@ function evalDocsConsistency() {
     assertIncludes(schema, '`regulation` and `obligations` are stable 1.x wire keys');
     assertIncludes(buildWorkflow, "node: ['18', '20']");
     assertIncludes(buildWorkflow, 'KAC_REPO_URL: https://github.com/snapsynapse/knowledge-as-code-template');
+    assertIncludes(readme, '[Deployment profiles and environment overrides](DEPLOYMENT.md)');
+    assertIncludes(deployment, '`KAC_LINK_BASE_PATH`');
+    assertIncludes(maintenance, '`regulation` and `obligations`');
 }
 
 const evals = [
@@ -811,17 +950,22 @@ const evals = [
     ['output sanitization', evalOutputSanitization],
     ['unsafe output dir guard', evalUnsafeOutputDirGuard],
     ['generated output cleanup', evalGeneratedOutputCleanup],
+    ['failed build preserves output', evalFailedBuildPreservesOutput],
     ['unsafe ID negative', evalUnsafeIdNegative],
     ['status contrast CSS', evalStatusContrastCss],
     ['URL path stability', evalUrlPathStability],
     ['URL validation and custom domain', evalUrlValidationAndCustomDomain],
+    ['mapping parser contract', evalMappingParserContract],
     ['identity and duplicate validation', evalIdentityAndDuplicateValidation],
     ['public surface', evalPublicSurface],
     ['manifest freshness', evalManifestFreshness],
     ['changelog release tags', evalChangelogReleaseTags],
     ['HTML snapshots', evalHtmlSnapshots],
     ['MCP smoke', evalMcpSmoke],
+    ['MCP response shape', evalMcpResponseShape],
     ['MCP notification silence', evalMcpNotificationSilence],
+    ['generated artifact cleanliness', evalGeneratedArtifactCleanliness],
+    ['workflow contract', evalWorkflowContract],
     ['docs consistency', evalDocsConsistency]
 ];
 

@@ -15,6 +15,7 @@ pattern.
 ## [Unreleased]
 
 ### Changed
+- Added deployment profiles and troubleshooting guidance, strict mapping-shape parsing, and regression coverage for output preservation, custom-domain transitions, URL edge cases, MCP response shape, generated-artifact cleanliness, and CI workflow contracts.
 - Made generated URL metadata and 404 navigation path-aware for subpath deployments.
 - Made internal-link checking deployment-base-aware for subpath output.
 - Made custom-domain CNAME generation explicit instead of deriving it from the published URL.

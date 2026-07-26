@@ -166,7 +166,7 @@ The mapping file connects containers to primaries through secondary (provision) 
     - access-control
 ```
 
-`regulation` and `obligations` are stable 1.x wire keys; their field names do not change with the display labels in `project.yml`. The `regulation` value is a container ID. Each `obligations` value is a primary ID.
+`regulation` and `obligations` are stable 1.x wire keys; their field names do not change with the display labels in `project.yml`. The `regulation` value is a container ID. Each `obligations` value is a primary ID. Supported mapping keys are `id`, `regulation`, `authority`, `source_file`, `source_heading`, and `obligations`. Unknown or duplicate keys, scalar `obligations`, and duplicate obligation IDs are rejected.
 
 `source_file` is informational — the build script resolves container files by `regulation` ID, not this path. It is useful for documentation tooling and traceability. If included, use the path relative to the repo root and match your configured `entities.container.directory`.
 

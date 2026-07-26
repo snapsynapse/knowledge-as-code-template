@@ -47,8 +47,13 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:e68fadd2abf5c5e404db827a39bd7c2f2f292d1f2eb6ddf9875c68f1c90ec941
+    hash: sha256:050155c1eed7241f8d916c647a0f13a9ce57681d48cbe266f0ff49c4d35ede2c
     note: Template overview
+
+  - path: DEPLOYMENT.md
+    role: protocol
+    hash: sha256:354540763d70739540da1d4bdf31f2b2ebe6fc26fa063baf08ad9f7b7f335506
+    note: Deployment profiles, environment overrides, and troubleshooting
 
   - path: assistant-guide.txt
     role: guidecheck
@@ -77,7 +82,7 @@ files:
 
   - path: scripts/init.js
     role: tooling
-    hash: sha256:4c8846a88e5cbd1126ce9e0ef88d9d376ca9d80cac5d57b72ade8c42cfd2ef01
+    hash: sha256:e9d42face450abb17437edb78af8927dc61c4b917b267174e6fd66137b61098b
     note: Clean-project initializer
 
   - path: scripts/validate.js
@@ -97,7 +102,7 @@ files:
 
   - path: scripts/lib/data-loaders.js
     role: tooling
-    hash: sha256:5c230390fce07ff5109d3842d6778ac3b87ca2c785843776e0eaecf4d4d95e14
+    hash: sha256:dee9a214f941fab38a0ee0dfb8b68ce3f68ad205360eff9dacd881cad3525bc1
     note: Canonical entity, mapping, timeline, and provision loading
 
   - path: scripts/lib/parsers.js
@@ -107,7 +112,7 @@ files:
 
   - path: scripts/eval.js
     role: tooling
-    hash: sha256:195e1394d3fe193db7cc712088e989b15000342188fc33573db44c61c7989c04
+    hash: sha256:6b9bcb6254884340cb0186c6cac73c34fdae57b07f44aea5a696cf44220e672e
     note: Behavioral and security regression suite
 
   - path: mcp-server.js

@@ -161,7 +161,7 @@ node scripts/verify.js
 node scripts/check-links.js
 \`\`\`
 
-Open \`docs/index.html\` after building. To publish, set GitHub Pages to **GitHub Actions** and push to \`main\`.
+Open \`docs/index.html\` after building. To publish, set GitHub Pages to **GitHub Actions** and push to \`main\`. See \`DEPLOYMENT.md\` for custom-domain and subpath profiles.
 
 ## Edit the reference
 
@@ -314,6 +314,7 @@ function generateProject(targetDir, values) {
         copyFile('mcp-server.js', stageDir);
         copyFile('mcp.json', stageDir);
         copyFile('LICENSE', stageDir);
+        copyFile('DEPLOYMENT.md', stageDir);
         copyFile('.github/workflows/verify.yml', stageDir);
 
         fs.writeFileSync(path.join(stageDir, 'project.yml'), customizeConfig(values));

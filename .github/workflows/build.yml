@@ -95,20 +95,24 @@ jobs:
         uses: snapsynapse/skill-a11y-audit/.github/actions/scan@main
         with:
           serve-path: ./
-          sitemap: http://localhost:8088/tests/fixtures/a11y-root-sitemap.xml
+          port: 8089
+          sitemap: http://localhost:8089/tests/fixtures/a11y-root-sitemap.xml
           sitemap-find: https://knowledge-as-code.com
-          sitemap-replace: http://localhost:8088
+          sitemap-replace: http://localhost:8089
           fail-on: errors
+          artifact-name: a11y-root-results
 
       - name: Audit canonical demo deployment
         if: github.repository == 'snapsynapse/knowledge-as-code-template'
         uses: snapsynapse/skill-a11y-audit/.github/actions/scan@main
         with:
           serve-path: ./demo
-          sitemap: http://localhost:8088/sitemap.xml
+          port: 8090
+          sitemap: http://localhost:8090/sitemap.xml
           sitemap-find: https://knowledge-as-code.com/demo
-          sitemap-replace: http://localhost:8088
+          sitemap-replace: http://localhost:8090
           fail-on: errors
+          artifact-name: a11y-demo-results
 
 # GitHub Pages serves directly from `main` branch root on this canonical repo.
 # Template-created repositories use pages.yml to build and deploy docs/ after

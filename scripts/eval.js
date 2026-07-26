@@ -887,7 +887,11 @@ function evalWorkflowContract() {
         'KAC_REPO_URL: https://github.com/snapsynapse/knowledge-as-code-template',
         'Verify generated outputs are current',
         'Audit canonical root landing',
-        'Audit canonical demo deployment'
+        'Audit canonical demo deployment',
+        'port: 8089',
+        'artifact-name: a11y-root-results',
+        'port: 8090',
+        'artifact-name: a11y-demo-results'
     ]) assertIncludes(workflow, required);
 }
 

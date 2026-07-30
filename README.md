@@ -63,7 +63,7 @@ This canonical repository tracks only the generated `demo/` published at `https:
 - **Dark/light theme** — with persistence
 - **Client-side search** — lazy-loaded, keyboard-navigable
 - **Sortable tables** — click any column header to sort
-- **Local MCP server** — optional read-only agent access through `mcp-server.js`; it runs separately from the static build
+- **Local MCP server** — optional read-only agent access through `mcp-server.js`; it runs separately from the static build. Dual-era: speaks MCP spec 2026-07-28 (stateless, `server/discover`, cacheable tool lists) and legacy 2024-11-05, so generated projects work with both current and older MCP clients
 - **Discovery files** — llms.txt, agents.json, RSS for machine consumption
 - **Safe generated output** — generated links, CSS tokens, and client-side comparison labels are normalized or escaped
 - **Subpath-safe deployment** — canonical, discovery, 404, and asset URLs preserve a configured path such as `/demo/`

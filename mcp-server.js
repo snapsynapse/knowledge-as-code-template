@@ -307,22 +307,46 @@ function handleToolCall(name, args) {
 // JSON-RPC / MCP protocol
 // ---------------------------------------------------------------------------
 
+// Dual-era server (MCP spec revision 2026-07-28): a legacy client selects the
+// 2024-11-05 semantics via `initialize`; a modern client carries per-request
+// `_meta` and is served statelessly. Both eras run concurrently in-process.
+const SUPPORTED_PROTOCOL_VERSIONS = ['2026-07-28', '2024-11-05'];
+// Static data regenerated on a known cadence — safe to cache for an hour.
+const CACHE_TTL_MS = 3600000;
+const CACHE_SCOPE = 'public';
+
 function makeResponse(id, result) {
     return JSON.stringify({ jsonrpc: '2.0', id, result });
 }
 
-function makeError(id, code, message) {
-    return JSON.stringify({ jsonrpc: '2.0', id, error: { code, message } });
+function makeError(id, code, message, data) {
+    const error = { code, message };
+    if (data !== undefined) error.data = data;
+    return JSON.stringify({ jsonrpc: '2.0', id, error });
 }
 
 function handleMessage(msg) {
     const { id, method, params } = msg;
     const hasId = Object.prototype.hasOwnProperty.call(msg, 'id');
 
+    // Modern requests declare their protocol version per request. Unknown
+    // versions are rejected; requests without `_meta` (legacy handshake or
+    // bare requests) are served exactly as before.
+    const requestedVersion = params?._meta?.['io.modelcontextprotocol/protocolVersion'];
+    if (requestedVersion !== undefined && !SUPPORTED_PROTOCOL_VERSIONS.includes(requestedVersion)) {
+        if (!hasId) return null;
+        return makeError(id, -32022, 'Unsupported protocol version', {
+            supported: SUPPORTED_PROTOCOL_VERSIONS,
+            requested: requestedVersion
+        });
+    }
+
     if (method === 'initialize') {
         if (!hasId) return null;
+        const clientVersion = params?.protocolVersion;
         return makeResponse(id, {
-            protocolVersion: '2024-11-05',
+            resultType: 'complete',
+            protocolVersion: SUPPORTED_PROTOCOL_VERSIONS.includes(clientVersion) ? clientVersion : '2024-11-05',
             capabilities: { tools: {} },
             serverInfo: {
                 name: config.name || 'Knowledge Base MCP',
@@ -335,9 +359,33 @@ function handleMessage(msg) {
         return null; // notification, no response
     }
 
+    if (method === 'server/discover') {
+        if (!hasId) return null;
+        const result = {
+            resultType: 'complete',
+            supportedVersions: SUPPORTED_PROTOCOL_VERSIONS,
+            capabilities: { tools: {} },
+            _meta: {
+                'io.modelcontextprotocol/serverInfo': {
+                    name: config.name || 'Knowledge Base MCP',
+                    version: packageMetadata.version
+                }
+            },
+            ttlMs: CACHE_TTL_MS,
+            cacheScope: CACHE_SCOPE
+        };
+        if (config.description) result.instructions = config.description;
+        return makeResponse(id, result);
+    }
+
     if (method === 'tools/list') {
         if (!hasId) return null;
-        return makeResponse(id, { tools: getToolDefinitions() });
+        return makeResponse(id, {
+            resultType: 'complete',
+            tools: getToolDefinitions(),
+            ttlMs: CACHE_TTL_MS,
+            cacheScope: CACHE_SCOPE
+        });
     }
 
     if (method === 'tools/call') {
@@ -345,7 +393,7 @@ function handleMessage(msg) {
         const toolName = params?.name;
         const toolArgs = params?.arguments || {};
         const result = handleToolCall(toolName, toolArgs);
-        return makeResponse(id, result);
+        return makeResponse(id, { resultType: 'complete', ...result });
     }
 
     if (!hasId) return null;

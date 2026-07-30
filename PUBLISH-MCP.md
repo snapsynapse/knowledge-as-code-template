@@ -14,7 +14,8 @@ This guide captures the exact prep work, in the order it has to happen.
   using only `a-z`, `0-9`, and single hyphens. Run `node scripts/validate.js`
   before publishing so unsafe IDs are rejected before they become MCP-visible
   data.
-- `node mcp-server.js` works locally — pipe `{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}`
+- `node mcp-server.js` works locally — pipe
+  `{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"smoke-test","version":"0.0.0"},"io.modelcontextprotocol/clientCapabilities":{}}}}`
   into it and you should get back your tools.
 - An npm account ([npmjs.com](https://npmjs.com/signup)) with 2FA enabled.
 - A GitHub account that matches the org/user owning the repo.
@@ -99,10 +100,19 @@ add it to `files` and re-run. If anything is included that shouldn't be (a
 Then test that the MCP server still runs after the package.json changes:
 
 ```bash
-echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | node mcp-server.js
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"smoke-test","version":"0.0.0"},"io.modelcontextprotocol/clientCapabilities":{}}}}' | node mcp-server.js
 ```
 
 You should get back your tools.
+
+That smoke test is the *stateless* form from the 2026-07-28 spec revision: no
+`initialize` handshake, the protocol version rides in each request's `_meta`,
+and `server/discover` is the new MUST-implement discovery method. The server
+in this template is dual-era — a legacy client that opens with `initialize`
+still gets the 2024-11-05 handshake it expects, for as long as the deprecation
+window runs, while modern clients are served statelessly in the same process.
+A `_meta` protocol version the server doesn't support gets error `-32022`
+back, not a guess; a request with no `_meta` at all is served as legacy.
 
 The server follows JSON-RPC notification semantics. Messages without an `id`
 are notifications and do not receive responses, including unknown-method
@@ -129,7 +139,7 @@ Verify:
 
 ```bash
 npm view your-package-name version
-npx -y your-package-name <<< '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+npx -y your-package-name <<< '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"smoke-test","version":"0.0.0"},"io.modelcontextprotocol/clientCapabilities":{}}}}'
 ```
 
 A cold install + tools list confirms the package is real.

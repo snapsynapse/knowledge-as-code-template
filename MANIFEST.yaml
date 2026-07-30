@@ -47,7 +47,7 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:c2e411e2234d7cdec0b89f42af402919f62633e7fd600399abf47e27307362e9
+    hash: sha256:dfebb03cd3f65629151a36d66eb7ed84a1918b5208e2ea6f6b2c41a4870b2141
     note: Template overview
 
   - path: favicon.svg
@@ -122,12 +122,12 @@ files:
 
   - path: scripts/eval.js
     role: tooling
-    hash: sha256:1f441afee32a8f0ad72986cba5acd227a67400c0bbff53655ce3c0a5fa8db4a7
+    hash: sha256:c2d73494bb777a6a23a78893ac38162d99bf252620d748ca27e5a9b504062ea9
     note: Behavioral and security regression suite
 
   - path: mcp-server.js
     role: tooling
-    hash: sha256:7a6e590449baa4eaff376e8a23d5bedbcf8a546d1a75d149287bc0c13517840f
+    hash: sha256:47dbdf6fd84013df6407ed538c72816d758c4531b65be11b1d95861e1d7467da
     note: Read-only MCP interface over canonical project data
 
   - path: scripts/check-links.js

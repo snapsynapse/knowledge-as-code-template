@@ -854,6 +854,7 @@ function evalMcpSmoke() {
     assertIncludes(interactive.stdout, 'iso-27001');
     assertIncludes(interactive.stdout, 'talking_point');
     assertIncludes(interactive.stdout, 'sources');
+    assertIncludes(interactive.stdout, 'supportedVersions');
 }
 
 function evalMcpResponseShape() {
@@ -877,6 +878,31 @@ function evalMcpResponseShape() {
     assert.strictEqual(responses[2].result.isError, true);
     const missing = JSON.parse(responses[2].result.content[0].text);
     assertIncludes(missing.error, 'not found: missing-id');
+}
+
+function evalMcpDualEraContract() {
+    const meta = {
+        'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+        'io.modelcontextprotocol/clientInfo': { name: 'eval', version: '1.0.0' },
+        'io.modelcontextprotocol/clientCapabilities': {}
+    };
+    const input = [
+        { jsonrpc: '2.0', id: 1, method: 'server/discover', params: { _meta: meta } },
+        { jsonrpc: '2.0', id: 2, method: 'tools/list', params: { _meta: meta } },
+        { jsonrpc: '2.0', id: 3, method: 'tools/list', params: { _meta: { 'io.modelcontextprotocol/protocolVersion': '1900-01-01' } } }
+    ].map(message => JSON.stringify(message)).join('\n') + '\n';
+    const result = spawnSync(process.execPath, ['mcp-server.js'], { cwd: ROOT, encoding: 'utf8', input });
+    assert.strictEqual(result.status, 0, `MCP dual-era check failed:\n${result.stdout}\n${result.stderr}`);
+    const responses = result.stdout.trim().split('\n').map(line => JSON.parse(line));
+    const discover = responses[0].result;
+    assert.strictEqual(discover.resultType, 'complete');
+    assert.ok(discover.supportedVersions.includes('2026-07-28'), 'server/discover must advertise 2026-07-28.');
+    assert.ok(discover.capabilities.tools, 'server/discover must advertise the tools capability.');
+    const list = responses[1].result;
+    assert.strictEqual(typeof list.ttlMs, 'number', 'tools/list must carry a numeric ttlMs.');
+    assert.strictEqual(list.cacheScope, 'public');
+    assert.strictEqual(responses[2].error.code, -32022);
+    assert.ok(Array.isArray(responses[2].error.data.supported), 'UnsupportedProtocolVersionError must list supported versions.');
 }
 
 function evalGeneratedArtifactCleanliness() {
@@ -1005,6 +1031,7 @@ const evals = [
     ['HTML snapshots', evalHtmlSnapshots],
     ['MCP smoke', evalMcpSmoke],
     ['MCP response shape', evalMcpResponseShape],
+    ['MCP dual-era contract', evalMcpDualEraContract],
     ['MCP notification silence', evalMcpNotificationSilence],
     ['generated artifact cleanliness', evalGeneratedArtifactCleanliness],
     ['workflow contract', evalWorkflowContract],

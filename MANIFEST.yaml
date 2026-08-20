@@ -82,7 +82,7 @@ files:
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:da80cae7d6e661072543189f5ed841b9ea73f3f283508b4b992aaa0118bb18a2
+    hash: sha256:41fbc565692823f1cb5fbd2002b61c616d06835851cda1d4b01be88c41f35eb3
     note: Static site generator
 
   - path: scripts/assets/favicon.svg

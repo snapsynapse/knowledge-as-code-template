@@ -397,7 +397,9 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
     const siteName = config.name || 'Knowledge Base';
     const siteUrl = config.url;
     const desc = description || config.description || '';
-    const canonical = canonicalPath ? `<link rel="canonical" href="${siteUrl}${canonicalPath}">` : '';
+    // The home page passes an empty canonicalPath, which is a valid route, not a
+    // missing one. Guard on undefined so `/` keeps its self-referential canonical.
+    const canonical = canonicalPath !== undefined ? `<link rel="canonical" href="${siteUrl}${canonicalPath}">` : '';
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -648,7 +650,7 @@ function generateContainersPage(config, data, configCSS) {
         </script>
     `;
 
-    return renderPageShell(config, { title: cPlural, activePage: 'containers', content, canonicalPath: 'containers.html', configCSS });
+    return renderPageShell(config, { title: cPlural, activePage: 'containers', content, canonicalPath: 'containers.html', description: `All ${containers.length} ${cPlural.toLowerCase()} tracked in ${config.name || 'this reference'}, with status, effective date, and provision count.`, configCSS });
 }
 
 function generatePrimariesPage(config, data, configCSS) {
@@ -678,7 +680,7 @@ function generatePrimariesPage(config, data, configCSS) {
         }).join('\n')}
     `;
 
-    return renderPageShell(config, { title: pPlural, activePage: 'primaries', content, canonicalPath: 'primaries.html', configCSS });
+    return renderPageShell(config, { title: pPlural, activePage: 'primaries', content, canonicalPath: 'primaries.html', description: `All ${primaries.length} ${pPlural.toLowerCase()} tracked in ${config.name || 'this reference'}, grouped by category and linked to the ${cNameLower}s that cover them.`, configCSS });
 }
 
 function generateMatrixPage(config, data, configCSS) {
@@ -711,7 +713,7 @@ function generateMatrixPage(config, data, configCSS) {
         </div>
     `;
 
-    return renderPageShell(config, { title: 'Coverage Matrix', activePage: 'matrix', content, canonicalPath: 'matrix.html', configCSS });
+    return renderPageShell(config, { title: 'Coverage Matrix', activePage: 'matrix', content, canonicalPath: 'matrix.html', description: `Coverage matrix showing which of ${containers.length} ${(config.entities?.container?.plural || 'containers').toLowerCase()} address each of ${primaries.length} ${(config.entities?.primary?.plural || 'primaries').toLowerCase()}.`, configCSS });
 }
 
 function generateTimelinePage(config, data, configCSS) {
@@ -746,7 +748,7 @@ function generateTimelinePage(config, data, configCSS) {
         <p style="color: var(--text-secondary); margin-bottom: 1rem;">Key dates. Solid dots are past; hollow dots are future.</p>
         <div class="timeline">${html}</div>`;
 
-    return renderPageShell(config, { title: 'Timeline', activePage: 'timeline', content, canonicalPath: 'timeline.html', configCSS });
+    return renderPageShell(config, { title: 'Timeline', activePage: 'timeline', content, canonicalPath: 'timeline.html', description: `Chronological timeline of ${events.length} milestones across ${containers.length} ${(config.entities?.container?.plural || 'containers').toLowerCase()}, with past and upcoming effective dates.`, configCSS });
 }
 
 function generateComparePage(config, data, configCSS) {
@@ -798,7 +800,7 @@ function generateComparePage(config, data, configCSS) {
         </script>
     `;
 
-    return renderPageShell(config, { title: 'Compare', activePage: 'compare', content, canonicalPath: 'compare.html', configCSS });
+    return renderPageShell(config, { title: 'Compare', activePage: 'compare', content, canonicalPath: 'compare.html', description: `Compare any two or three of ${containers.length} ${cPlural.toLowerCase()} side by side to see where their coverage overlaps and diverges.`, configCSS });
 }
 
 function generateAboutPage(config, data, configCSS) {
@@ -827,7 +829,7 @@ function generateAboutPage(config, data, configCSS) {
         <p>See the <a href="${escapeHTML(safeURL(config.repo))}">repository</a> for contribution guidelines.</p>
     </div>`;
 
-    return renderPageShell(config, { title: 'About', activePage: 'about', content, canonicalPath: 'about.html', configCSS });
+    return renderPageShell(config, { title: 'About', activePage: 'about', content, canonicalPath: 'about.html', description: `How ${config.name || 'this reference'} is sourced, verified, and maintained: ${containers.length} ${cPlural.toLowerCase()}, ${primaries.length} ${pPlural.toLowerCase()}, and ${totalProvisions} ${secName.toLowerCase()}s from ${authorities.length} ${authName.toLowerCase()}${authorities.length !== 1 ? 's' : ''}.`, configCSS });
 }
 
 // ---------------------------------------------------------------------------
@@ -912,7 +914,7 @@ function generateAuthorityDetail(config, auth, data, configCSS) {
         </tbody></table>` : '<p style="color:var(--text-secondary);">None tracked.</p>'}
     `;
 
-    return renderBridgeShell(config, { title: auth.name || humanizeId(auth.id), depth: 2, content, canonicalPath: `authority/${pathSegment(auth.id, 'Authority ID')}/`, configCSS });
+    return renderBridgeShell(config, { title: auth.name || humanizeId(auth.id), depth: 2, content, canonicalPath: `authority/${pathSegment(auth.id, 'Authority ID')}/`, description: `${auth.name || humanizeId(auth.id)} — ${authContainers.length} ${(authContainers.length === 1 ? (config.entities?.container?.name || 'container') : (config.entities?.container?.plural || 'containers')).toLowerCase()} published by this ${(config.entities?.authority?.name || 'authority').toLowerCase()}.`, configCSS });
 }
 
 // ---------------------------------------------------------------------------
@@ -971,7 +973,7 @@ function generateCompareBridge(config, cA, cB, comparison, data, configCSS) {
         </div>
     `;
 
-    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 2, content, canonicalPath: `compare/${pathSegment(cA.id, 'Container ID')}-vs-${pathSegment(cB.id, 'Container ID')}/`, configCSS, noindex: comparison.shared_count === 0 });
+    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 2, content, canonicalPath: `compare/${pathSegment(cA.id, 'Container ID')}-vs-${pathSegment(cB.id, 'Container ID')}/`, description: `${cA.name} vs ${cB.name}: ${comparison.shared_count} shared ${(comparison.shared_count === 1 ? (config.entities?.primary?.name || 'primary') : (config.entities?.primary?.plural || 'primaries')).toLowerCase()} and where the two diverge.`, configCSS, noindex: comparison.shared_count === 0 });
 }
 
 function generateAppliesToBridge(config, scopeValue, data, configCSS) {
@@ -990,7 +992,7 @@ function generateAppliesToBridge(config, scopeValue, data, configCSS) {
         <div style="margin-top: 2rem; text-align: center;"><a href="../../containers.html" onclick="passTheme(this)" class="bridge-cta">All ${escapeHTML((config.entities?.container?.plural || 'containers').toLowerCase())}</a></div>
     `;
 
-    return renderBridgeShell(config, { title: `${scopeValue}`, depth: 2, content, canonicalPath: `applies-to/${slugify(scopeValue)}/`, configCSS, noindex: scopeContainers.length === 0 });
+    return renderBridgeShell(config, { title: `${scopeValue}`, depth: 2, content, canonicalPath: `applies-to/${slugify(scopeValue)}/`, description: `${scopeContainers.length} ${(scopeContainers.length === 1 ? (config.entities?.container?.name || 'container') : (config.entities?.container?.plural || 'containers')).toLowerCase()} that ${scopeContainers.length === 1 ? 'applies' : 'apply'} to ${scopeValue}, with status and effective dates.`, configCSS, noindex: scopeContainers.length === 0 });
 }
 
 // ---------------------------------------------------------------------------

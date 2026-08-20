@@ -105,6 +105,49 @@ Run after the Pages deployment completed and before any console action.
 | Negative routes returning 404 without redirect | 5 of 5 |
 | Host redirects to bare HTTPS in one hop | 2 of 2 |
 
+## Console actions attempted
+
+Two accepted, one rejected. All performed after the production verification
+above passed against the deployed commit.
+
+| Accepted at | Action and target | Visible confirmation | Result class |
+|---|---|---|---|
+| 2026-08-20 | Submit sitemap `https://knowledge-as-code.com/demo/sitemap.xml` | Toast "Sitemap submitted successfully"; table row Submitted 2026-08-20, Last read 2026-08-20, Status Success, Discovered pages 22 | Accepted |
+| 2026-08-20 | Refresh sitemap `https://knowledge-as-code.com/sitemap.xml` | Toast "Sitemap submitted successfully"; table row Submitted 2026-08-20, Last read 2026-08-20, Status Success, Discovered pages 2 | Accepted |
+| 2026-08-20 | Submit sitemap using bare path `demo/sitemap.xml` | Error "Invalid sitemap address. Please enter a valid path to a sitemap in your site." | Rejected, superseded by the full-URL submission above |
+
+Confirmations were read from the rendered sitemap table, not inferred from the
+click. The rejected attempt changed no console state.
+
+## Evidence completeness
+
+Distinguishing missing, not performed, and zero:
+
+| Item | State |
+|---|---|
+| Active validation batches | Zero. All four not-indexed reason groups showed `Validation: Not Started`. Observed, genuinely none. |
+| URL Inspection | Not performed. No URL was inspected or submitted for indexing this session. Distinct from zero. |
+| Enhancement and structured-data reports | Not observed. The property's left navigation exposed no enhancement report section during this session, consistent with the demo tree carrying no JSON-LD. Unknown rather than zero. |
+| Video reports | Not applicable. Both sitemaps report 0 discovered videos and the site publishes none. |
+| Provider exports | Absent by choice. No export was downloaded. UI evidence only. |
+| Bing Webmaster Tools | Missing. Property not configured. |
+
+## Classification summary
+
+| Finding | Class |
+|---|---|
+| `/demo/` emitted no `rel=canonical` while present in the sitemap | Defect, fixed in `93feb3d` |
+| Five bridge pages carried an empty meta description | Defect, fixed in `93feb3d` |
+| Seven list pages shared one identical meta description | Defect, fixed in `93feb3d` |
+| `/demo/` listed in two sitemaps with conflicting `lastmod` | Defect, fixed in `93feb3d` |
+| `demo/sitemap.xml` never submitted; root sitemap last read 2026-04-17 | Defect, resolved by the two accepted console actions |
+| Redirect, `/index.html`, retired-route, and raw `.md` rows | Expected noise |
+| `/demo/primary/data-quality/index.html` still indexed while returning 404 | Pending recrawl |
+| Two retired root routes still listed as crawled | Pending recrawl |
+| Core Web Vitals reporting insufficient field data | External limitation |
+| Whether `/.well-known/assistant-guide.txt` should remain a sitemap entry | Policy decision, unresolved |
+| No repository search contract; no JSON-LD on bridge pages | Deferred work, tracked in `ops/search-indexing.md` |
+
 ## Next review
 
 2026-08-27 or later. Re-read the Pages report and confirm `/demo/*` URLs have

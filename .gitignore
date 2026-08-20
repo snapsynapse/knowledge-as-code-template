@@ -41,3 +41,9 @@ venv/
 # --- portfolio baseline (2026-07-04): transient dirs ---
 handoffs/
 working/
+
+# --- search-property private artifacts (2026-08-20) ---
+# Authenticated browser artifacts and raw provider exports never enter Git.
+# Sanitized, reviewable evidence lives in tracked ops/search/ instead.
+.playwright-mcp/
+.search-evidence-private/

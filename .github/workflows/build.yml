@@ -52,6 +52,10 @@ jobs:
       - name: Run eval suite
         run: node scripts/eval.js
 
+      - name: Run offline search contract
+        if: github.repository == 'snapsynapse/knowledge-as-code-template'
+        run: node scripts/check-search.mjs
+
       - name: Verify generated outputs are current
         if: github.repository == 'snapsynapse/knowledge-as-code-template'
         run: |

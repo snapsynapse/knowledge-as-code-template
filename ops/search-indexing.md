@@ -165,7 +165,8 @@ types. No active validation batches.
 
 Open items by class: two `pending recrawl` rows for `data-quality` URLs, one
 `policy decision` on the assistant-guide surfaces, one `external limitation` on
-Core Web Vitals, two deferred engineering tasks.
+Core Web Vitals. Both deferred engineering tasks landed on 2026-08-28; see
+"Deferred work" below.
 
 ## Console action ledger
 
@@ -215,53 +216,54 @@ considering any further console action.
 
 ## Deferred work
 
-### Repository search contract
+Both tasks below were implemented on 2026-08-28. The descriptions are kept as
+the record of what was specified and how the implementation differed.
 
-No offline or production search contract exists here. All five defects fixed on
-2026-08-20 were found by hand and would have been caught deterministically by
-one.
+### Repository search contract — done 2026-08-28
 
-The skill ships v4 templates and a scaffolder. Treat the skill as read-only and
-run its scaffolder from its installed location:
+Scaffolded from portfolio-search-indexing-audit v5 (contract v4) into
+`scripts/check-search.mjs`, `scripts/check-production-search.mjs`, and
+`search-audit.config.json`. The offline check is wired into `build.yml`
+(canonical repository only); the production check runs from
+`.github/workflows/production-search.yml` on release publish and manual
+dispatch.
 
-```bash
-node ~/.claude/skills/portfolio-search-indexing-audit/scripts/scaffold-search-contract.mjs --repo="$PWD" --origin=https://knowledge-as-code.com/ --output=demo
-```
+Configuration differs from the original sketch in one way: `outputDir` is `.`
+(the repository root, which is the deployed tree on this property), not
+`demo/`. Both sitemaps are listed, so the hand-written root landing and the
+generated demo are asserted by the same run. All five minimum assertions from
+the sketch are active, plus: JSON-LD required and parseable on every sitemap
+page, `article:modified_time` and JSON-LD `dateModified` equal to sitemap
+`lastmod` on both container detail routes, orphan detection, required machine
+surfaces, and expected-noindex enforcement on both 404 pages.
 
-Then configure for this repository's split layout, which the default scaffold
-does not anticipate:
-- Two sitemaps, not one. `outputDir` should point at `demo/`, and the hand-written root landing needs its own assertions.
-- Expected 404s: `/docs/`, the retired root routes, and both `data-quality` paths.
-- Required machine surfaces: `/.well-known/assistant-guide.txt`, `/llms.txt`, `/demo/agents.json`, `/demo/api/v1/index.json`.
-- Do not require JSON-LD globally. Today only the landing page has it. Require it on `/` only, until the bridge-page work below lands.
+Local adaptations to the vendored checker (documented in its header):
+1. Internal links resolve against the linking page's URL because generated
+   pages use page-relative hrefs; `/index.html` normalizes to `/`.
+2. `nonHtmlSitemapPaths` (the assistant guide, still an open policy decision)
+   are checked for existence only.
+3. `thinPageExemptions` covers `^/demo/`: the demo is a deliberately small
+   teaching fixture and cannot meet a 120-word floor. The root landing keeps
+   the floor.
 
-Minimum assertions, being exactly those that would have caught this round:
-1. Every sitemap page has a `rel=canonical` exactly equal to its sitemap `loc`. This one matters most: the home page regressed precisely because an empty path is falsy.
-2. Every sitemap page has a non-empty `meta description`.
-3. Descriptions are unique across sitemap pages.
-4. No URL appears in more than one sitemap.
-5. Every noindex page is absent from every sitemap.
+### JSON-LD on bridge pages — done 2026-08-28
 
-Wire only the offline check into `build.yml`. Keep the production check
-release-triggered. Note the repository-wide validators: `scripts/eval.js` and
-`validate-hashes.sh` inspect tracked files, so stage new files with `git add -N`
-before rerunning them, and update `MANIFEST.yaml` with
-`./scripts/validate-hashes.sh --update` after changing any hashed file.
+Every generated page now carries structured data; the contract asserts it.
+Mappings as implemented: container detail `CreativeWork` with `dateModified`
+from the freshest container date (last_verified / effective / timeline) and
+`sameAs` to the official source; primary detail `DefinedTerm` inside the
+reference-wide `DefinedTermSet`; primaries index the `DefinedTermSet` itself;
+requires bridge `QAPage` with `Question`/`Answer`; compare bridge `ItemList`;
+authority detail `Organization` with `sameAs`; containers index and applies-to
+`CollectionPage` with an `ItemList`; home `WebSite`; about `AboutPage`; matrix,
+timeline, and compare index `CollectionPage`; pattern `TechArticle`.
 
-### JSON-LD on bridge pages
+Sitemap `lastmod` for container detail routes now uses the same
+freshest-container-date value as their JSON-LD `dateModified`; all other
+routes keep the build stamp. Container pages also emit
+`article:modified_time`.
 
-`renderBridgeShell` in `scripts/build.js` already accepts a `structuredData`
-parameter and renders it into an `application/ld+json` block. No caller passes
-one, so all 22 demo pages ship without structured data while the landing page
-carries `TechArticle` and `DefinedTerm`.
-
-Candidate mappings, one per bridge generator:
-- container detail: `Dataset` or `CreativeWork`, with `dateModified` from the container timeline.
-- primary detail: `DefinedTerm` inside a `DefinedTermSet` for the reference as a whole.
-- requires bridge: `Question` and `Answer`. These pages already read as "Does X require Y? Yes." and are the strongest rich-result candidates in the tree.
-- compare bridge: `ItemList` of the two containers compared.
-- authority detail: `Organization`.
-
-If this lands, add a contract assertion that every sitemap page contains
-parseable JSON-LD, and align `dateModified` with sitemap `lastmod` on the exact
-routes where both exist.
+The same pass fixed the five orphaned-page defects the new contract surfaced:
+container detail pages link their authority, the compare index carries static
+links to every generated pairwise page, and the containers index links each
+scope to its applies-to page.

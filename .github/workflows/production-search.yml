@@ -1,0 +1,28 @@
+name: Production search contract
+
+# Release-triggered HTTP validation of the deployed canonical site against
+# search-audit.config.json. The offline contract runs in CI on every push;
+# this check confirms the live property agrees after a release, and can be
+# run on demand with workflow_dispatch.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-search:
+    if: github.repository == 'snapsynapse/knowledge-as-code-template'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check deployed site against search contract
+        run: node scripts/check-production-search.mjs

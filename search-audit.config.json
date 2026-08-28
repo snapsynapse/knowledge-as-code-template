@@ -1,0 +1,118 @@
+{
+  "$schema": "portfolio-search-indexing-audit/v4",
+  "contractVersion": 4,
+  "canonicalOrigin": "https://knowledge-as-code.com/",
+  "outputDir": ".",
+  "sitemaps": [
+    "sitemap.xml",
+    "demo/sitemap.xml"
+  ],
+  "minimumWords": 120,
+  "thinPageExemptions": [
+    "^/demo/"
+  ],
+  "expectedNoindex": [
+    "/404.html",
+    "/demo/404.html"
+  ],
+  "requireJsonLd": true,
+  "jsonLdRequiredPaths": [],
+  "lastmodAgreementPaths": [
+    "/demo/container/iso-27001/",
+    "/demo/container/nist-csf/"
+  ],
+  "nonHtmlSitemapPaths": [
+    "/.well-known/assistant-guide.txt"
+  ],
+  "compareRepositorySitemaps": true,
+  "internalSourceRules": [],
+  "requiredFiles": [
+    {
+      "path": "robots.txt",
+      "contentTypes": [
+        "text/plain"
+      ],
+      "contains": [
+        "Sitemap: https://knowledge-as-code.com/sitemap.xml",
+        "Sitemap: https://knowledge-as-code.com/demo/sitemap.xml"
+      ]
+    },
+    {
+      "path": "sitemap.xml",
+      "contentTypes": [
+        "xml"
+      ],
+      "contains": []
+    },
+    {
+      "path": "demo/sitemap.xml",
+      "contentTypes": [
+        "xml"
+      ],
+      "contains": []
+    },
+    {
+      "path": ".well-known/assistant-guide.txt",
+      "contentTypes": [
+        "text/plain"
+      ],
+      "contains": []
+    },
+    {
+      "path": "llms.txt",
+      "contentTypes": [
+        "text/plain"
+      ],
+      "contains": []
+    },
+    {
+      "path": "demo/agents.json",
+      "contentTypes": [
+        "application/json",
+        "json"
+      ],
+      "contains": []
+    },
+    {
+      "path": "demo/api/v1/index.json",
+      "contentTypes": [
+        "application/json",
+        "json"
+      ],
+      "contains": []
+    },
+    {
+      "path": "favicon.svg",
+      "contentTypes": [
+        "image/svg+xml",
+        "svg"
+      ],
+      "contains": []
+    }
+  ],
+  "redirects": [
+    {
+      "from": "http://knowledge-as-code.com/",
+      "to": "https://knowledge-as-code.com/"
+    },
+    {
+      "from": "https://www.knowledge-as-code.com/",
+      "to": "https://knowledge-as-code.com/"
+    },
+    {
+      "from": "http://www.knowledge-as-code.com/",
+      "to": "https://knowledge-as-code.com/"
+    }
+  ],
+  "hosted404Patterns": [
+    "There isn't a GitHub Pages site here",
+    "<title>Page not found",
+    "404 File not found"
+  ],
+  "expectedNotFoundPaths": [
+    "/__search-audit-404__",
+    "/docs/",
+    "/primary/data-quality/",
+    "/demo/primary/data-quality/"
+  ]
+}

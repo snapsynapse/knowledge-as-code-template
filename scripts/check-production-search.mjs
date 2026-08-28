@@ -7,6 +7,9 @@
 // change_summary: Revalidated unchanged for the v5 bundle; the portable repository contract remains v4.
 // Upstream: portfolio-search-indexing-audit contract v4.
 // Release-triggered HTTP validation. Exit 2 means infrastructure is unavailable.
+// Local adaptation for this repository: sitemap entries listed in
+// config.nonHtmlSitemapPaths (the assistant guide, an unresolved sitemap-policy
+// decision) are checked for reachability only, matching scripts/check-search.mjs.
 'use strict';
 
 import fs from 'node:fs';
@@ -262,6 +265,14 @@ function lastmodAgreement(html, url, sitemapLastmod) {
 
 async function checkPage(canonical) {
     const target = deployedUrl(canonical);
+    // Non-HTML sitemap entries (this property publishes the assistant guide as
+    // one) are checked for reachability only; canonical, JSON-LD, and noindex
+    // assertions do not apply to a plain-text surface.
+    if ((config.nonHtmlSitemapPaths || []).includes(new URL(canonical).pathname)) {
+        const plain = await fetchText(target, { contentTypes: ['text/plain'] });
+        if (plain && plain.response.url !== target) report('defect', `${target}: final URL is ${plain.response.url}`);
+        return;
+    }
     const result = await fetchText(target, { contentTypes: ['text/html'] });
     if (!result) return;
     if (result.response.url !== target) report('defect', `${target}: final URL is ${result.response.url}`);

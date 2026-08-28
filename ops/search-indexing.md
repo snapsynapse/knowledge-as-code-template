@@ -149,13 +149,17 @@ because provider state later changed; add a new dated file instead.
 
 ## Current classified state
 
-As of 2026-08-20. Evidence: [`ops/search/GoogleSearchConsole/2026-08-20/audit.md`](search/GoogleSearchConsole/2026-08-20/audit.md).
+Machine lanes as of 2026-08-28; console lane as of 2026-08-20. Console
+evidence: [`ops/search/GoogleSearchConsole/2026-08-20/audit.md`](search/GoogleSearchConsole/2026-08-20/audit.md).
 
 | Lane | Date | Result |
 |---|---|---|
-| Repository and generated artifact | 2026-08-20 | Pass. All gates green at `49c9317`. |
-| Production HTTP | 2026-08-20 | Pass against deployed `93feb3d`, spot-checked on `49c9317`. 24 of 24 sitemap URLs 200, canonical-exact, unique non-empty descriptions. |
-| Google Search Console | 2026-08-20, Page indexing report dated 2026-08-16 | Five defects resolved. Two rows pending recrawl. |
+| Repository and generated artifact | 2026-08-28 | Pass. All gates green at `1484e31`, CI green on Node 18 and 20. Offline search contract: 24 sitemap pages, 0 defects. |
+| Production HTTP | 2026-08-28 | Pass against deployed `1484e31`. Production search contract: 24 sitemap pages, 0 defects, 0 infrastructure failures. Spot-checked live JSON-LD and sitemap `lastmod` / `article:modified_time` / JSON-LD `dateModified` agreement on `/demo/container/nist-csf/`. |
+| Google Search Console | 2026-08-20, Page indexing report dated 2026-08-16 | Five defects resolved. Two rows pending recrawl. Not re-observed since; see "Next review". |
+
+Both machine lanes are now contract-checked rather than hand-verified. The
+2026-08-20 observations they replace remain in the dated evidence file above.
 
 Provider state at observation: 2 indexed, 8 not indexed, 10 known URLs against
 24 declared targets. Both sitemaps now read Success on 2026-08-20 with 2 and 22

@@ -38,6 +38,7 @@
     <meta property="og:url" content="https://knowledge-as-code.com/demo/compare.html">
     <meta name="twitter:card" content="summary_large_image">
     
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"Compare - Example Knowledge Base","description":"Compare any two or three of 2 frameworks side by side to see where their coverage overlaps and diverges.","url":"https://knowledge-as-code.com/demo/compare.html"}</script>
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
@@ -80,6 +81,8 @@
         <div class="compare-selector" id="compareSelector"><label><input type="checkbox" name="cmp" value="iso-27001" onchange="updateComparison()"> <span>ISO/IEC 27001:2022</span></label>
 <label><input type="checkbox" name="cmp" value="nist-csf" onchange="updateComparison()"> <span>NIST Cybersecurity Framework</span></label></div>
         <div id="compareResult" class="compare-result"></div>
+        <h3>Side-by-side pages</h3>
+<ul class="compare-list"><li><a href="compare/iso-27001-vs-nist-csf/index.html" onclick="passTheme(this)">ISO/IEC 27001:2022 vs NIST Cybersecurity Framework</a></li></ul>
         <script>
         var cmpData = [{"id":"iso-27001","name":"ISO/IEC 27001:2022","primaries":["access-control","information-integrity"]},{"id":"nist-csf","name":"NIST Cybersecurity Framework","primaries":["incident-response","access-control"]}];
         var pNames = {"access-control":"Access Control","incident-response":"Incident Response","information-integrity":"Information Integrity"};

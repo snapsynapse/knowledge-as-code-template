@@ -392,11 +392,32 @@ function renderFooter(config) {
     </footer>`;
 }
 
-function renderPageShell(config, { title, activePage, prefix, content, description, canonicalPath, configCSS }) {
+// JSON-LD is embedded inside a <script> element, so a literal "<" in any data
+// value could terminate the block early. Escaping it keeps the JSON valid.
+function jsonLdScript(structuredData) {
+    if (!structuredData) return '';
+    return `\n    <script type="application/ld+json">${JSON.stringify(structuredData).replace(/</g, '\\u003c')}</script>`;
+}
+
+// Freshest date a container carries (last_verified / effective / timeline).
+// Used as JSON-LD dateModified and the matching sitemap lastmod.
+function containerLastDate(container) {
+    let max = '';
+    for (const d of [container.last_verified, container.effective]) {
+        if (d && d > max) max = d;
+    }
+    for (const t of container.timeline || []) {
+        if (t.date && t.date > max) max = t.date;
+    }
+    return max || BUILD_DAY;
+}
+
+function renderPageShell(config, { title, activePage, prefix, content, description, canonicalPath, structuredData, configCSS }) {
     prefix = prefix || '';
     const siteName = config.name || 'Knowledge Base';
     const siteUrl = config.url;
     const desc = description || config.description || '';
+    const jsonLd = jsonLdScript(structuredData);
     // The home page passes an empty canonicalPath, which is a valid route, not a
     // missing one. Guard on undefined so `/` keeps its self-referential canonical.
     const canonical = canonicalPath !== undefined ? `<link rel="canonical" href="${siteUrl}${canonicalPath}">` : '';
@@ -419,7 +440,7 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
     ${config.social?.og_image ? `<meta property="og:image" content="${escapeHTML(safeURL(siteUrl + config.social.og_image))}">` : ''}
     ${canonicalPath !== undefined ? `<meta property="og:url" content="${siteUrl}${canonicalPath || ''}">` : ''}
     <meta name="twitter:card" content="${escapeHTML(config.social?.twitter_card || 'summary')}">
-    ${config.social?.twitter_site ? `<meta name="twitter:site" content="${escapeHTML(config.social.twitter_site)}">` : ''}
+    ${config.social?.twitter_site ? `<meta name="twitter:site" content="${escapeHTML(config.social.twitter_site)}">` : ''}${jsonLd}
     ${renderThemeInit()}
 </head>
 <body>
@@ -435,10 +456,10 @@ function renderPageShell(config, { title, activePage, prefix, content, descripti
 </html>`;
 }
 
-function renderBridgeShell(config, { title, depth, content, description, canonicalPath, structuredData, configCSS, noindex }) {
+function renderBridgeShell(config, { title, depth, content, description, canonicalPath, structuredData, modifiedTime, configCSS, noindex }) {
     const prefix = depth > 0 ? '../'.repeat(depth) : '';
     const siteUrl = config.url;
-    const jsonLd = structuredData ? `\n    <script type="application/ld+json">${JSON.stringify(structuredData)}</script>` : '';
+    const jsonLd = jsonLdScript(structuredData);
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -458,6 +479,7 @@ function renderBridgeShell(config, { title, depth, content, description, canonic
     <meta property="og:type" content="website">
     ${config.social?.og_image ? `<meta property="og:image" content="${escapeHTML(safeURL(siteUrl + config.social.og_image))}">` : ''}
     ${canonicalPath !== undefined ? `<meta property="og:url" content="${siteUrl}${canonicalPath || ''}">` : ''}
+    ${modifiedTime ? `<meta property="article:modified_time" content="${escapeHTML(modifiedTime)}">` : ''}
     <meta name="twitter:card" content="${escapeHTML(config.social?.twitter_card || 'summary')}">
     ${config.social?.twitter_site ? `<meta name="twitter:site" content="${escapeHTML(config.social.twitter_site)}">` : ''}${jsonLd}
     ${renderThemeInit()}
@@ -608,7 +630,14 @@ function generateHomepage(config, data, configCSS) {
         </div>
     `;
 
-    return renderPageShell(config, { title: 'Home', activePage: 'home', content, canonicalPath: '', description: config.description, configCSS });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: config.name || 'Knowledge Base',
+        description: config.description || '',
+        url: config.url
+    };
+    return renderPageShell(config, { title: 'Home', activePage: 'home', content, canonicalPath: '', description: config.description, structuredData, configCSS });
 }
 
 function generateContainersPage(config, data, configCSS) {
@@ -632,7 +661,7 @@ function generateContainersPage(config, data, configCSS) {
             <tbody>
                 ${containers.map(c => `<tr data-scope="${escapeHTML(c[scopeField] || '')}">
                     <td><a href="container/${pathSegment(c.id, 'Container ID')}/index.html" onclick="passTheme(this)">${escapeHTML(c.name)}</a></td>
-                    <td>${escapeHTML(c[scopeField] || '')}</td>
+                    <td>${c[scopeField] && config.bridges?.applies_to ? `<a href="applies-to/${slugify(c[scopeField])}/index.html" onclick="passTheme(this)">${escapeHTML(c[scopeField])}</a>` : escapeHTML(c[scopeField] || '')}</td>
                     ${tdStatus(c.status)}
                     ${tdDate(c.effective)}
                     ${tdNumber(c.provisions.length)}
@@ -650,7 +679,23 @@ function generateContainersPage(config, data, configCSS) {
         </script>
     `;
 
-    return renderPageShell(config, { title: cPlural, activePage: 'containers', content, canonicalPath: 'containers.html', description: `All ${containers.length} ${cPlural.toLowerCase()} tracked in ${config.name || 'this reference'}, with status, effective date, and provision count.`, configCSS });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: `${cPlural} - ${config.name || 'Knowledge Base'}`,
+        url: `${config.url}containers.html`,
+        mainEntity: {
+            '@type': 'ItemList',
+            numberOfItems: containers.length,
+            itemListElement: containers.map((c, i) => ({
+                '@type': 'ListItem',
+                position: i + 1,
+                name: c.name,
+                url: `${config.url}container/${pathSegment(c.id, 'Container ID')}/`
+            }))
+        }
+    };
+    return renderPageShell(config, { title: cPlural, activePage: 'containers', content, canonicalPath: 'containers.html', description: `All ${containers.length} ${cPlural.toLowerCase()} tracked in ${config.name || 'this reference'}, with status, effective date, and provision count.`, structuredData, configCSS });
 }
 
 function generatePrimariesPage(config, data, configCSS) {
@@ -680,7 +725,18 @@ function generatePrimariesPage(config, data, configCSS) {
         }).join('\n')}
     `;
 
-    return renderPageShell(config, { title: pPlural, activePage: 'primaries', content, canonicalPath: 'primaries.html', description: `All ${primaries.length} ${pPlural.toLowerCase()} tracked in ${config.name || 'this reference'}, grouped by category and linked to the ${cNameLower}s that cover them.`, configCSS });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'DefinedTermSet',
+        name: `${config.name || 'Knowledge Base'} ${pPlural}`,
+        url: `${config.url}primaries.html`,
+        hasDefinedTerm: primaries.map(p => ({
+            '@type': 'DefinedTerm',
+            name: p.name || humanizeId(p.id),
+            url: `${config.url}primary/${pathSegment(p.id, 'Primary ID')}/`
+        }))
+    };
+    return renderPageShell(config, { title: pPlural, activePage: 'primaries', content, canonicalPath: 'primaries.html', description: `All ${primaries.length} ${pPlural.toLowerCase()} tracked in ${config.name || 'this reference'}, grouped by category and linked to the ${cNameLower}s that cover them.`, structuredData, configCSS });
 }
 
 function generateMatrixPage(config, data, configCSS) {
@@ -713,7 +769,15 @@ function generateMatrixPage(config, data, configCSS) {
         </div>
     `;
 
-    return renderPageShell(config, { title: 'Coverage Matrix', activePage: 'matrix', content, canonicalPath: 'matrix.html', description: `Coverage matrix showing which of ${containers.length} ${(config.entities?.container?.plural || 'containers').toLowerCase()} address each of ${primaries.length} ${(config.entities?.primary?.plural || 'primaries').toLowerCase()}.`, configCSS });
+    const matrixDescription = `Coverage matrix showing which of ${containers.length} ${(config.entities?.container?.plural || 'containers').toLowerCase()} address each of ${primaries.length} ${(config.entities?.primary?.plural || 'primaries').toLowerCase()}.`;
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: `Coverage Matrix - ${config.name || 'Knowledge Base'}`,
+        description: matrixDescription,
+        url: `${config.url}matrix.html`
+    };
+    return renderPageShell(config, { title: 'Coverage Matrix', activePage: 'matrix', content, canonicalPath: 'matrix.html', description: matrixDescription, structuredData, configCSS });
 }
 
 function generateTimelinePage(config, data, configCSS) {
@@ -748,21 +812,39 @@ function generateTimelinePage(config, data, configCSS) {
         <p style="color: var(--text-secondary); margin-bottom: 1rem;">Key dates. Solid dots are past; hollow dots are future.</p>
         <div class="timeline">${html}</div>`;
 
-    return renderPageShell(config, { title: 'Timeline', activePage: 'timeline', content, canonicalPath: 'timeline.html', description: `Chronological timeline of ${events.length} milestones across ${containers.length} ${(config.entities?.container?.plural || 'containers').toLowerCase()}, with past and upcoming effective dates.`, configCSS });
+    const timelineDescription = `Chronological timeline of ${events.length} milestones across ${containers.length} ${(config.entities?.container?.plural || 'containers').toLowerCase()}, with past and upcoming effective dates.`;
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: `Timeline - ${config.name || 'Knowledge Base'}`,
+        description: timelineDescription,
+        url: `${config.url}timeline.html`
+    };
+    return renderPageShell(config, { title: 'Timeline', activePage: 'timeline', content, canonicalPath: 'timeline.html', description: timelineDescription, structuredData, configCSS });
 }
 
 function generateComparePage(config, data, configCSS) {
-    const { containers, primaries, mappingIndex } = data;
+    const { containers, primaries, mappingIndex, comparisons } = data;
     const cName = config.entities?.container?.name || 'Container';
     const cPlural = config.entities?.container?.plural || 'Containers';
 
     const checkboxes = containers.map(c => `<label><input type="checkbox" name="cmp" value="${escapeHTML(c.id)}" onchange="updateComparison()"> <span>${escapeHTML(c.name)}</span></label>`).join('\n');
+
+    // Static links to every generated pairwise page keep the compare bridges
+    // reachable without JavaScript (and out of the orphaned-page class).
+    const pairLinks = (config.bridges?.compare === false ? [] : (comparisons || [])).filter(comp => comp.shared_count > 0).map(comp => {
+        const [aId, bId] = comp.regulations;
+        const cA = containers.find(c => c.id === aId), cB = containers.find(c => c.id === bId);
+        if (!cA || !cB) return '';
+        return `<li><a href="compare/${pathSegment(aId, 'Container ID')}-vs-${pathSegment(bId, 'Container ID')}/index.html" onclick="passTheme(this)">${escapeHTML(cA.name)} vs ${escapeHTML(cB.name)}</a></li>`;
+    }).filter(Boolean).join('\n');
 
     const content = `
         <h2 style="margin-top: 0.5rem;">Compare ${escapeHTML(cPlural)}</h2>
         <p style="color: var(--text-secondary); margin-bottom: 1rem;">Select 2 or 3 to compare coverage.</p>
         <div class="compare-selector" id="compareSelector">${checkboxes}</div>
         <div id="compareResult" class="compare-result"></div>
+        ${pairLinks ? `<h3>Side-by-side pages</h3>\n<ul class="compare-list">${pairLinks}</ul>` : ''}
         <script>
         var cmpData = ${safeScriptJson(containers.map(c => ({ id: c.id, name: c.name, primaries: [...new Set(mappingIndex.filter(m => m.regulation === c.id).flatMap(m => m.obligations))] })))};
         var pNames = ${safeScriptJson(Object.fromEntries(primaries.map(p => [p.id, p.name || humanizeId(p.id)])))};
@@ -800,7 +882,15 @@ function generateComparePage(config, data, configCSS) {
         </script>
     `;
 
-    return renderPageShell(config, { title: 'Compare', activePage: 'compare', content, canonicalPath: 'compare.html', description: `Compare any two or three of ${containers.length} ${cPlural.toLowerCase()} side by side to see where their coverage overlaps and diverges.`, configCSS });
+    const compareDescription = `Compare any two or three of ${containers.length} ${cPlural.toLowerCase()} side by side to see where their coverage overlaps and diverges.`;
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: `Compare - ${config.name || 'Knowledge Base'}`,
+        description: compareDescription,
+        url: `${config.url}compare.html`
+    };
+    return renderPageShell(config, { title: 'Compare', activePage: 'compare', content, canonicalPath: 'compare.html', description: compareDescription, structuredData, configCSS });
 }
 
 function generateAboutPage(config, data, configCSS) {
@@ -829,7 +919,15 @@ function generateAboutPage(config, data, configCSS) {
         <p>See the <a href="${escapeHTML(safeURL(config.repo))}">repository</a> for contribution guidelines.</p>
     </div>`;
 
-    return renderPageShell(config, { title: 'About', activePage: 'about', content, canonicalPath: 'about.html', description: `How ${config.name || 'this reference'} is sourced, verified, and maintained: ${containers.length} ${cPlural.toLowerCase()}, ${primaries.length} ${pPlural.toLowerCase()}, and ${totalProvisions} ${secName.toLowerCase()}s from ${authorities.length} ${authName.toLowerCase()}${authorities.length !== 1 ? 's' : ''}.`, configCSS });
+    const aboutDescription = `How ${config.name || 'this reference'} is sourced, verified, and maintained: ${containers.length} ${cPlural.toLowerCase()}, ${primaries.length} ${pPlural.toLowerCase()}, and ${totalProvisions} ${secName.toLowerCase()}s from ${authorities.length} ${authName.toLowerCase()}${authorities.length !== 1 ? 's' : ''}.`;
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'AboutPage',
+        name: `About - ${config.name || 'Knowledge Base'}`,
+        description: aboutDescription,
+        url: `${config.url}about.html`
+    };
+    return renderPageShell(config, { title: 'About', activePage: 'about', content, canonicalPath: 'about.html', description: aboutDescription, structuredData, configCSS });
 }
 
 // ---------------------------------------------------------------------------
@@ -837,8 +935,9 @@ function generateAboutPage(config, data, configCSS) {
 // ---------------------------------------------------------------------------
 
 function generateContainerDetail(config, container, data, configCSS) {
-    const { primaries, mappingIndex, matrix } = data;
+    const { primaries, mappingIndex, matrix, authorities } = data;
     const cPlural = config.entities?.container?.plural || 'Containers';
+    const containerAuthority = (authorities || []).find(a => a.id === container.authority);
     const cProvisions = mappingIndex.filter(m => m.regulation === container.id);
     const cPrimaries = [...new Set(cProvisions.flatMap(m => m.obligations))];
 
@@ -850,6 +949,7 @@ function generateContainerDetail(config, container, data, configCSS) {
             <h2>${escapeHTML(container.name)}</h2>
             <div class="detail-meta">
                 ${container.jurisdiction ? `<span><strong>Scope:</strong> ${escapeHTML(container.jurisdiction)}</span>` : ''}
+                ${containerAuthority ? `<span><strong>${escapeHTML(config.entities?.authority?.name || 'Authority')}:</strong> <a href="../../authority/${pathSegment(containerAuthority.id, 'Authority ID')}/index.html" onclick="passTheme(this)">${escapeHTML(containerAuthority.name || humanizeId(containerAuthority.id))}</a></span>` : ''}
                 ${renderStatusBadge(container.status)}
                 ${container.effective ? `<span><strong>Effective:</strong> ${formatDate(container.effective)}</span>` : ''}
                 ${safeURL(container.official_url) !== '#' ? `<span><a href="${escapeHTML(safeURL(container.official_url))}" target="_blank" rel="noopener">Official source</a></span>` : ''}
@@ -864,7 +964,16 @@ function generateContainerDetail(config, container, data, configCSS) {
         ${container.provisions.map(p => renderProvisionCard(p, '../../')).join('\n')}
     `;
 
-    return renderBridgeShell(config, { title: container.name, depth: 2, content, canonicalPath: `container/${pathSegment(container.id, 'Container ID')}/`, description: `${container.name} — ${container.provisions.length} provisions.`, configCSS });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'CreativeWork',
+        name: container.name,
+        description: `${container.name} — ${container.provisions.length} provisions.`,
+        url: `${config.url}container/${pathSegment(container.id, 'Container ID')}/`,
+        dateModified: containerLastDate(container),
+        ...(safeURL(container.official_url) !== '#' ? { sameAs: safeURL(container.official_url) } : {})
+    };
+    return renderBridgeShell(config, { title: container.name, depth: 2, content, canonicalPath: `container/${pathSegment(container.id, 'Container ID')}/`, description: `${container.name} — ${container.provisions.length} provisions.`, structuredData, modifiedTime: containerLastDate(container), configCSS });
 }
 
 function generatePrimaryDetail(config, primary, data, configCSS) {
@@ -892,7 +1001,19 @@ function generatePrimaryDetail(config, primary, data, configCSS) {
         </tbody></table>` : `<p style="color:var(--text-secondary);">No ${cName}s currently implement this.</p>`}
     `;
 
-    return renderBridgeShell(config, { title: primary.name || humanizeId(primary.id), depth: 2, content, canonicalPath: `primary/${pathSegment(primary.id, 'Primary ID')}/`, description: `${primary.name || humanizeId(primary.id)} — ${summary.slice(0, 150)}`, configCSS });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'DefinedTerm',
+        name: primary.name || humanizeId(primary.id),
+        ...(summary ? { description: summary } : {}),
+        url: `${config.url}primary/${pathSegment(primary.id, 'Primary ID')}/`,
+        inDefinedTermSet: {
+            '@type': 'DefinedTermSet',
+            name: `${config.name || 'Knowledge Base'} ${pPlural}`,
+            url: `${config.url}primaries.html`
+        }
+    };
+    return renderBridgeShell(config, { title: primary.name || humanizeId(primary.id), depth: 2, content, canonicalPath: `primary/${pathSegment(primary.id, 'Primary ID')}/`, description: `${primary.name || humanizeId(primary.id)} — ${summary.slice(0, 150)}`, structuredData, configCSS });
 }
 
 function generateAuthorityDetail(config, auth, data, configCSS) {
@@ -914,7 +1035,14 @@ function generateAuthorityDetail(config, auth, data, configCSS) {
         </tbody></table>` : '<p style="color:var(--text-secondary);">None tracked.</p>'}
     `;
 
-    return renderBridgeShell(config, { title: auth.name || humanizeId(auth.id), depth: 2, content, canonicalPath: `authority/${pathSegment(auth.id, 'Authority ID')}/`, description: `${auth.name || humanizeId(auth.id)} — ${authContainers.length} ${(authContainers.length === 1 ? (config.entities?.container?.name || 'container') : (config.entities?.container?.plural || 'containers')).toLowerCase()} published by this ${(config.entities?.authority?.name || 'authority').toLowerCase()}.`, configCSS });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: auth.name || humanizeId(auth.id),
+        url: `${config.url}authority/${pathSegment(auth.id, 'Authority ID')}/`,
+        ...(safeURL(auth.website) !== '#' ? { sameAs: safeURL(auth.website) } : {})
+    };
+    return renderBridgeShell(config, { title: auth.name || humanizeId(auth.id), depth: 2, content, canonicalPath: `authority/${pathSegment(auth.id, 'Authority ID')}/`, structuredData, description: `${auth.name || humanizeId(auth.id)} — ${authContainers.length} ${(authContainers.length === 1 ? (config.entities?.container?.name || 'container') : (config.entities?.container?.plural || 'containers')).toLowerCase()} published by this ${(config.entities?.authority?.name || 'authority').toLowerCase()}.`, configCSS });
 }
 
 // ---------------------------------------------------------------------------
@@ -948,7 +1076,21 @@ function generateRequiresBridge(config, containerId, primaryId, data, configCSS)
         </div>
     `;
 
-    return renderBridgeShell(config, { title: `${container.name} — ${pName}`, depth: 3, content, canonicalPath: `requires/${pathSegment(containerId, 'Container ID')}/${pathSegment(primaryId, 'Primary ID')}/`, description: `Does ${container.name} require ${pName}? ${covered ? 'Yes' : 'No'}.`, configCSS });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'QAPage',
+        mainEntity: {
+            '@type': 'Question',
+            name: `Does ${container.name} require ${pName}?`,
+            answerCount: 1,
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: covered ? `Yes — ${matching.length} provision${matching.length !== 1 ? 's' : ''}.` : 'Not specifically addressed.'
+            }
+        },
+        url: `${config.url}requires/${pathSegment(containerId, 'Container ID')}/${pathSegment(primaryId, 'Primary ID')}/`
+    };
+    return renderBridgeShell(config, { title: `${container.name} — ${pName}`, depth: 3, content, canonicalPath: `requires/${pathSegment(containerId, 'Container ID')}/${pathSegment(primaryId, 'Primary ID')}/`, description: `Does ${container.name} require ${pName}? ${covered ? 'Yes' : 'No'}.`, structuredData, configCSS });
 }
 
 function generateCompareBridge(config, cA, cB, comparison, data, configCSS) {
@@ -973,7 +1115,19 @@ function generateCompareBridge(config, cA, cB, comparison, data, configCSS) {
         </div>
     `;
 
-    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 2, content, canonicalPath: `compare/${pathSegment(cA.id, 'Container ID')}-vs-${pathSegment(cB.id, 'Container ID')}/`, description: `${cA.name} vs ${cB.name}: ${comparison.shared_count} shared ${(comparison.shared_count === 1 ? (config.entities?.primary?.name || 'primary') : (config.entities?.primary?.plural || 'primaries')).toLowerCase()} and where the two diverge.`, configCSS, noindex: comparison.shared_count === 0 });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: `${cA.name} vs ${cB.name}`,
+        numberOfItems: 2,
+        itemListElement: [cA, cB].map((c, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            name: c.name,
+            url: `${config.url}container/${pathSegment(c.id, 'Container ID')}/`
+        }))
+    };
+    return renderBridgeShell(config, { title: `${cA.name} vs ${cB.name}`, depth: 2, content, canonicalPath: `compare/${pathSegment(cA.id, 'Container ID')}-vs-${pathSegment(cB.id, 'Container ID')}/`, structuredData, description: `${cA.name} vs ${cB.name}: ${comparison.shared_count} shared ${(comparison.shared_count === 1 ? (config.entities?.primary?.name || 'primary') : (config.entities?.primary?.plural || 'primaries')).toLowerCase()} and where the two diverge.`, configCSS, noindex: comparison.shared_count === 0 });
 }
 
 function generateAppliesToBridge(config, scopeValue, data, configCSS) {
@@ -992,7 +1146,23 @@ function generateAppliesToBridge(config, scopeValue, data, configCSS) {
         <div style="margin-top: 2rem; text-align: center;"><a href="../../containers.html" onclick="passTheme(this)" class="bridge-cta">All ${escapeHTML((config.entities?.container?.plural || 'containers').toLowerCase())}</a></div>
     `;
 
-    return renderBridgeShell(config, { title: `${scopeValue}`, depth: 2, content, canonicalPath: `applies-to/${slugify(scopeValue)}/`, description: `${scopeContainers.length} ${(scopeContainers.length === 1 ? (config.entities?.container?.name || 'container') : (config.entities?.container?.plural || 'containers')).toLowerCase()} that ${scopeContainers.length === 1 ? 'applies' : 'apply'} to ${scopeValue}, with status and effective dates.`, configCSS, noindex: scopeContainers.length === 0 });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: `${config.entities?.container?.plural || 'Containers'} in ${scopeValue}`,
+        url: `${config.url}applies-to/${slugify(scopeValue)}/`,
+        mainEntity: {
+            '@type': 'ItemList',
+            numberOfItems: scopeContainers.length,
+            itemListElement: scopeContainers.map((c, i) => ({
+                '@type': 'ListItem',
+                position: i + 1,
+                name: c.name,
+                url: `${config.url}container/${pathSegment(c.id, 'Container ID')}/`
+            }))
+        }
+    };
+    return renderBridgeShell(config, { title: `${scopeValue}`, depth: 2, content, canonicalPath: `applies-to/${slugify(scopeValue)}/`, structuredData, description: `${scopeContainers.length} ${(scopeContainers.length === 1 ? (config.entities?.container?.name || 'container') : (config.entities?.container?.plural || 'containers')).toLowerCase()} that ${scopeContainers.length === 1 ? 'applies' : 'apply'} to ${scopeValue}, with status and effective dates.`, configCSS, noindex: scopeContainers.length === 0 });
 }
 
 // ---------------------------------------------------------------------------
@@ -1014,10 +1184,11 @@ function buildSearchIndex(config, data) {
     return items;
 }
 
-function generateSitemap(config, pages) {
+function generateSitemap(config, pages, lastmodByPath = {}) {
     const base = config.url || '';
-    const lastmod = BUILD_DAY;
-    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map(p => `  <url><loc>${base}${p}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}\n</urlset>`;
+    // Routes whose JSON-LD carries a dateModified (container details) get the
+    // same value as their lastmod so the two surfaces never disagree.
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map(p => `  <url><loc>${base}${p}</loc><lastmod>${lastmodByPath[p] || BUILD_DAY}</lastmod></url>`).join('\n')}\n</urlset>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1148,7 +1319,14 @@ open docs/index.html</code></pre>
         </div>
     `;
 
-    return renderPageShell(config, { title: 'Knowledge as Code', activePage: 'pattern', content, description: 'A zero-dependency generator for evidence-backed reference sites.', canonicalPath: 'pattern.html', configCSS });
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'TechArticle',
+        headline: 'Knowledge as Code',
+        description: 'A zero-dependency generator for evidence-backed reference sites.',
+        url: `${config.url}pattern.html`
+    };
+    return renderPageShell(config, { title: 'Knowledge as Code', activePage: 'pattern', content, description: 'A zero-dependency generator for evidence-backed reference sites.', canonicalPath: 'pattern.html', structuredData, configCSS });
 }
 
 // ---------------------------------------------------------------------------
@@ -1251,6 +1429,7 @@ function build() {
 
     // --- HTML pages ---
     const sitemapPages = [];
+    const sitemapLastmod = {};
 
     fs.writeFileSync(path.join(DOCS_DIR, 'index.html'), generateHomepage(config, data, configCSS)); sitemapPages.push('');
     fs.writeFileSync(path.join(DOCS_DIR, 'containers.html'), generateContainersPage(config, data, configCSS)); sitemapPages.push('containers.html');
@@ -1270,7 +1449,7 @@ function build() {
 
     console.log('  Core pages: ' + (7 + patternPageCount));
 
-    for (const c of containers) { const cSeg = pathSegment(c.id, 'Container ID'); const dir = path.join(DOCS_DIR, 'container', cSeg); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateContainerDetail(config, c, data, configCSS)); sitemapPages.push(`container/${cSeg}/`); }
+    for (const c of containers) { const cSeg = pathSegment(c.id, 'Container ID'); const dir = path.join(DOCS_DIR, 'container', cSeg); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generateContainerDetail(config, c, data, configCSS)); sitemapPages.push(`container/${cSeg}/`); sitemapLastmod[`container/${cSeg}/`] = containerLastDate(c); }
     console.log(`  Container detail pages: ${containers.length}`);
 
     for (const p of primaries) { const pSeg = pathSegment(p.id, 'Primary ID'); const dir = path.join(DOCS_DIR, 'primary', pSeg); ensureDir(dir); fs.writeFileSync(path.join(dir, 'index.html'), generatePrimaryDetail(config, p, data, configCSS)); sitemapPages.push(`primary/${pSeg}/`); }
@@ -1325,7 +1504,7 @@ function build() {
 
     // Sitemap + robots
     const siteUrl = config.url;
-    fs.writeFileSync(path.join(DOCS_DIR, 'sitemap.xml'), generateSitemap(config, sitemapPages));
+    fs.writeFileSync(path.join(DOCS_DIR, 'sitemap.xml'), generateSitemap(config, sitemapPages, sitemapLastmod));
     fs.writeFileSync(path.join(DOCS_DIR, 'robots.txt'), [
         'User-agent: *',
         'Allow: /',

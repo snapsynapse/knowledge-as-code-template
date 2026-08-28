@@ -76,6 +76,27 @@ Provide an opt-in way for independent maintainers to report how they use Knowled
 - Publish the library from reviewable repository data so additions, corrections, provenance, and removal history remain auditable.
 - Do not add telemetry, phone-home behavior, or automatic usage reporting to the generator.
 
+## Reserved direction: Canon Map public home
+
+Recorded 2026-06-09, migrated from a session disposition note on 2026-08-28.
+This is a record, not a work order.
+
+A portfolio competitive review on 2026-06-09 found docs-as-code to be a
+saturated pattern; the durable novelty identified for this project is the
+Canon Map scheme (a typed source-of-truth model: kind / scope / canonical
+home / pointer convention / maintained by; pointers are one-line links, never
+paraphrases; snapshots carry verified dates; append-only handoffs with
+supersedes chains). It passed its acceptance gate at v0.0.3 in the ob1-paice
+pilot on 2026-06-06.
+
+knowledge-as-code.com is the staked term reserved as the eventual public home
+of that pattern. The promotion path requires a second Canon Map pilot
+(paice-foundation) and an explicit maintainer decision before any public
+write-up lands here; external interest accelerates the promotion question but
+does not bypass it. The 2026-07-21 recalibration to internal-first open
+utility supersedes the "dormant" status the original note carried; this
+reservation is unaffected by that change.
+
 ## Recalibration gates
 
 - If the initializer cannot create a working project from a clean checkout, stop feature work and restore the golden path.
@@ -98,5 +119,6 @@ None currently recorded.
 
 ## Changelog
 
+- 2026-08-28: Migrated the Canon Map public-home reservation from the 2026-06-09 session disposition note; processed and removed both session handoffs.
 - 2026-07-25: Added GuideCheck generation and a voluntary, consent-based implementation registry to the roadmap.
 - 2026-07-21: Recalibrated the project from adoption-seeking template to internal-first open utility; made independent transfer the public adoption gate.

@@ -9,6 +9,7 @@ This repository is an internal-first open utility maintained by [PAICE.work](htt
 - [Intent and viable end state](INTENT.md)
 - [Roadmap](INTENT.md#roadmap)
 - [Maintenance and compatibility](MAINTENANCE.md)
+- [1.2.0 migration notes](MIGRATION.md)
 - [Deployment profiles and environment overrides](DEPLOYMENT.md)
 - [Independent adoption pilot](ADOPTION.md)
 - [Security policy](SECURITY.md)
@@ -190,7 +191,7 @@ npm run eval
 
 That runs the broader smoke/eval suite covering builds, links, API shape, parser fixtures, MCP smoke, and documentation consistency.
 
-The build script looks for data in `data/examples/` first, then `data/`. You can rename `data/examples/` to `data/` if you prefer a flatter structure. Keep filenames slug-safe because the generated site, JSON API, MCP tools, search index, sitemap, and agents.json all use the filename-derived IDs.
+The build script looks for data in `data/examples/` first, then `data/`. For a flatter structure, move the entity and mapping directories from `data/examples/` directly into `data/`, then remove the empty `data/examples/` directory and update any mapping `source_file` paths. Keep filenames slug-safe because the generated site, JSON API, MCP tools, search index, sitemap, and agents.json all use the filename-derived IDs.
 
 The mapping keys `regulation` and `obligations` are stable 1.x wire keys even when the displayed entity labels are changed. `regulation` contains a container ID and `obligations` contains primary IDs.
 
@@ -216,18 +217,18 @@ node scripts/eval.js       # Run smoke, link, API, parser, MCP, and docs evals (
 
 ## AI Agent Support
 
-Every Knowledge-as-Code site includes machine-readable discovery files:
+Generated sites include machine-readable discovery files:
 
-- **Assistant Guide** -- `/.well-known/assistant-guide.txt` is a GuideCheck Level 4 guide for local verification and generated-output refresh work
-- **MCP Server** -- `mcp-server.js` provides read-only access to all entities via Model Context Protocol
-- **llms.txt** -- Generated at `docs/llms.txt` with entity model, API endpoints, and entity listings
-- **agents.json** -- Machine-readable metadata at `docs/agents.json` for agent discovery
-- **RSS feed** -- Recent updates at `docs/index.xml`
-- **JSON API** -- Programmatic access at `docs/api/v1/`
+- **llms.txt** -- Generated at `docs/llms.txt` with entity model, API endpoints, and entity listings.
+- **agents.json** -- Machine-readable metadata at `docs/agents.json` for agent discovery.
+- **RSS feed** -- Recent updates at `docs/index.xml`.
+- **JSON API** -- Programmatic access at `docs/api/v1/`.
 
-### GuideCheck conformance
+Initialized projects also include `mcp-server.js`, which provides separate read-only access to all entities through Model Context Protocol. The canonical repository additionally carries a human-verifiable assistant guide at `/.well-known/assistant-guide.txt` for local verification and generated-output refresh work.
 
-This repository adopts the [GuideCheck](https://guidecheck.org/) Human-Verifiable Assistant Guide profile at Level 4, the highest appropriate guide-file level. Level 5 is a runtime claim and is not asserted by this repository.
+### GuideCheck conformance in the canonical repository
+
+This repository adopts the [GuideCheck](https://guidecheck.org/) Human-Verifiable Assistant Guide profile and targets Level 4, which requires an independently published provenance anchor. Local verification establishes at most Level 3; the achieved level must be reported from a verifier result for the exact guide bytes and published anchors. Level 5 is a runtime claim and is not asserted by this repository.
 
 Published artifacts:
 
@@ -236,6 +237,8 @@ Published artifacts:
 - `/.well-known/assistant-guide-manifest.txt` - sidecar manifest carrying the guide hash and byte count
 
 Assistants should verify the guide with `https://guidecheck.org/verify` or another conformant verifier, report the achieved level and SHA-256, and ask for explicit user confirmation before executing any action blocks.
+
+Generating equivalent GuideCheck artifacts for initialized projects is tracked in the [GuideCheck implementation roadmap](INTENT.md#guidecheck-implementation).
 
 ### Using the MCP server
 
@@ -272,11 +275,11 @@ The server reads `project.yml` at startup and exposes tools for listing and retr
 | `plural: Organizations` | `list_organizations` |
 | `name: Organization` | `get_organization` |
 
-Two fixed tools are always present regardless of config: `get_matrix` and `get_mappings`.
+Three fixed tools are always present regardless of config: `search`, `get_matrix`, and `get_mappings`.
 
 ## Validation
 
-`node scripts/validate.js` checks cross-references before building. Common errors and fixes:
+`node scripts/validate.js` checks cross-references before building. The 1.2.0 validation contract is stricter about mapping authority, source headings, and optional source files; see [MIGRATION.md](MIGRATION.md) before upgrading. Common errors and fixes:
 
 | Error message | Cause | Fix |
 |--------------|-------|-----|

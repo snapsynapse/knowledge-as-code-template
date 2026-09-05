@@ -15,6 +15,7 @@ const fs = require('fs');
 const path = require('path');
 const packageMetadata = require('./package.json');
 const { loadProjectData } = require('./scripts/lib/data-loaders');
+const { validateProjectData } = require('./scripts/lib/validation');
 const { parseYaml } = require('./scripts/lib/parsers');
 
 const ROOT = __dirname;
@@ -51,6 +52,7 @@ const config = (() => {
 let loaded;
 try {
     loaded = loadProjectData(ROOT, config, { requireMapping: true });
+    validateProjectData(config, loaded, ROOT);
 } catch (error) {
     process.stderr.write(`Error: ${error.message}\n`);
     process.exit(1);

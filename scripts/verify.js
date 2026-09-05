@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { loadProjectData } = require('./lib/data-loaders');
+const { validateProjectData } = require('./lib/validation');
 const { parseYaml } = require('./lib/parsers');
 
 const ROOT = path.join(__dirname, '..');
@@ -221,11 +222,16 @@ function verify() {
 
     const mappings = loaded.mappings;
 
-    const primaryIds = new Set(primaries.map(p => p.id));
-    const containerIds = new Set(containers.map(c => c.id));
-    const authorityIds = new Set(authorities.map(a => a.id));
-
     let completenessErrors = 0;
+    let structuralFailure = false;
+    try {
+        validateProjectData(config, loaded, projectRoot);
+    } catch (error) {
+        const issues = error.issues || [error.message];
+        for (const issue of issues) console.log(`  ERROR: ${issue}`);
+        completenessErrors += issues.length;
+        structuralFailure = true;
+    }
 
     // Check each container has at least one mapping
     const containersMapped = new Set();
@@ -238,43 +244,6 @@ function verify() {
         if (!containersMapped.has(c.id)) {
             console.log(`  WARNING: ${config.entities?.container?.name || 'Container'} "${c.id}" has no mapping entries`);
             completenessErrors++;
-        }
-    }
-
-    // Check each mapping references valid primaries
-    for (const m of mappings) {
-        for (const obl of m.obligations) {
-            if (!primaryIds.has(obl)) {
-                console.log(`  ERROR: Mapping "${m.id}" references unknown ${(config.entities?.primary?.name || 'primary').toLowerCase()} "${obl}"`);
-                completenessErrors++;
-            }
-        }
-        const cId = m.regulation || m.container || m.framework;
-        if (cId && !containerIds.has(cId)) {
-            console.log(`  ERROR: Mapping "${m.id}" references unknown ${(config.entities?.container?.name || 'container').toLowerCase()} "${cId}"`);
-            completenessErrors++;
-        }
-        if (m.authority && !authorityIds.has(m.authority)) {
-            console.log(`  ERROR: Mapping "${m.id}" references unknown ${(config.entities?.authority?.name || 'authority').toLowerCase()} "${m.authority}"`);
-            completenessErrors++;
-        }
-        if (m.source_file) {
-            const sourcePath = path.resolve(projectRoot, m.source_file);
-            const relative = path.relative(projectRoot, sourcePath);
-            if (relative.startsWith('..') || path.isAbsolute(relative)) {
-                console.log(`  ERROR: Mapping "${m.id}" source_file escapes the project root`);
-                completenessErrors++;
-            } else if (!fs.existsSync(sourcePath)) {
-                console.log(`  ERROR: Mapping "${m.id}" source_file does not exist: ${m.source_file}`);
-                completenessErrors++;
-            } else if (m.source_heading) {
-                const source = fs.readFileSync(sourcePath, 'utf8');
-                const escapedHeading = m.source_heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                if (!(new RegExp(`^#{1,6}\\s+${escapedHeading}\\s*$`, 'm')).test(source)) {
-                    console.log(`  ERROR: Mapping "${m.id}" source_heading not found in ${m.source_file}: ${m.source_heading}`);
-                    completenessErrors++;
-                }
-            }
         }
     }
 
@@ -316,8 +285,11 @@ function verify() {
     // 4. Optional external review
     // -----------------------------------------------------------------------
     console.log('--- External Review ---\n');
-    const external = runExternalVerifier(allEntities);
-    if (!external.ran) console.log('  Not configured. Deterministic checks only.\n');
+    const external = structuralFailure
+        ? { errors: 0, ran: false }
+        : runExternalVerifier(allEntities);
+    if (structuralFailure) console.log('  Skipped because source validation failed.\n');
+    else if (!external.ran) console.log('  Not configured. Deterministic checks only.\n');
     else console.log(`\n  ${external.errors} external review issue(s) found.\n`);
 
     // -----------------------------------------------------------------------

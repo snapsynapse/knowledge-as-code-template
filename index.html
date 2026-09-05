@@ -22,7 +22,7 @@
 <meta property="og:image" content="https://knowledge-as-code.com/imgs/og.png">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-01-20T00:00:00Z">
-<meta property="article:modified_time" content="2026-07-25T00:00:00Z">
+<meta property="article:modified_time" content="2026-09-05T00:00:00Z">
 <meta property="article:author" content="Sam Rogers">
 <meta property="article:publisher" content="https://paice.work/">
 <meta property="article:section" content="Open Patterns">
@@ -49,7 +49,7 @@
   "url": "https://knowledge-as-code.com/",
   "mainEntityOfPage": { "@type": "WebPage", "@id": "https://knowledge-as-code.com/" },
   "datePublished": "2026-01-20",
-  "dateModified": "2026-07-25",
+  "dateModified": "2026-09-05",
   "author": {
     "@type": "Person",
     "name": "Sam Rogers",
@@ -569,9 +569,9 @@
     <span class="sep">·</span>
     Published <time datetime="2026-01-20">January 20, 2026</time>
     <span class="sep">·</span>
-    Updated <time datetime="2026-07-25">July 25, 2026</time>
+    Updated <time datetime="2026-09-05">September 5, 2026</time>
     <span class="sep">·</span>
-    <span class="version">v1.1</span>
+    <span class="version">v1.2</span>
     <span class="sep">·</span>
     <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC&nbsp;BY&nbsp;4.0</a>
   </p>
@@ -662,8 +662,9 @@
     <h3>aitool.watch</h3>
     <p>
       Capability-first taxonomy. Each entry carries "What counts" and "what doesn't count"
-      boundaries, plan-tier requirements, and launch dates. The site, JSON API, and MCP server
-      all regenerate from a folder of markdown files every time someone merges a PR.
+      boundaries, plan-tier requirements, and launch dates. The site and JSON API regenerate from
+      a folder of markdown files every time someone merges a PR. A separate MCP server reads the
+      same source at runtime.
     </p>
     <p style="margin-top:10px;">
       <a href="https://aitool.watch/" target="_blank" rel="noopener">Browse the live site →</a>
@@ -692,7 +693,9 @@
       <p>
         A complete Knowledge as Code site generated from the example data in this very repo.
         Homepage, entity detail pages, a coverage matrix, a comparison tool, a JSON API, an
-        RSS feed, and an MCP server — all from a small set of Git-tracked source files.
+        RSS feed, and discovery files — all generated from a small set of Git-tracked source files.
+        A separate MCP server reads those same source files at runtime and is not part of the
+        static <code>/demo/</code> artifact.
       </p>
       <a class="big-link" href="/demo/">Open the live demo →</a>
     </div>
@@ -764,19 +767,14 @@
     Clone the generator once, then run its zero-dependency initializer to create a clean project
     containing only the engine, worked example, MCP runtime, and deployment workflows.
   </p>
-  <pre><span class="c"># 1. Clone the generator</span>
-git clone https://github.com/snapsynapse/knowledge-as-code-template.git
+  <pre id='quick-start-commands'>git clone https://github.com/snapsynapse/knowledge-as-code-template.git
 cd knowledge-as-code-template
-
-<span class="c"># 2. Create a clean, guided project</span>
 node scripts/init.js ../my-knowledge-base
 cd ../my-knowledge-base
-
-<span class="c"># 3. Build the site + JSON API (no npm install required)</span>
+node scripts/validate.js
 node scripts/build.js
-
-<span class="c"># 4. Validate cross-references any time</span>
-node scripts/validate.js</pre>
+node scripts/verify.js
+node scripts/check-links.js</pre>
 
   <ul class="plain">
     <li><span class="step">01</span><div><strong>Define your ontology.</strong> Edit <code>project.yml</code> to describe the entities your domain cares about — primary anchors, containers, authorities, and mappings.</div></li>
@@ -796,7 +794,7 @@ node scripts/validate.js</pre>
     <strong>Canonical project home.</strong> This page describes the maintained reference generator.
     The <a href="https://snapsynapse.com/tools/knowledge-as-code/">long-form writeup on snapsynapse.com</a>
     and any cross-posts should link here for the current implementation scope.
-    Last substantive revision: <time datetime="2026-07-25">2026-07-25</time>.
+    Last substantive revision: <time datetime="2026-09-05">2026-09-05</time>.
     <a href="https://github.com/snapsynapse/knowledge-as-code-template/commits/main/index.html">Revision history →</a>
   </aside>
 </section>

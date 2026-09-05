@@ -1,6 +1,6 @@
 # Data Schema
 
-This file documents the file format for each entity type. All data files use YAML frontmatter followed by a markdown body.
+This file documents the file format for each entity type. All data files use the repository's bounded YAML subset in frontmatter followed by a markdown body. The parser supports indentation-based mappings, scalar strings (unquoted or quoted with JSON-compatible double-quote escapes or single quotes using doubled apostrophes), embedded colons, inline comments beginning with `#` after whitespace, block sequences, and the booleans and empty `[]`/`{}` values used by `project.yml`. It is not a full YAML implementation; keep data within these documented forms and avoid YAML features such as anchors, aliases, tags, and multiline scalars.
 
 ## Primary entities
 
@@ -156,19 +156,27 @@ The heading name should match your container entity's plural name (e.g., "Regula
 
 The mapping file connects containers to primaries through secondary (provision) entities. Mapping IDs and every entity reference must use the same lowercase slug format as filenames.
 
+Replace: `iso-27001-access-control` -> a unique mapping ID for this provision.
+Replace: `iso-27001` -> the mapped container filename ID.
+Replace: `iso` -> the authority ID in that container's `authority` field.
+Replace: `Confidentiality and Access` -> the exact parsed provision heading in the mapped container.
+Replace: `data/examples/frameworks/iso-27001.md` -> the repository-relative path to that mapped container file.
+Replace: `access-control` -> the primary entity filename ID this provision maps to.
+
+Customize
 ```yaml
 - id: iso-27001-access-control        # Required. Unique provision ID (kebab-case)
   regulation: iso-27001               # Required. Container file name (without .md)
   authority: iso                      # Required. Authority ID
-  source_heading: Confidentiality and Access               # Required. Must match an ## H2 in the container file
-  source_file: data/examples/frameworks/iso-27001.md       # Optional. Path to container file for tooling/traceability
+  source_heading: Confidentiality and Access               # Required. Must match exactly one parsed provision in the mapped container
+  source_file: data/examples/frameworks/iso-27001.md       # Optional. Repository-relative path that identifies the mapped container
   obligations:                        # Required. List of primary entity IDs this provision maps to
     - access-control
 ```
 
-`regulation` and `obligations` are stable 1.x wire keys; their field names do not change with the display labels in `project.yml`. The `regulation` value is a container ID. Each `obligations` value is a primary ID. Supported mapping keys are `id`, `regulation`, `authority`, `source_file`, `source_heading`, and `obligations`. Unknown or duplicate keys, scalar `obligations`, and duplicate obligation IDs are rejected.
+`regulation` and `obligations` are stable 1.x wire keys; their field names do not change with the display labels in `project.yml`. The `regulation` value is a container ID. Each `obligations` value is a primary ID. `authority` must match the mapped container's `authority` field. A provision's `Obligation` value must be a known primary ID and must be included in its mapping's `obligations` list; additional primary IDs remain supported. Generated provision cards display the union of the declared primary and all primary IDs mapped to that provision. `source_heading` must identify exactly one parsed provision section in that container; a timeline or another non-provision `##` heading does not qualify. `source_file`, when present, must identify that same container file, use a path relative to the repository root, and match the configured container directory. Supported mapping keys are `id`, `regulation`, `authority`, `source_file`, `source_heading`, and `obligations`. Unknown or duplicate keys, scalar `obligations`, duplicate obligation IDs, authority mismatches, unresolved source files, and headings that do not identify the mapped provision are rejected. `node scripts/validate.js`, `node scripts/build.js`, `node scripts/verify.js`, and `npm run eval` enforce this same mapping contract.
 
-`source_file` is informational — the build script resolves container files by `regulation` ID, not this path. It is useful for documentation tooling and traceability. If included, use the path relative to the repo root and match your configured `entities.container.directory`.
+`source_file` is informational for tooling and traceability; the build script still resolves the container by `regulation` ID. If included, it must point to the same container named by `regulation`, use the path relative to the repo root, and match your configured `entities.container.directory`.
 
 ## File naming
 

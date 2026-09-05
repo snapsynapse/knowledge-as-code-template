@@ -98,7 +98,7 @@ function validateHttps(value, label, allowExample = false) {
 
 function replaceLine(text, pattern, replacement, label) {
     if (!pattern.test(text)) throw new Error(`Could not customize ${label} in project.yml.`);
-    return text.replace(pattern, replacement);
+    return text.replace(pattern, () => replacement);
 }
 
 function customizeConfig(values) {
@@ -118,11 +118,17 @@ function customizeConfig(values) {
     for (const [role, plural] of roleValues) {
         const block = new RegExp(`(  ${role}:\\n(?:    [^\\n]*\\n)*?    name: )[^\\n]+(\\n    plural: )[^\\n]+`);
         if (!block.test(config)) throw new Error(`Could not customize ${role} entity labels.`);
-        config = config.replace(block, `$1${singularize(plural)}$2${plural}`);
+        config = config.replace(block, (_match, namePrefix, pluralPrefix) =>
+            `${namePrefix}${yamlString(singularize(plural))}${pluralPrefix}${yamlString(plural)}`);
     }
 
-    config = replaceLine(config, /(  - id: containers\n    label: )[^\n]+/, `$1${values.container}`, 'container navigation');
-    config = replaceLine(config, /(  - id: primaries\n    label: )[^\n]+/, `$1${values.primary}`, 'primary navigation');
+    const replaceNavLabel = (role, label) => {
+        const pattern = new RegExp(`(  - id: ${role}\\n    label: )[^\\n]+`);
+        if (!pattern.test(config)) throw new Error(`Could not customize ${role} navigation in project.yml.`);
+        config = config.replace(pattern, (_match, prefix) => `${prefix}${yamlString(label)}`);
+    };
+    replaceNavLabel('containers', values.container);
+    replaceNavLabel('primaries', values.primary);
     config = config.replace(/\n  - id: pattern\n    label: Pattern\n    href: pattern\.html\n/, '\n');
 
     const patternSection = /# Pattern page[^\n]*\n# -+\npattern:\n[\s\S]*?(?=# -+\n# Social \/ Open Graph meta tags)/;

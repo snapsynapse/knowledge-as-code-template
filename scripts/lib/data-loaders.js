@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { parseFrontmatter } = require('./parsers');
+const { parseFrontmatter, parseScalar } = require('./parsers');
 
 function isSafeId(id) {
     return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(id || ''));
@@ -49,7 +49,12 @@ function loadMappingIndex(filePath) {
         throw new Error(`${path.basename(filePath)}:${lineNumber}: ${message}`);
     };
 
-    for (const [index, line] of content.split('\n').entries()) {
+    const scalar = (value, lineNumber) => {
+        try { return parseScalar(value, false); }
+        catch (error) { fail(lineNumber, error.message); }
+    };
+
+    for (const [index, line] of content.split(/\r?\n/).entries()) {
         const lineNumber = index + 1;
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith('#')) continue;
@@ -57,7 +62,7 @@ function loadMappingIndex(filePath) {
         const entryMatch = line.match(/^- id:\s*(.*)$/);
         if (entryMatch) {
             if (current) entries.push(current);
-            const id = entryMatch[1].trim();
+            const id = scalar(entryMatch[1], lineNumber);
             if (!id) fail(lineNumber, 'mapping entry requires a non-empty id.');
             current = { id, obligations: [] };
             listKey = null;
@@ -70,7 +75,8 @@ function loadMappingIndex(filePath) {
         const listMatch = line.match(/^\s+-\s+(.+)$/);
         if (listMatch) {
             if (listKey !== 'obligations') fail(lineNumber, 'list items are only supported under "obligations".');
-            const obligation = listMatch[1].trim();
+            const obligation = scalar(listMatch[1], lineNumber);
+            if (!obligation) fail(lineNumber, 'obligation requires a non-empty ID.');
             if (current.obligations.includes(obligation)) {
                 fail(lineNumber, `duplicate obligation "${obligation}" in mapping "${current.id}".`);
             }
@@ -85,11 +91,11 @@ function loadMappingIndex(filePath) {
         if (seenKeys.has(key)) fail(lineNumber, `duplicate key "${key}" in mapping "${current.id}".`);
         seenKeys.add(key);
         if (key === 'obligations') {
-            if (rawValue.trim()) fail(lineNumber, '"obligations" must be a YAML list, not a scalar value.');
+            if (scalar(rawValue, lineNumber)) fail(lineNumber, '"obligations" must be a YAML list, not a scalar value.');
             listKey = 'obligations';
             continue;
         }
-        const value = rawValue.trim();
+        const value = scalar(rawValue, lineNumber);
         if (!value) fail(lineNumber, `"${key}" requires a value.`);
         current[key] = value;
         listKey = null;
@@ -105,7 +111,7 @@ function parseProvisionSection(section) {
     if (!nameMatch) return null;
 
     const provision = { name: nameMatch[1] };
-    const propTableMatch = trimmed.match(/\| Property \| Value \|[\s\S]*?\n\n/);
+    const propTableMatch = trimmed.match(/\| Property \| Value \|[\s\S]*?(?:\n\n|$)/);
     if (propTableMatch) {
         parseTable(propTableMatch[0]).forEach(item => {
             provision[item.property.toLowerCase().replace(/\s+/g, '_')] = item.value;

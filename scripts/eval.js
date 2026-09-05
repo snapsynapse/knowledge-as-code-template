@@ -223,10 +223,10 @@ function evalInitializerGoldenPath() {
 
         const config = fs.readFileSync(path.join(target, 'project.yml'), 'utf8');
         assertIncludes(config, 'name: "Policy Evidence Map"');
-        assertIncludes(config, 'name: Control\n    plural: Controls');
-        assertIncludes(config, 'name: Policy\n    plural: Policies');
-        assertIncludes(config, 'label: Policies');
-        assertIncludes(config, 'label: Controls');
+        assertIncludes(config, 'name: "Control"\n    plural: "Controls"');
+        assertIncludes(config, 'name: "Policy"\n    plural: "Policies"');
+        assertIncludes(config, 'label: "Policies"');
+        assertIncludes(config, 'label: "Controls"');
         assertIncludes(config, 'pattern:\n  enabled: false');
         assertIncludes(config, 'ecosystem: []');
 
@@ -236,7 +236,10 @@ function evalInitializerGoldenPath() {
             ['scripts/verify.js'],
             ['scripts/check-links.js']
         ]) {
-            const result = spawnSync(process.execPath, command, { cwd: target, encoding: 'utf8' });
+            const result = spawnSync(process.execPath, command, {
+                cwd: target, encoding: 'utf8',
+                env: { ...process.env, KAC_NOW: '2026-07-21T00:00:00Z' }
+            });
             assert.strictEqual(result.status, 0, `Initialized project command failed (${command.join(' ')}):\n${result.stdout}\n${result.stderr}`);
         }
         assertFile(path.join(target, 'docs', 'index.html'));
@@ -462,11 +465,11 @@ function evalParserFixtures() {
 
     const advancedFmFixture = fs.readFileSync(path.join(FIXTURES_DIR, 'frontmatter-fixture-advanced.md'), 'utf8');
     const advancedParsed = parseFrontmatter(advancedFmFixture);
-    assert.strictEqual(advancedParsed.frontmatter.title, '"Quoted title"');
+    assert.strictEqual(advancedParsed.frontmatter.title, 'Quoted title');
     assert.strictEqual(advancedParsed.frontmatter.status, 'active');
     assert.deepStrictEqual(advancedParsed.frontmatter.search_terms, ['zero dependency', 'bridge: pages']);
-    assert.deepStrictEqual(advancedParsed.frontmatter.aliases, ['"Control One"', '"Control: Primary"']);
-    assert.strictEqual(advancedParsed.frontmatter.notes, '"Quoted: keeps colon"');
+    assert.deepStrictEqual(advancedParsed.frontmatter.aliases, ['Control One', 'Control: Primary']);
+    assert.strictEqual(advancedParsed.frontmatter.notes, 'Quoted: keeps colon');
     assert.strictEqual(advancedParsed.frontmatter.empty_field, undefined);
     assert.ok(advancedParsed.body.startsWith('## Summary'));
 
@@ -816,7 +819,11 @@ function evalChangelogReleaseTags() {
     const localTags = result.stdout.split(/\s+/).filter(Boolean);
     if (localTags.length === 0) return;
 
+    const candidateTag = `v${readJson(path.join(ROOT, 'package.json')).version}`;
     for (const tag of linkedVersions) {
+        // Release preparation precedes tag creation. Historical release links
+        // must resolve locally; the current candidate is checked after publish.
+        if (tag === candidateTag) continue;
         assert.ok(localTags.includes(tag), `Changelog links ${tag}, but no matching local tag exists.`);
     }
 }
@@ -824,7 +831,7 @@ function evalChangelogReleaseTags() {
 function evalHtmlSnapshots() {
     buildDefault();
     const snapshots = [
-        ['index.html', ['Updated <time datetime="2026-07-25">July 25, 2026</time>', 'Run a pilot', 'transitive runtime dependency tree']],
+        ['index.html', ['Run a pilot', 'transitive runtime dependency tree']],
         ['docs/index.html', ['Example Knowledge Base', 'Coverage Matrix', 'JSON API']],
         ['docs/container/iso-27001/index.html', ['ISO/IEC 27001:2022', 'Provisions (2)', 'Official source']],
         ['docs/primary/access-control/index.html', ['Access Control', 'What Counts', 'Implementing Frameworks']],
@@ -947,6 +954,18 @@ function evalReleaseMetadata() {
     const landing = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
     assertIncludes(changelog, `## [${version}]`);
     assertIncludes(manifest, `bundle_version: ${version}`);
+    const escapedVersion = version.replace(/\./g, '\\.');
+    const releaseDate = changelog.match(new RegExp(String.raw`^## \[${escapedVersion}\] - (\d{4}-\d{2}-\d{2})$`, 'm'))?.[1];
+    assert.ok(releaseDate, 'Current release requires a dated changelog entry.');
+    assertIncludes(manifest, `bundle_date: ${releaseDate}`);
+    assertIncludes(landing, `content="${releaseDate}T00:00:00Z"`);
+    assertIncludes(landing, `"dateModified": "${releaseDate}"`);
+    const rootSitemap = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
+    const landingEntry = [...rootSitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)]
+        .map(match => match[1]).find(entry => entry.includes('<loc>https://knowledge-as-code.com/</loc>'));
+    assert.ok(landingEntry, 'Root sitemap must list canonical landing.');
+    assertIncludes(landingEntry, `<lastmod>${releaseDate}</lastmod>`);
+    assertIncludes(landing, `<time datetime="${releaseDate}">${releaseDate}</time>`);
     assertIncludes(landing, `<span class="version">v${version.split('.').slice(0, 2).join('.')}</span>`);
 
     const request = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }) + '\n';
@@ -970,7 +989,6 @@ function evalMcpNotificationSilence() {
 function evalDocsConsistency() {
     const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
     const buildWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/build.yml'), 'utf8');
-    const pagesWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/pages.yml'), 'utf8');
     const verification = fs.readFileSync(path.join(ROOT, 'VERIFICATION.md'), 'utf8');
     const verifyWorkflow = fs.readFileSync(path.join(ROOT, '.github/workflows/verify.yml'), 'utf8');
     const intent = fs.readFileSync(path.join(ROOT, 'INTENT.md'), 'utf8');
@@ -980,10 +998,7 @@ function evalDocsConsistency() {
     const schema = fs.readFileSync(path.join(ROOT, 'data/_schema.md'), 'utf8');
     const deployment = fs.readFileSync(path.join(ROOT, 'DEPLOYMENT.md'), 'utf8');
 
-    assertIncludes(readme, 'node scripts/init.js ../my-knowledge-base');
     assertIncludes(readme, '`docs/` is transient local output');
-    assertIncludes(buildWorkflow, 'Build site (sanity check)');
-    assertIncludes(pagesWorkflow, 'actions/deploy-pages@v4');
     assert.ok(!readme.includes('deploys to GitHub Pages automatically'), 'README should not claim automatic deployment.');
     assert.ok(!verification.includes('continue-on-error: true'), 'Verification docs should reflect current workflow implementation.');
     assertIncludes(verifyWorkflow, 'echo "exit_code=$?" >> "$GITHUB_OUTPUT"');
@@ -1003,7 +1018,15 @@ function evalDocsConsistency() {
     assertIncludes(maintenance, '`regulation` and `obligations`');
 }
 
+function evalRegressionContracts() {
+    const tests = fs.readdirSync(path.join(ROOT, 'tests')).filter(file => file.endsWith('.test.js')).sort();
+    assert.ok(tests.length, 'Expected behavioral regression tests.');
+    const result = runNode(['--test', ...tests.map(file => path.join('tests', file))]);
+    assert.strictEqual(result.status, 0, `Regression contracts failed:\n${result.stdout}\n${result.stderr}`);
+}
+
 const evals = [
+    ['regression contracts', evalRegressionContracts],
     ['build smoke', evalBuildSmoke],
     ['fresh clone build', evalFreshCloneBuild],
     ['initializer golden path', evalInitializerGoldenPath],

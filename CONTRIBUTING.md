@@ -33,12 +33,18 @@ last_verified: 2025-01-15
 ```
 
 **Container entities:**
+
+Replace: `ISO/IEC 27001:2022` -> the container's human-readable name.
+Replace: `iso` -> the ID of the authority file that produces this container.
+Replace: `International` -> the jurisdiction or scope value required by `project.yml`.
+
+Customize
 ```yaml
 ---
 name: ISO/IEC 27001:2022
-status: active
 authority: iso
-last_verified: 2025-01-15
+jurisdiction: International
+status: active
 ---
 ```
 
@@ -55,12 +61,22 @@ last_verified: 2025-01-15
 
 For containers that reference primary entities, add entries to `data/examples/mapping/index.yml` (or the path configured in `project.yml` under `mapping.file`):
 
+Replace: `iso-27001-access-control` -> a unique mapping ID for this provision.
+Replace: `iso-27001` -> the mapped container filename ID.
+Replace: `iso` -> the authority ID in that container's `authority` field.
+Replace: `Confidentiality and Access` -> the exact parsed provision heading in the mapped container.
+Replace: `data/examples/frameworks/iso-27001.md` -> the repository-relative path to that mapped container file.
+Replace: `access-control` -> the primary entity filename ID this provision maps to.
+
+Customize
 ```yaml
-- id: provision-id
-  regulation: framework-id
+- id: iso-27001-access-control
+  regulation: iso-27001
+  authority: iso
+  source_heading: Confidentiality and Access
+  source_file: data/examples/frameworks/iso-27001.md
   obligations:
-    - primary-id-1
-    - primary-id-2
+    - access-control
 ```
 
 ### 4. Validate and Build
@@ -133,32 +149,46 @@ Check the generated `docs/` directory for the HTML site and `docs/api/v1/` for t
 
 Container entity files have a specific structure with a timeline table and provision sections separated by `---`:
 
+Replace: `ISO/IEC 27001:2022` -> the container's human-readable name.
+Replace: `iso` -> the authority ID that produces this container.
+Replace: `International` -> the jurisdiction or scope value required by `project.yml`.
+Replace: `Confidentiality and Access` -> the provision heading referenced by the mapping entry.
+Replace: `access-control` -> the primary entity filename ID linked by this provision.
+
+Customize
 ```markdown
 ---
-name: Example Framework
+name: ISO/IEC 27001:2022
 status: active
-authority: org-id
+authority: iso
+jurisdiction: International
 ---
 
 ## Timeline
 
-| Date | Event |
-|------|-------|
-| 2024-01-01 | Published |
+| Milestone | Date | Notes |
+|-----------|------|-------|
+| Published | 2022-10-25 | ISO/IEC 27001:2022 released |
 
 ---
 
-## Provision Name
+## Confidentiality and Access
 
 | Property | Value |
 |----------|-------|
-| Category | example |
+| Obligation | access-control |
+| Sections | ISO public overview |
+| Status | active |
+| Effective | 2022-10-25 |
+| Verified | 2026-07-21 |
+| Checked | 2026-07-21 |
 
 ### Requirements
 
-| Requirement | Description |
+| Requirement | Details |
 |-------------|-------------|
-| req-id | Details here |
+| Confidential access | Ensure only the right people can access information |
+| Risk management | Manage risks to information handled by the organization |
 ```
 
 See existing container files for complete examples.

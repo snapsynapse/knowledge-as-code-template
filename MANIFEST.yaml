@@ -27,8 +27,8 @@
 #   - This file itself
 
 bundle: knowledge-as-code-template
-bundle_version: 1.1.2
-bundle_date: 2026-07-25
+bundle_version: 1.2.0
+bundle_date: 2026-09-05
 description: >
   Knowledge as Code starter template — scaffolds a KaC site with
   Primary/Container/Authority/Secondary entities, gist ontology binding,
@@ -47,7 +47,7 @@ files:
 
   - path: README.md
     role: protocol
-    hash: sha256:dfebb03cd3f65629151a36d66eb7ed84a1918b5208e2ea6f6b2c41a4870b2141
+    hash: sha256:1a7908fd2a2b216265007828a939ed06c0f60e65d2e1a0695e1b6624669b37b2
     note: Template overview
 
   - path: favicon.svg
@@ -57,22 +57,22 @@ files:
 
   - path: DEPLOYMENT.md
     role: protocol
-    hash: sha256:354540763d70739540da1d4bdf31f2b2ebe6fc26fa063baf08ad9f7b7f335506
+    hash: sha256:46419f0fba0304c113d2e35dc5e9251fdde9cc038b1b66a83bbc232245100e55
     note: Deployment profiles, environment overrides, and troubleshooting
 
   - path: assistant-guide.txt
     role: guidecheck
-    hash: sha256:fbbd7ef36427e736d5748f1976c56839ab7af85871e1e407c410b600cbfc3954
+    hash: sha256:1f5f955fd03b8a3a176cec4bd312bb36bdf81a42922e659ca447417345493276
     note: Repository-root GuideCheck assistant guide copy
 
   - path: .well-known/assistant-guide.txt
     role: guidecheck
-    hash: sha256:fbbd7ef36427e736d5748f1976c56839ab7af85871e1e407c410b600cbfc3954
+    hash: sha256:1f5f955fd03b8a3a176cec4bd312bb36bdf81a42922e659ca447417345493276
     note: Canonical GuideCheck assistant guide
 
   - path: .well-known/assistant-guide-manifest.txt
     role: guidecheck
-    hash: sha256:eec1d3c29731d14769faf0c3782e220178798f6ca2bc4663b2517602795ce15e
+    hash: sha256:5c0f8a5f13e25f46f0e0efd45c1963ef3d993415e3f440359a392e1eb79e7f7d
     note: GuideCheck sidecar manifest
 
   - path: project.yml
@@ -82,7 +82,7 @@ files:
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:bb772c25c828ddf56321dc03dceb3ec6055edf9d4178e9d0d6bcf8e4796e3af4
+    hash: sha256:0b9445770253923bee61b49b90a883bf3db3a6511777b9da928ae26022f8382a
     note: Static site generator
 
   - path: scripts/assets/favicon.svg
@@ -92,17 +92,17 @@ files:
 
   - path: scripts/init.js
     role: tooling
-    hash: sha256:e9d42face450abb17437edb78af8927dc61c4b917b267174e6fd66137b61098b
+    hash: sha256:5272570d8383a76c57a490c796da0da44a73bdfc412dfefd9e03da9c123fc443
     note: Clean-project initializer
 
   - path: scripts/validate.js
     role: tooling
-    hash: sha256:498bf63d90d24066189388ad28e147bbaf25716031e40f8973040e67abf48af1
+    hash: sha256:37ef3bc38e57be246f13fc23b72c9b086c77a7bf1697e5903dcbc6511da0e545
     note: Cross-reference validator
 
   - path: scripts/verify.js
     role: tooling
-    hash: sha256:a4abb00b5a0304e27ccd2dd9ea79741fa9e70c18c545cfcb86d15fd3bb5b1bdb
+    hash: sha256:61c8d1848da6f6968cfa90c27a977313fc258f90547fd858d324b8f12d8ae87b
     note: Staleness / freshness checker
 
   - path: scripts/lib/urls.js
@@ -112,30 +112,115 @@ files:
 
   - path: scripts/lib/data-loaders.js
     role: tooling
-    hash: sha256:dee9a214f941fab38a0ee0dfb8b68ce3f68ad205360eff9dacd881cad3525bc1
+    hash: sha256:96bf7edecd5462ab5f5cf37a7a8859691d5d8af5344f4745e3ed9fc9b3fb9954
     note: Canonical entity, mapping, timeline, and provision loading
 
   - path: scripts/lib/parsers.js
     role: tooling
-    hash: sha256:0e458681cb9c40f5868a11dcde3c3dc554368862c6a8a5cbb625c65a8c257aee
+    hash: sha256:182bb1a68d9155ba5ef7a3a88f82fcbefb3cc2bdcc8e8edd8050b5ae26f60660
     note: Supported YAML and frontmatter parser subset
 
   - path: scripts/eval.js
     role: tooling
-    hash: sha256:c2d73494bb777a6a23a78893ac38162d99bf252620d748ca27e5a9b504062ea9
+    hash: sha256:7f5622d2245588bf7cdf00cd2afcf651f7b9a44565b3572645b931bdfcfd0e49
     note: Behavioral and security regression suite
 
   - path: mcp-server.js
     role: tooling
-    hash: sha256:47dbdf6fd84013df6407ed538c72816d758c4531b65be11b1d95861e1d7467da
+    hash: sha256:d4ae594793355fd758397e520999e6838286a30f2e8ecf691dc491a241e04b3b
     note: Read-only MCP interface over canonical project data
 
   - path: scripts/check-links.js
     role: tooling
-    hash: sha256:304845985e34fab6aba2606213940e9beb44f109073e671860d7031a2df26d72
+    hash: sha256:5f813ba62dedace8292b4247559a0a2db85bf751b8685ef10770cea53d468b06
     note: Internal link checker
 
   - path: scripts/validate-hashes.sh
     role: tooling
     hash: sha256:019b9a6ea7fe9c7de93f9edd7d13eef706139ccba8a4192bb0033f207b40365c
     note: This manifest's verifier
+
+  - path: scripts/lib/validation.js
+    role: tooling
+    hash: sha256:3e5b163a0faff73cf415725ac0313a9316d522426e03e845ea819e0f8d197574
+    note: Shared structural and relationship validation
+
+  - path: scripts/lib/output-safety.js
+    role: tooling
+    hash: sha256:c0a9a94e2745240b8f35d0a57ceb0f8a762cb40bdf79ca4b05d3c1d7c6ca1493
+    note: Symlink-safe generated-output cleanup
+
+  - path: package.json
+    role: protocol
+    hash: sha256:b434018b5b8ecffbc387f3f82deeb44cb83e662cf2cfe5aad5c34bf84ab12d81
+    note: Release identity and supported commands
+
+  - path: index.html
+    role: protocol
+    hash: sha256:8a431b58a12102a94602548fa3810ce348e10b5e2701e0a708649c1c78c595f7
+    note: Canonical landing and executable quick start
+
+  - path: sitemap.xml
+    role: protocol
+    hash: sha256:08418d626f7c64e2429f9d0e35f730d142d4ce8a66dd096abbb5fface26fe39d
+    note: Canonical landing and guide discovery
+
+  - path: MIGRATION.md
+    role: protocol
+    hash: sha256:202f7743b2103c3a34267d0f42f5ce2d1f49f0d8c3d05dd3b0086018c271b647
+    note: Upgrade procedure and corrected mapping example
+
+  - path: data/_schema.md
+    role: protocol
+    hash: sha256:179f15da4473646ba51787bc9c509d5922d5ddd0b6255bc52189a4edc648ea5e
+    note: Supported data contract and executable examples
+
+  - path: CONTRIBUTING.md
+    role: protocol
+    hash: sha256:e53b5ac6ef90e441d63428228d6890398718d79326e2993685e91f14c0d31b76
+    note: Contributor examples
+
+  - path: MAINTENANCE.md
+    role: protocol
+    hash: sha256:0d1fde34cb47dc6a25e71ff9bbfa28adb23ebf41bc99167850d919369881457d
+    note: Compatibility and upgrade policy
+
+  - path: VERIFICATION.md
+    role: protocol
+    hash: sha256:342c65c3dee9f888d59cba12a2a3acb016e44aa44762a57b58c836d1dc45949e
+    note: Structural and external verification boundaries
+
+  - path: tests/documentation-examples.test.js
+    role: tooling
+    hash: sha256:c08a43680e7f31dc05f2776b0c12622b1959f215917dabee3c03eb2cf1265839
+    note: Executable schema and contributor examples
+
+  - path: tests/output-safety.test.js
+    role: tooling
+    hash: sha256:2f9c8a9a63dba03fc3e0e5446ff7a9cbb5778facf1b1178f0829a8bfa99245d7
+    note: Output boundary and link regressions
+
+  - path: tests/parser-roundtrip.test.js
+    role: tooling
+    hash: sha256:80b241c859de7bc0beb8aafb8fcd39adfcc2b007a1cd37ae8f3f8d9269efc34d
+    note: Parser and initializer regressions
+
+  - path: tests/validation-contract.test.js
+    role: tooling
+    hash: sha256:c626e168fa42a0eb9f4c62428d58bdae8cb12ebff726ede2b53d6c4f32437f20
+    note: Cross-entry-point relationship and rendering regressions
+
+  - path: tests/public-workflow.test.js
+    role: tooling
+    hash: sha256:003d194b68bac9d365bdfe542dca76360a57d41bf2bb21edcf99755839873c53
+    note: Website workflow and upgrade regressions
+
+  - path: tests/guide-contract.test.js
+    role: tooling
+    hash: sha256:f41a8c4026546ee9565a3d3a6733e8278488fb69ac943a3e25a2118952f98595
+    note: Guide integrity and action-effects contract
+
+  - path: llms.txt
+    role: protocol
+    hash: sha256:f7725ba01ac0663704fb605b41ad477741905f6514c49f9bdf8d7fd1edba2524
+    note: Canonical machine-readable scope and guide verification boundary

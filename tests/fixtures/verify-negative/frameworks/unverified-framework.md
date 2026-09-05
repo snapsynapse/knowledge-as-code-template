@@ -9,3 +9,11 @@ effective: 2026-01-01
 | Milestone | Date | Notes |
 | --- | --- | --- |
 | Published | 2026-01-01 | Fixture |
+
+---
+
+## Fresh requirement provision
+
+| Property | Value |
+|----------|-------|
+| Obligation | fresh-requirement |

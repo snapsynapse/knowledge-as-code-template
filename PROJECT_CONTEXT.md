@@ -9,7 +9,7 @@ This repo is **two things at once**:
 1. The reference template (MIT-licensed, fork-friendly) for the Knowledge-as-Code pattern.
 2. The canonical landing site for that pattern at **knowledge-as-code.com** (hand-written `index.html`, `404.html`, etc. at repo root) plus its live reference build at `knowledge-as-code.com/demo/` (generated from `data/examples/` into `/demo/`).
 
-The Knowledge-as-Code pattern itself was created by Sam Rogers ("Snap") for PAICE.work PBC, first published 2026-01-20 on snapsynapse.com, with the reference template following about two months later.
+The implementation in this repository was created by Sam Rogers ("Snap") for PAICE.work PBC, with the reference landing page first published 2026-01-20 on snapsynapse.com. The broader Knowledge-as-Code pattern predates this repository; this project documents one specific generator and ontology implementation.
 
 ## Current status
 
@@ -21,7 +21,7 @@ An earlier 2026-06-09 portfolio review proposed maintenance-only status and rese
 
 - **Template consumers**: developers/teams evaluating or forking the template to build their own knowledge base (see README Quick Start, `CONTRIBUTING.md`, `data/_schema.md`).
 - **knowledge-as-code.com visitors**: people landing on the pattern's canonical page, browsing the live demo, or citing the pattern.
-- **Agents**: `AGENTS.md` / `CLAUDE.md` (identical, template-distributed) plus `llms.txt`, `.well-known/assistant-guide.txt`, and `mcp-server.js` give AI agents structured access to both the template internals and the example knowledge base.
+- **Agents**: `AGENTS.md` / `CLAUDE.md` are identical instructions for work in this canonical checkout and are not copied by the initializer. The repository's `llms.txt`, `.well-known/assistant-guide.txt`, and `mcp-server.js` give agents structured access to the template internals and example knowledge base; initialized projects receive the runtime and generated surfaces described by the initializer.
 
 ## Style / tone
 

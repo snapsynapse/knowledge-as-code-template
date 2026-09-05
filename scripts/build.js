@@ -14,6 +14,8 @@
 const fs = require('fs');
 const path = require('path');
 const { assertSafeId, loadProjectData } = require('./lib/data-loaders');
+const { cleanGeneratedOutput: cleanOwnedGeneratedOutput } = require('./lib/output-safety');
+const { validateProjectData } = require('./lib/validation');
 const { parseYaml } = require('./lib/parsers');
 const { normalizeCustomDomain, normalizeHttpsUrl, normalizeSiteUrl, normalizeSocialConfig } = require('./lib/urls');
 
@@ -145,12 +147,6 @@ function ensureDir(dir) {
 }
 
 function cleanGeneratedOutput() {
-    const outputRoot = path.resolve(DOCS_DIR);
-    const repoRoot = path.resolve(ROOT);
-    if (outputRoot === repoRoot || !outputRoot.startsWith(repoRoot + path.sep)) {
-        throw new Error(`Refusing to clean unsafe output directory: ${DOCS_DIR}`);
-    }
-
     const ownedDirs = ['api', 'assets', 'container', 'primary', 'authority', 'requires', 'compare', 'applies-to'];
     const ownedFiles = [
         'index.html', 'containers.html', 'primaries.html', 'matrix.html', 'timeline.html',
@@ -158,13 +154,7 @@ function cleanGeneratedOutput() {
         'robots.txt', 'llms.txt', 'agents.json', 'index.xml', 'CNAME', '.nojekyll'
     ];
 
-    ensureDir(DOCS_DIR);
-    for (const dir of ownedDirs) {
-        fs.rmSync(path.join(DOCS_DIR, dir), { recursive: true, force: true });
-    }
-    for (const file of ownedFiles) {
-        fs.rmSync(path.join(DOCS_DIR, file), { force: true });
-    }
+    cleanOwnedGeneratedOutput({ repoRoot: ROOT, outputDir: DOCS_DIR, ownedDirs, ownedFiles });
 }
 
 function copyStaticAssets() {
@@ -195,68 +185,6 @@ function extractSection(body, heading) {
 
 function parseBulletList(text) {
     return text.split('\n').map(l => l.trim()).filter(l => l.startsWith('- ')).map(l => l.slice(2).trim());
-}
-
-function validateDataIds({ config, primaries, containers, authorities, mappingIndex }) {
-    primaries.forEach(p => assertSafeId(p.id, 'Primary ID'));
-    containers.forEach(c => assertSafeId(c.id, 'Container ID'));
-    authorities.forEach(a => assertSafeId(a.id, 'Authority ID'));
-    const primaryIds = new Set(primaries.map(p => p.id));
-    const containerIds = new Set(containers.map(c => c.id));
-    const authorityIds = new Set(authorities.map(a => a.id));
-    const mappingIds = new Set();
-    const groups = new Set((config.entities?.primary?.groups || []).map(group => group.name || group));
-    const statuses = new Set((config.entities?.container?.statuses || []).map(status => status.name || status));
-    const scopeField = config.entities?.container?.scope_field;
-
-    for (const primary of primaries) {
-        if (!primary.name) throw new Error(`${primary.file} requires frontmatter "name".`);
-        if (!primary.group) throw new Error(`${primary.file} requires frontmatter "group".`);
-        if (groups.size && !groups.has(primary.group)) throw new Error(`${primary.file} uses unknown group "${primary.group}".`);
-    }
-    for (const container of containers) {
-        if (!container.name) throw new Error(`${container.file} requires frontmatter "name".`);
-        if (!container.authority) throw new Error(`${container.file} requires frontmatter "authority".`);
-        if (!authorityIds.has(container.authority)) throw new Error(`Container "${container.id}" references unknown authority "${container.authority}".`);
-        if (!container.status) throw new Error(`${container.file} requires frontmatter "status".`);
-        if (statuses.size && !statuses.has(container.status)) throw new Error(`${container.file} uses unknown status "${container.status}".`);
-        if (scopeField && !container[scopeField]) throw new Error(`${container.file} requires configured scope field "${scopeField}".`);
-    }
-    authorities.forEach(authority => {
-        if (!authority.name) throw new Error(`${authority.file} requires frontmatter "name".`);
-    });
-
-    mappingIndex.forEach(m => {
-        assertSafeId(m.id, 'Mapping ID');
-        if (mappingIds.has(m.id)) throw new Error(`Duplicate mapping ID "${m.id}".`);
-        mappingIds.add(m.id);
-        if (!m.regulation) throw new Error(`Mapping "${m.id}" requires "regulation".`);
-        if (m.regulation) assertSafeId(m.regulation, `Mapping ${m.id} container reference`);
-        if (m.container) assertSafeId(m.container, `Mapping ${m.id} container reference`);
-        if (m.framework) assertSafeId(m.framework, `Mapping ${m.id} container reference`);
-        if (!containerIds.has(m.regulation)) throw new Error(`Mapping "${m.id}" references unknown container "${m.regulation}".`);
-        if (!m.authority) throw new Error(`Mapping "${m.id}" requires "authority".`);
-        if (m.authority) assertSafeId(m.authority, `Mapping ${m.id} authority reference`);
-        if (!authorityIds.has(m.authority)) throw new Error(`Mapping "${m.id}" references unknown authority "${m.authority}".`);
-        if (!(m.obligations || []).length) throw new Error(`Mapping "${m.id}" requires at least one "obligations" entry.`);
-        (m.obligations || []).forEach(obl => assertSafeId(obl, `Mapping ${m.id} primary reference`));
-        for (const obligation of m.obligations || []) {
-            if (!primaryIds.has(obligation)) throw new Error(`Mapping "${m.id}" references unknown primary "${obligation}".`);
-        }
-    });
-
-    if (scopeField && config.bridges?.applies_to) {
-        const routes = new Map();
-        for (const container of containers) {
-            const scope = container[scopeField];
-            const route = slugify(scope);
-            if (!route) throw new Error(`Container "${container.id}" has a scope value that cannot produce a route.`);
-            if (routes.has(route) && routes.get(route) !== scope) {
-                throw new Error(`Scope values "${routes.get(route)}" and "${scope}" both produce route "${route}".`);
-            }
-            routes.set(route, scope);
-        }
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -516,7 +444,15 @@ function renderBreadcrumb(items, prefix) {
     </nav>`;
 }
 
-function renderProvisionCard(prov, linkPrefix = '../') {
+function provisionPrimaryIds(provision, containerId, mappings) {
+    return [...new Set([
+        provision.obligation,
+        ...mappings.filter(mapping => mapping.regulation === containerId && mapping.source_heading === provision.name)
+            .flatMap(mapping => mapping.obligations)
+    ].filter(Boolean))];
+}
+
+function renderProvisionCard(prov, linkPrefix = '../', primaryIds = [prov.obligation].filter(Boolean)) {
     const reqRows = (prov.requirements || []).map(r => `<tr><td>${escapeHTML(r.requirement || '')}</td><td>${escapeHTML(r.details || '')}</td></tr>`).join('');
     const penRows = (prov.penalties || []).map(p => `<tr><td>${escapeHTML(p.violation || '')}</td><td>${escapeHTML(p.fine || '')}</td></tr>`).join('');
     const sources = (prov.sources || [])
@@ -528,7 +464,7 @@ function renderProvisionCard(prov, linkPrefix = '../') {
     return `<div class="provision-card" id="${slugify(prov.name)}">
         <h3>${escapeHTML(prov.name)}</h3>
         <div class="provision-meta">
-            ${prov.obligation ? `<span><strong>Implements:</strong> <a href="${linkPrefix}primary/${pathSegment(prov.obligation, 'Provision primary reference')}/index.html" onclick="passTheme(this)">${escapeHTML(humanizeId(prov.obligation))}</a></span>` : ''}
+            ${primaryIds.length ? `<span><strong>Implements:</strong> ${primaryIds.map(id => `<a href="${linkPrefix}primary/${pathSegment(id, 'Provision primary reference')}/index.html" onclick="passTheme(this)">${escapeHTML(humanizeId(id))}</a>`).join(', ')}</span>` : ''}
             ${prov.status ? `<span>${renderStatusBadge(prov.status)}</span>` : ''}
             ${prov.effective ? `<span><strong>Effective:</strong> ${formatDate(prov.effective)}</span>` : ''}
         </div>
@@ -961,7 +897,7 @@ function generateContainerDetail(config, container, data, configCSS) {
         </div>` : ''}
         ${timelineRows ? `<h3>Timeline</h3><table class="data-table"><thead><tr><th>Milestone</th><th>Date</th><th>Notes</th></tr></thead><tbody>${timelineRows}</tbody></table>` : ''}
         <h3>Provisions (${container.provisions.length})</h3>
-        ${container.provisions.map(p => renderProvisionCard(p, '../../')).join('\n')}
+        ${container.provisions.map(p => renderProvisionCard(p, '../../', provisionPrimaryIds(p, container.id, data.mappingIndex))).join('\n')}
     `;
 
     const structuredData = {
@@ -1066,9 +1002,9 @@ function generateRequiresBridge(config, containerId, primaryId, data, configCSS)
             <h2>Does ${escapeHTML(container.name)} require ${escapeHTML(pName)}?</h2>
         </div>
         <div class="bridge-answer">
-            ${covered ? `<p class="answer-yes">Yes &mdash; ${matching.length} provision${matching.length !== 1 ? 's' : ''}</p>` : `<p class="answer-no">Not specifically addressed</p>`}
+            ${covered ? `<p class="answer-yes">Yes &mdash; ${provCards.length} provision${provCards.length !== 1 ? 's' : ''}</p>` : `<p class="answer-no">Not specifically addressed</p>`}
         </div>
-        ${provCards.map(p => renderProvisionCard(p, '../../../')).join('\n')}
+        ${provCards.map(p => renderProvisionCard(p, '../../../', provisionPrimaryIds(p, containerId, mappingIndex))).join('\n')}
         <div style="margin-top: 2rem; text-align: center;">
             <a href="../../../container/${pathSegment(containerId, 'Container ID')}/index.html" onclick="passTheme(this)" class="bridge-cta">View ${escapeHTML(config.entities?.container?.name || 'container')}</a>
             <a href="../../../primary/${pathSegment(primaryId, 'Primary ID')}/index.html" onclick="passTheme(this)" class="bridge-cta">View ${escapeHTML(config.entities?.primary?.name || 'primary')}</a>
@@ -1085,7 +1021,7 @@ function generateRequiresBridge(config, containerId, primaryId, data, configCSS)
             answerCount: 1,
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: covered ? `Yes — ${matching.length} provision${matching.length !== 1 ? 's' : ''}.` : 'Not specifically addressed.'
+                text: covered ? `Yes — ${provCards.length} provision${provCards.length !== 1 ? 's' : ''}.` : 'Not specifically addressed.'
             }
         },
         url: `${config.url}requires/${pathSegment(containerId, 'Container ID')}/${pathSegment(primaryId, 'Primary ID')}/`
@@ -1356,7 +1292,7 @@ function build() {
     const loaded = loadProjectData(ROOT, config, { requireMapping: true });
     const { primaries, containers, authorities } = loaded;
     const mappingIndex = loaded.mappings;
-    validateDataIds({ config, primaries, containers, authorities, mappingIndex });
+    validateProjectData(config, loaded, ROOT);
 
     setBuildStamp(containers);
 

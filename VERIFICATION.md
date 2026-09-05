@@ -23,6 +23,11 @@ The script validates that:
 - Every container has at least one mapping entry
 - Every mapping references valid primary entity IDs
 - Every mapping references valid container IDs
+- Every mapping authority matches its container's authority
+- Every mapping heading identifies exactly one provision in that container
+- Any supplied source file identifies that same container
+
+Build, validation, verification, and MCP use the same structural checks. Freshness, evidence metadata, and external factual review remain verifier-specific. Invalid structure prevents external review from running.
 
 ### Evidence Metadata
 

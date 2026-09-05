@@ -25,7 +25,7 @@ Published URLs must use HTTPS, a bare domain, and no query, fragment, credential
 | `KAC_LINK_CHECK_DIR` | Artifact checked by `scripts/check-links.js` | `docs` |
 | `KAC_LINK_BASE_PATH` | Explicit deployment base path for link checking when no sitemap is available | Derived from the artifact sitemap |
 
-The output directory must be a child of the repository. The build refuses the repository root and parent paths.
+The output directory must be a child of the repository. The build refuses the repository root, parent paths, symlinked output directories, and symlinked ancestors below the repository root before cleanup. Filesystem aliases above the repository root are supported.
 
 ## GitHub Pages
 

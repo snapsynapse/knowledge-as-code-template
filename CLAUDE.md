@@ -13,7 +13,7 @@ This repo is BOTH the reference template (MIT, fork-friendly) AND the canonical 
 
 GitHub Pages serves `main` branch root. `.nojekyll` is critical so raw `.md` files serve as text for the "see the source" links on the landing.
 
-**Template forks only need `/scripts/`, `/project.yml`, `/data/`, and the workflow.** They can delete `/index.html`, `/demo/`, `/404.html`, `/CNAME`, `/imgs/`, `/sitemap.xml`, `/robots.txt`, and `/.nojekyll` to start clean.
+**Use the initializer (`node scripts/init.js`) to create a supported template fork.** If copying the layout manually, retain `/scripts/` including `/scripts/assets/` and `/scripts/lib/`, `/project.yml`, `/package.json`, `/mcp-server.js`, `/mcp.json`, `/DEPLOYMENT.md`, `/LICENSE`, `/data/`, and the required workflows under `/.github/workflows/`. The canonical landing files `/index.html`, `/demo/`, `/404.html`, `/CNAME`, `/imgs/`, `/sitemap.xml`, `/robots.txt`, and `/.nojekyll` belong only to this repository and may be removed from a fork.
 
 ## Project Structure
 

@@ -14,11 +14,22 @@ pattern.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-05
+
 ### Added
+- Added MCP protocol-version negotiation and discovery, generated-page structured data, and offline search checks for the canonical root and demo.
 - Added roadmap commitments for first-class GuideCheck generation and a voluntary, consent-based public library of independent Knowledge-as-Code implementations.
 
 ### Fixed
+- Rejected symlinked output directories and ancestors before generated-output cleanup, and required directory links to resolve to an index page.
+- Shared source validation across build, validation, verification, and MCP so invalid IDs and contradictory mapping provenance fail consistently before publication or agent access.
+- Decoded quoted YAML scalars, inline comments, and CRLF input consistently, and preserved literal initializer names and labels.
+- Made documented data examples executable regression fixtures and pinned the initializer eval clock independently of source review dates.
+- Corrected the canonical-only GuideCheck claim, aligned the website quick start and guide action effects, and directed template consumers to the complete initializer output.
+- Added executable website workflow, guide integrity/action, and migration regressions.
 - Added an SVG favicon to the canonical landing and 404 pages and to every generated and initialized site.
+
+See [Migration](MIGRATION.md) for the tested upgrade procedure. Mappings must now supply the already-documented `source_heading`, identifying exactly one provision in the mapped container. Correct mismatched `authority` values and ensure any `source_file` identifies that container before upgrading. Quoted frontmatter values are decoded; use explicit escaped or nested quotes when quote characters are part of the intended value.
 
 ## [1.1.2] - 2026-07-25
 
@@ -196,7 +207,8 @@ canonical pattern definition at <https://knowledge-as-code.com/>.
   site generator, `scripts/validate.js` cross-reference linter, example data for ISO 27001 and
   NIST CSF, dark/light themed static site output, JSON API, bridge pages, `CNAME` fixture.
 
-[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/snapsynapse/knowledge-as-code-template/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.2.0
 [1.1.2]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.1.2
 [1.1.1]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.1.1
 [1.1.0]: https://github.com/snapsynapse/knowledge-as-code-template/releases/tag/v1.1.0

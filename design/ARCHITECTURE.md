@@ -7,7 +7,7 @@ Data lives in durable markdown files, not locked in an application database.
 Validation in CI, peer review via PR, version control via Git.
 
 ## 3. Zero-Dependency Build
-All scripts use Node.js built-ins only. No npm install, no supply chain risk.
+The core build and validation scripts use Node.js built-ins only. No package installation is required for the supported runtime.
 
 ## 4. Config-Driven
 `project.yml` is the single source of truth for domain configuration. The build script reads it and generates everything.

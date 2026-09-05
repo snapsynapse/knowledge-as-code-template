@@ -119,13 +119,15 @@ function resolveLink(href, sourceFile) {
         resolved = path.resolve(sourceDir, cleanHref);
     }
 
-    // Check if it resolves to a file
-    if (fs.existsSync(resolved)) return null; // OK
-
-    // If it's a directory, check for index.html
-    if (cleanHref.endsWith('/')) {
+    // Files resolve directly. Directories resolve only when they contain an
+    // index page; the directory's existence alone does not make a valid URL.
+    if (fs.existsSync(resolved)) {
+        const stat = fs.statSync(resolved);
+        if (stat.isFile()) return null; // OK
+        if (!stat.isDirectory()) return resolved;
         const indexPath = path.join(resolved, 'index.html');
-        if (fs.existsSync(indexPath)) return null; // OK
+        if (fs.existsSync(indexPath) && fs.statSync(indexPath).isFile()) return null; // OK
+        return indexPath;
     }
 
     // Broken link

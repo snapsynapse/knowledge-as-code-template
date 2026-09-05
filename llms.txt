@@ -17,7 +17,7 @@
 ## Assistant-Facing Instructions
 
 - [Assistant Guide](https://knowledge-as-code.com/.well-known/assistant-guide.txt):
-  GuideCheck Level 4 guide for local verification and generated-output refresh work
+  Human-verifiable guide for local checks; targets GuideCheck Level 4 with an independent published hash anchor. Local verification establishes at most Level 3.
 - [Assistant Guide Manifest](https://knowledge-as-code.com/.well-known/assistant-guide-manifest.txt):
   sidecar manifest with guide hash and byte count
 

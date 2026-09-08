@@ -29,6 +29,8 @@
 :is(html, body).light-mode .status-badge.deprecated { background: #455a64; color: #fff; }
 :root { --accent: #4fc3f7; }
 :is(html, body).light-mode { --accent: #0055aa; }
+.skip-link, .back-to-top { color: #000; }
+:is(html, body).light-mode .skip-link, :is(html, body).light-mode .back-to-top { color: #fff; }
 </style>
     <meta name="description" content="Chronological timeline of 3 milestones across 2 frameworks, with past and upcoming effective dates.">
     <meta property="og:title" content="Timeline">
@@ -77,8 +79,9 @@
     <main class="container" id="main-content">
         <h2 style="margin-top: 0.5rem;">Timeline</h2>
         <p style="color: var(--text-secondary); margin-bottom: 1rem;">Key dates. Solid dots are past; hollow dots are future.</p>
-        <div class="timeline"><div class="timeline-year">2018</div>
+        <div class="timeline"><span class="timeline-track" aria-hidden="true"></span><div class="timeline-year">2018</div>
 <div class="timeline-entry past">
+            <span class="timeline-marker" aria-hidden="true"></span>
             <div class="timeline-date">Apr 16, 2018</div>
             <div class="timeline-content">
                 <a href="container/nist-csf/index.html" onclick="passTheme(this)" class="timeline-regulation">NIST Cybersecurity Framework</a>
@@ -88,6 +91,7 @@
         </div>
 <div class="timeline-year">2022</div>
 <div class="timeline-entry past">
+            <span class="timeline-marker" aria-hidden="true"></span>
             <div class="timeline-date">Oct 25, 2022</div>
             <div class="timeline-content">
                 <a href="container/iso-27001/index.html" onclick="passTheme(this)" class="timeline-regulation">ISO/IEC 27001:2022</a>
@@ -97,6 +101,7 @@
         </div>
 <div class="timeline-year">2024</div>
 <div class="timeline-entry past">
+            <span class="timeline-marker" aria-hidden="true"></span>
             <div class="timeline-date">Feb 26, 2024</div>
             <div class="timeline-content">
                 <a href="container/nist-csf/index.html" onclick="passTheme(this)" class="timeline-regulation">NIST Cybersecurity Framework</a>
@@ -143,7 +148,7 @@
             var btn = document.createElement('button');
             btn.className = 'back-to-top';
             btn.setAttribute('aria-label', 'Back to top');
-            btn.textContent = '\u2191';
+            btn.innerHTML = '<span aria-hidden="true">\u2191</span>';
             document.body.appendChild(btn);
             window.addEventListener('scroll', function() { btn.classList.toggle('visible', window.scrollY > 400); });
             btn.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });

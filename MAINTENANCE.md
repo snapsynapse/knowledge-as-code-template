@@ -16,6 +16,10 @@ The maintained public path is:
 
 The current supported runtime is Node.js 18 or later on macOS and Linux. Windows may work but is not part of the tested support promise.
 
+## Accessibility gate
+
+The canonical CI scans the generated template, canonical root landing, and canonical demo with the immutable A11y Audit identity and fail-closed major-findings policy recorded in [the 2026-09-07 accessibility adoption evidence](audits/a11y-2026-09-07.md). The generator keeps its Node.js 18-or-later support promise; the accessibility job selects its scanner's required Node.js 22 runtime explicitly.
+
 ## Maintenance priorities
 
 Work is prioritized in this order:

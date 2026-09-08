@@ -54,6 +54,18 @@ html {
     top: 0;
 }
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* ========================================
    CSS VARIABLES (DARK MODE DEFAULT)
    ======================================== */
@@ -125,7 +137,7 @@ html {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    background: var(--bg-gradient-start);
     min-height: 100vh;
     color: var(--text-primary);
     padding: 20px;
@@ -136,6 +148,14 @@ body {
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
+
+#main-content p a,
+#main-content li a,
+.breadcrumb a,
+footer p a {
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+}
 
 h2 {
     font-size: 1.5rem;
@@ -702,8 +722,7 @@ th[data-sortable].sort-desc::after {
     position: relative;
 }
 
-.timeline::before {
-    content: '';
+.timeline-track {
     position: absolute;
     left: 20px;
     top: 0;
@@ -726,8 +745,7 @@ th[data-sortable].sort-desc::after {
     margin: 4px 0;
 }
 
-.timeline-entry::before {
-    content: '';
+.timeline-marker {
     position: absolute;
     left: 14px;
     top: 18px;
@@ -738,17 +756,17 @@ th[data-sortable].sort-desc::after {
     background: var(--bg-gradient-start);
 }
 
-.timeline-entry.past::before {
+.timeline-entry.past .timeline-marker {
     background: var(--status-enforcing);
     border-color: var(--status-enforcing);
 }
 
-.timeline-entry.future::before {
+.timeline-entry.future .timeline-marker {
     background: transparent;
     border-color: var(--accent);
 }
 
-.timeline-entry.today-marker::before {
+.timeline-entry.today-marker .timeline-marker {
     background: var(--accent);
     border-color: var(--accent);
     box-shadow: 0 0 8px var(--accent);

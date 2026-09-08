@@ -143,7 +143,7 @@
   code, pre, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  p a, aside a { text-decoration: underline; text-underline-offset: 0.12em; }
+  p a, aside a, .plain a { text-decoration: underline; text-underline-offset: 0.12em; }
 
   nav {
     position: sticky; top: 0; z-index: 10;
@@ -223,7 +223,7 @@
     margin: 0 0 14px;
   }
   h1 .mark {
-    background: linear-gradient(180deg, transparent 62%, var(--highlight-soft) 62%);
+    box-shadow: inset 0 -0.32em var(--highlight-soft);
     padding: 0 4px;
   }
   .byline {
@@ -352,6 +352,8 @@
     font-size: 12.5px;
     color: var(--accent);
     word-break: break-all;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
   }
   .split .card.primary-card {
     background: var(--highlight-soft);
@@ -433,18 +435,15 @@
     padding: 14px;
     text-align: center;
   }
-  .used-by-card .thumb-text .big-num {
+  .used-by-card .thumb-text-copy {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
     font-family: ui-monospace, monospace;
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--accent);
-    line-height: 1;
-  }
-  .used-by-card .thumb-text .unit {
-    font-size: 12px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.6;
   }
   .used-by-card .body { padding: 16px 18px 18px; }
   .used-by-card h3 {
@@ -539,7 +538,7 @@
 
 <nav>
   <div class="nav-inner">
-    <div class="brand" aria-label="knowledge-as-code"><span class="brace">{</span><span class="sp"></span><span class="kw">knowledge</span><span class="dash">-</span><span class="kw">as</span><span class="dash">-</span><span class="kw">code</span><span class="sp"></span><span class="brace">}</span></div>
+    <div class="brand" role="img" aria-label="knowledge-as-code"><span class="brace">{</span><span class="sp"></span><span class="kw">knowledge</span><span class="dash">-</span><span class="kw">as</span><span class="dash">-</span><span class="kw">code</span><span class="sp"></span><span class="brace">}</span></div>
     <div class="nav-links">
       <a href="#what">What</a>
       <a href="#why">Why</a>
@@ -566,13 +565,9 @@
   <h1><span class="mark">Knowledge as Code</span></h1>
   <p class="byline">
     By <a href="https://paice.work/" rel="author">Sam Rogers</a>, <a href="https://paice.work/">PAICE.work PBC</a>
-    <span class="sep">·</span>
     Published <time datetime="2026-01-20">January 20, 2026</time>
-    <span class="sep">·</span>
     Updated <time datetime="2026-09-05">September 5, 2026</time>
-    <span class="sep">·</span>
     <span class="version">v1.2</span>
-    <span class="sep">·</span>
     <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC&nbsp;BY&nbsp;4.0</a>
   </p>
   <p class="lede">
@@ -707,10 +702,10 @@
         the body. Git diffs are human-readable. No database, no CMS, no migrations.
       </p>
       <ul class="files">
-        <li>→ <a href="/data/examples/frameworks/iso-27001.md">data/examples/frameworks/iso-27001.md</a></li>
-        <li>→ <a href="/data/examples/requirements/access-control.md">data/examples/requirements/access-control.md</a></li>
-        <li>→ <a href="/data/examples/organizations/iso.md">data/examples/organizations/iso.md</a></li>
-        <li>→ <a href="/project.yml">project.yml</a> <span style="color:var(--muted);font-family:inherit;font-size:12px;">— the ontology config</span></li>
+        <li><a href="/data/examples/frameworks/iso-27001.md">data/examples/frameworks/iso-27001.md</a></li>
+        <li><a href="/data/examples/requirements/access-control.md">data/examples/requirements/access-control.md</a></li>
+        <li><a href="/data/examples/organizations/iso.md">data/examples/organizations/iso.md</a></li>
+        <li><a href="/project.yml">project.yml</a> <span style="color:var(--muted);font-family:inherit;font-size:12px;">— the ontology config</span></li>
       </ul>
     </div>
   </div>
@@ -748,10 +743,7 @@
 
     <a class="used-by-card" href="https://VirtualClassroom.watch/" target="_blank" rel="noopener">
       <span class="thumb-text">
-        <span class="big-num">22</span>
-        <span class="unit">meeting tools</span>
-        <span class="big-num" style="font-size:1.3rem;margin-top:4px;">9</span>
-        <span class="unit">facilitation primitives</span>
+        <span class="thumb-text-copy">22 meeting tools<br>9 facilitation primitives</span>
       </span>
       <div class="body">
         <h3>VirtualClassroom.watch</h3>

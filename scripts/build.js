@@ -219,12 +219,16 @@ function generateConfigCSS(config) {
     });
 
     // Theme accent overrides
+    const accent = cssColor(theme.accent, '#4fc3f7');
+    const accentLight = cssColor(theme.accent_light, '#0055aa');
     if (theme.accent) {
-        css += `:root { --accent: ${cssColor(theme.accent, '#4fc3f7')}; }\n`;
+        css += `:root { --accent: ${accent}; }\n`;
     }
     if (theme.accent_light) {
-        css += `:is(html, body).light-mode { --accent: ${cssColor(theme.accent_light, '#0055aa')}; }\n`;
+        css += `:is(html, body).light-mode { --accent: ${accentLight}; }\n`;
     }
+    css += `.skip-link, .back-to-top { color: ${readableTextColor(accent)}; }\n`;
+    css += `:is(html, body).light-mode .skip-link, :is(html, body).light-mode .back-to-top { color: ${readableTextColor(accentLight)}; }\n`;
 
     return escapeStyle(css);
 }
@@ -278,7 +282,7 @@ function renderThemeScript() {
             var btn = document.createElement('button');
             btn.className = 'back-to-top';
             btn.setAttribute('aria-label', 'Back to top');
-            btn.textContent = '\\u2191';
+            btn.innerHTML = '<span aria-hidden="true">\\u2191</span>';
             document.body.appendChild(btn);
             window.addEventListener('scroll', function() { btn.classList.toggle('visible', window.scrollY > 400); });
             btn.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
@@ -687,9 +691,10 @@ function generateMatrixPage(config, data, configCSS) {
             const entry = (matrix[p.id] || {})[c.id];
             if (entry && entry.covered) {
                 const n = entry.provisions.length;
-                return `<td class="matrix-cell covered" title="${escapeHTML(pLabel)} — ${escapeHTML(c.name)}: ${n}"><a href="requires/${pathSegment(c.id, 'Container ID')}/${pathSegment(p.id, 'Primary ID')}/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;">${n}</a></td>`;
+                const provisionLabel = `${n} provision${n === 1 ? '' : 's'}`;
+                return `<td class="matrix-cell covered" title="${escapeHTML(pLabel)} — ${escapeHTML(c.name)}: ${provisionLabel}"><a href="requires/${pathSegment(c.id, 'Container ID')}/${pathSegment(p.id, 'Primary ID')}/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;" aria-label="${escapeHTML(pLabel)} — ${escapeHTML(c.name)}: ${provisionLabel}">${n}</a></td>`;
             }
-            return `<td class="matrix-cell empty">&mdash;</td>`;
+            return `<td class="matrix-cell empty"><span aria-hidden="true">&mdash;</span><span class="sr-only">Not covered</span></td>`;
         }).join('');
         return `<tr><td class="matrix-row-header group-${cssClassName(p.group, 'other')}"><a href="primary/${pathSegment(p.id, 'Primary ID')}/index.html" onclick="passTheme(this)" style="color:inherit;">${escapeHTML(pLabel)}</a></td>${cells}</tr>`;
     }).join('\n');
@@ -735,6 +740,7 @@ function generateTimelinePage(config, data, configCSS) {
     const html = Object.keys(byYear).sort().map(year =>
         `<div class="timeline-year">${year}</div>\n` +
         byYear[year].map(ev => `<div class="timeline-entry ${ev.date <= today ? 'past' : 'future'}">
+            <span class="timeline-marker" aria-hidden="true"></span>
             <div class="timeline-date">${formatDate(ev.date)}</div>
             <div class="timeline-content">
                 <a href="container/${pathSegment(ev.containerId, 'Container ID')}/index.html" onclick="passTheme(this)" class="timeline-regulation">${escapeHTML(ev.container)}</a>
@@ -746,7 +752,7 @@ function generateTimelinePage(config, data, configCSS) {
 
     const content = `<h2 style="margin-top: 0.5rem;">Timeline</h2>
         <p style="color: var(--text-secondary); margin-bottom: 1rem;">Key dates. Solid dots are past; hollow dots are future.</p>
-        <div class="timeline">${html}</div>`;
+        <div class="timeline"><span class="timeline-track" aria-hidden="true"></span>${html}</div>`;
 
     const timelineDescription = `Chronological timeline of ${events.length} milestones across ${containers.length} ${(config.entities?.container?.plural || 'containers').toLowerCase()}, with past and upcoming effective dates.`;
     const structuredData = {
@@ -843,7 +849,7 @@ function generateAboutPage(config, data, configCSS) {
         <h2 style="margin-top: 0.5rem;">About</h2>
         <p>${escapeHTML(config.description || '')} Tracks <strong>${containers.length} ${cPlural.toLowerCase()}</strong>, <strong>${primaries.length} ${pPlural.toLowerCase()}</strong>, <strong>${totalProvisions} ${secName.toLowerCase()}s</strong>, and <strong>${authorities.length} ${authName.toLowerCase()}${authorities.length !== 1 ? 's' : ''}</strong>.</p>
         <h3>Data Model</h3>
-        <p><strong>${escapeHTML(authName)}</strong> &rarr; <strong>${escapeHTML(cName)}</strong> &rarr; <strong>${escapeHTML(secName)}</strong> &rarr; <strong>${escapeHTML(pName)}</strong></p>
+        <p><strong>${escapeHTML(authName)}</strong> maps to <strong>${escapeHTML(cName)}</strong> maps to <strong>${escapeHTML(secName)}</strong> maps to <strong>${escapeHTML(pName)}</strong></p>
         <p>${escapeHTML(pPlural)} are the stable anchors. ${escapeHTML(secName)}s are the implementations — different ${cPlural.toLowerCase()} ${rel} the same ${pPlural.toLowerCase()} differently.</p>
         <h3>JSON API</h3>
         <ul>
@@ -1203,7 +1209,7 @@ function generatePatternPage(config, data, configCSS) {
         <h2>The Ontology</h2>
         <p>Every Knowledge-as-Code project has four entity roles:</p>
         <div style="text-align: center; padding: 1.5rem 0; font-size: 1.1rem;">
-            <strong>${escapeHTML(authorityName)}</strong> → <strong>${escapeHTML(containerName)}</strong> → <strong>${escapeHTML(secondaryName)}</strong> → <strong>${escapeHTML(primaryName)}</strong>
+            <strong>${escapeHTML(authorityName)}</strong> maps to <strong>${escapeHTML(containerName)}</strong> maps to <strong>${escapeHTML(secondaryName)}</strong> maps to <strong>${escapeHTML(primaryName)}</strong>
         </div>
         <table class="data-table">
             <thead><tr><th>Role</th><th>This Project</th><th>What It Is</th></tr></thead>

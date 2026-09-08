@@ -29,6 +29,8 @@
 :is(html, body).light-mode .status-badge.deprecated { background: #455a64; color: #fff; }
 :root { --accent: #4fc3f7; }
 :is(html, body).light-mode { --accent: #0055aa; }
+.skip-link, .back-to-top { color: #000; }
+:is(html, body).light-mode .skip-link, :is(html, body).light-mode .back-to-top { color: #fff; }
 </style>
     
     <meta name="description" content="International Organization for Standardization — 1 framework published by this organization.">
@@ -133,7 +135,7 @@
             var btn = document.createElement('button');
             btn.className = 'back-to-top';
             btn.setAttribute('aria-label', 'Back to top');
-            btn.textContent = '\u2191';
+            btn.innerHTML = '<span aria-hidden="true">\u2191</span>';
             document.body.appendChild(btn);
             window.addEventListener('scroll', function() { btn.classList.toggle('visible', window.scrollY > 400); });
             btn.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });

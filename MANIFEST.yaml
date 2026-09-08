@@ -82,7 +82,7 @@ files:
 
   - path: scripts/build.js
     role: tooling
-    hash: sha256:0b9445770253923bee61b49b90a883bf3db3a6511777b9da928ae26022f8382a
+    hash: sha256:ad7861d1350c55c69294d08bbaa175ffe9b11b53139f17b8ac7ebed58bea3191
     note: Static site generator
 
   - path: scripts/assets/favicon.svg
@@ -122,7 +122,7 @@ files:
 
   - path: scripts/eval.js
     role: tooling
-    hash: sha256:7f5622d2245588bf7cdf00cd2afcf651f7b9a44565b3572645b931bdfcfd0e49
+    hash: sha256:f87c45678844465c5d84bb838664802cfa3aeaab397f3b60cddda33a6ad4a043
     note: Behavioral and security regression suite
 
   - path: mcp-server.js
@@ -157,7 +157,7 @@ files:
 
   - path: index.html
     role: protocol
-    hash: sha256:8a431b58a12102a94602548fa3810ce348e10b5e2701e0a708649c1c78c595f7
+    hash: sha256:2c13538b1d72fb4b365f54e77a41a9697fc77f71d9ab26622e55e47147f9f8db
     note: Canonical landing and executable quick start
 
   - path: sitemap.xml
@@ -182,7 +182,7 @@ files:
 
   - path: MAINTENANCE.md
     role: protocol
-    hash: sha256:0d1fde34cb47dc6a25e71ff9bbfa28adb23ebf41bc99167850d919369881457d
+    hash: sha256:51a5afe6c658692a7d1789dc695d64451ba7c4660719e43a6776b1ef03c8e4fa
     note: Compatibility and upgrade policy
 
   - path: VERIFICATION.md

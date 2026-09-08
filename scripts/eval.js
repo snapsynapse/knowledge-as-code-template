@@ -780,7 +780,7 @@ function evalPublicSurface() {
         'Canonical and generated favicon sources should remain byte-identical.'
     );
     assertIncludes(landing, '--accent: #047857;');
-    assertIncludes(landing, 'p a, aside a { text-decoration: underline;');
+    assertIncludes(landing, 'p a, aside a, .plain a { text-decoration: underline;');
     assertIncludes(landing, '.btn-primary { background: var(--accent); color: var(--bg); }');
     const jsonLdBlocks = [...landing.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
     assert.ok(jsonLdBlocks.length > 0, 'Landing should include JSON-LD.');
@@ -929,6 +929,27 @@ function evalGeneratedArtifactCleanliness() {
 
 function evalWorkflowContract() {
     const workflow = fs.readFileSync(path.join(ROOT, '.github/workflows/build.yml'), 'utf8');
+    const a11yJob = workflow.match(/\n  a11y:\n([\s\S]+)$/)?.[1] || '';
+    const scanPin = 'snapsynapse/skill-a11y-audit/.github/actions/scan@6af2c95a56ff058cddf0c6febc71512db1d6d19b';
+    const scanSteps = [
+        ['Run skill-a11y-audit (WCAG 2.1 AA)', ['serve-path: ./docs', 'sitemap: http://localhost:8088/sitemap.xml']],
+        ['Audit canonical root landing', ['serve-path: ./', 'port: 8089', 'sitemap: http://localhost:8089/tests/fixtures/a11y-root-sitemap.xml', 'artifact-name: a11y-root-results']],
+        ['Audit canonical demo deployment', ['serve-path: ./demo', 'port: 8090', 'sitemap: http://localhost:8090/sitemap.xml', 'artifact-name: a11y-demo-results']]
+    ];
+    assertIncludes(a11yJob, "node-version: '22'");
+    for (const [name, surfaceContract] of scanSteps) {
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const step = a11yJob.match(new RegExp(`- name: ${escapedName}\\n([\\s\\S]*?)(?=\\n      - name:|$)`))?.[1] || '';
+        assert.ok(step, `Accessibility workflow is missing step: ${name}`);
+        assertIncludes(step, `uses: ${scanPin}`);
+        assertIncludes(step, 'fail-on: major');
+        for (const requirement of surfaceContract) assertIncludes(step, requirement);
+    }
+    assert.strictEqual(
+        (a11yJob.match(/^\s*uses: snapsynapse\/skill-a11y-audit\/\.github\/actions\/scan@/gm) || []).length,
+        scanSteps.length,
+        'Every accessibility action use must belong to one of the three required scan surfaces.'
+    );
     for (const required of [
         "node: ['18', '20']",
         'KAC_OUTPUT_DIR: demo',
@@ -936,11 +957,7 @@ function evalWorkflowContract() {
         'KAC_REPO_URL: https://github.com/snapsynapse/knowledge-as-code-template',
         'Verify generated outputs are current',
         'Audit canonical root landing',
-        'Audit canonical demo deployment',
-        'port: 8089',
-        'artifact-name: a11y-root-results',
-        'port: 8090',
-        'artifact-name: a11y-demo-results'
+        'Audit canonical demo deployment'
     ]) assertIncludes(workflow, required);
 }
 

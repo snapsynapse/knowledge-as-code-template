@@ -14,6 +14,12 @@ pattern.
 
 ## [Unreleased]
 
+### Changed
+- Pinned all three accessibility scan surfaces to A11y Audit v3.1.0 at its verified immutable commit, selected Node.js 22 explicitly for the scanner, and adopted the fail-closed major-findings policy.
+
+### Fixed
+- Repaired shared generated-site and canonical landing contrast, link distinction, decorative marker, matrix-label, and theme-control behavior found while scanning all 45 required routes.
+
 ## [1.2.0] - 2026-09-05
 
 ### Added

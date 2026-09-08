@@ -29,6 +29,8 @@
 :is(html, body).light-mode .status-badge.deprecated { background: #455a64; color: #fff; }
 :root { --accent: #4fc3f7; }
 :is(html, body).light-mode { --accent: #0055aa; }
+.skip-link, .back-to-top { color: #000; }
+:is(html, body).light-mode .skip-link, :is(html, body).light-mode .back-to-top { color: #fff; }
 </style>
     <meta name="description" content="Coverage matrix showing which of 2 frameworks address each of 3 requirements.">
     <meta property="og:title" content="Coverage Matrix">
@@ -81,9 +83,9 @@
         <div class="matrix-wrapper">
             <table class="matrix-table">
                 <thead><tr><th class="matrix-corner">Requirement</th><th><a href="container/iso-27001/index.html" onclick="passTheme(this)" title="ISO/IEC 27001:2022">International</a></th><th><a href="container/nist-csf/index.html" onclick="passTheme(this)" title="NIST Cybersecurity Framework">Federal</a></th></tr></thead>
-                <tbody><tr><td class="matrix-row-header group-governance"><a href="primary/access-control/index.html" onclick="passTheme(this)" style="color:inherit;">Access Control</a></td><td class="matrix-cell covered" title="Access Control — ISO/IEC 27001:2022: 1"><a href="requires/iso-27001/access-control/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;">1</a></td><td class="matrix-cell covered" title="Access Control — NIST Cybersecurity Framework: 1"><a href="requires/nist-csf/access-control/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;">1</a></td></tr>
-<tr><td class="matrix-row-header group-operational"><a href="primary/incident-response/index.html" onclick="passTheme(this)" style="color:inherit;">Incident Response</a></td><td class="matrix-cell empty">&mdash;</td><td class="matrix-cell covered" title="Incident Response — NIST Cybersecurity Framework: 1"><a href="requires/nist-csf/incident-response/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;">1</a></td></tr>
-<tr><td class="matrix-row-header group-technical"><a href="primary/information-integrity/index.html" onclick="passTheme(this)" style="color:inherit;">Information Integrity</a></td><td class="matrix-cell covered" title="Information Integrity — ISO/IEC 27001:2022: 1"><a href="requires/iso-27001/information-integrity/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;">1</a></td><td class="matrix-cell empty">&mdash;</td></tr></tbody>
+                <tbody><tr><td class="matrix-row-header group-governance"><a href="primary/access-control/index.html" onclick="passTheme(this)" style="color:inherit;">Access Control</a></td><td class="matrix-cell covered" title="Access Control — ISO/IEC 27001:2022: 1 provision"><a href="requires/iso-27001/access-control/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;" aria-label="Access Control — ISO/IEC 27001:2022: 1 provision">1</a></td><td class="matrix-cell covered" title="Access Control — NIST Cybersecurity Framework: 1 provision"><a href="requires/nist-csf/access-control/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;" aria-label="Access Control — NIST Cybersecurity Framework: 1 provision">1</a></td></tr>
+<tr><td class="matrix-row-header group-operational"><a href="primary/incident-response/index.html" onclick="passTheme(this)" style="color:inherit;">Incident Response</a></td><td class="matrix-cell empty"><span aria-hidden="true">&mdash;</span><span class="sr-only">Not covered</span></td><td class="matrix-cell covered" title="Incident Response — NIST Cybersecurity Framework: 1 provision"><a href="requires/nist-csf/incident-response/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;" aria-label="Incident Response — NIST Cybersecurity Framework: 1 provision">1</a></td></tr>
+<tr><td class="matrix-row-header group-technical"><a href="primary/information-integrity/index.html" onclick="passTheme(this)" style="color:inherit;">Information Integrity</a></td><td class="matrix-cell covered" title="Information Integrity — ISO/IEC 27001:2022: 1 provision"><a href="requires/iso-27001/information-integrity/index.html" onclick="passTheme(this)" style="color:inherit;text-decoration:none;" aria-label="Information Integrity — ISO/IEC 27001:2022: 1 provision">1</a></td><td class="matrix-cell empty"><span aria-hidden="true">&mdash;</span><span class="sr-only">Not covered</span></td></tr></tbody>
             </table>
         </div>
     
@@ -126,7 +128,7 @@
             var btn = document.createElement('button');
             btn.className = 'back-to-top';
             btn.setAttribute('aria-label', 'Back to top');
-            btn.textContent = '\u2191';
+            btn.innerHTML = '<span aria-hidden="true">\u2191</span>';
             document.body.appendChild(btn);
             window.addEventListener('scroll', function() { btn.classList.toggle('visible', window.scrollY > 400); });
             btn.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
